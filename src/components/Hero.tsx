@@ -1,17 +1,28 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { HeroGlobe } from "@/components/HeroGlobe";
+import { IndexTicker } from "@/components/IndexTicker";
 
 export function Hero() {
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-bg-base px-6 text-center">
+      {/* profundidade sutil: leve mescla azul/violeta sobre bg-base, centrada
+          onde o globo fica, desaparecendo nas bordas — sem cor hardcoded */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-accent-blue/10 blur-[120px]"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 70% at 50% 50%, color-mix(in srgb, var(--color-accent-blue) 6%, var(--color-bg-base)) 0%, color-mix(in srgb, var(--color-accent-violet) 4%, var(--color-bg-base)) 45%, var(--color-bg-base) 80%)",
+        }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-accent-violet/10 blur-[120px]"
+        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-accent-blue/8 blur-[120px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-accent-violet/8 blur-[120px]"
       />
       <div
         aria-hidden
@@ -23,24 +34,29 @@ export function Hero() {
         }}
       />
 
-      {/* "horizonte de planeta": globo grande, deslocado para baixo, só a
-          curvatura superior aparece atrás dos CTAs */}
+      {/* globo completo, centralizado atrás do conteúdo */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
       >
-        <div className="aspect-square w-[140vw] max-w-[1100px] translate-y-[38%] sm:w-[110vw]">
+        <div className="aspect-square w-[min(85vw,75vh)] max-w-[900px] translate-y-[5%]">
           <HeroGlobe />
         </div>
       </div>
+      {/* overlay atrás do bloco de texto (centro) para garantir contraste,
+          esmaecendo para transparente na borda do globo */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 70% 60% at 50% 100%, transparent 30%, var(--color-bg-base) 90%)",
+            "radial-gradient(ellipse 55% 45% at 50% 50%, color-mix(in srgb, var(--color-bg-base) 55%, transparent) 0%, transparent 70%)",
         }}
       />
+
+      <div className="absolute inset-x-0 top-20 sm:top-24">
+        <IndexTicker />
+      </div>
 
       <div className="relative flex max-w-3xl flex-col items-center">
         <span className="inline-flex items-center rounded-full border border-border px-4 py-1.5 text-xs font-medium text-text-secondary">
