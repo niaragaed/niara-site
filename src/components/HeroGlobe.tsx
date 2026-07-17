@@ -8,17 +8,17 @@ import { CITIES, type City } from "@/lib/cities";
 const BASE_COLOR: [number, number, number] = [0.106, 0.141, 0.251];
 // #2E6BFF, com a intensidade rebaixada para não estourar o fundo escuro
 const GLOW_COLOR: [number, number, number] = [0.108, 0.252, 0.6];
-// #38BDF8 — marcador "você está aqui"
+// #38BDF8 — único marcador em destaque: "você está aqui"
 const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 
-// "luz de cidade": azul-claro/branco-azulado derivado de accent-blue,
-// interpolado entre um tom mais apagado e um mais brilhante conforme a
-// população — cidades maiores ficam maiores E um pouco mais "acesas".
-const CITY_COLOR_DIM: [number, number, number] = [0.42, 0.55, 0.85];
-const CITY_COLOR_BRIGHT: [number, number, number] = [0.75, 0.85, 1];
-const CITY_MIN_SIZE = 0.02;
-const CITY_MAX_SIZE = 0.08;
-const USER_MARKER_SIZE = 0.09; // maior que qualquer cidade
+// "poeira de luz": accent-blue puxado para o tom do próprio mapa (baseColor),
+// bem apagado — as cidades devem ler como textura do globo, não como pontos
+// flutuando por cima do conteúdo.
+const CITY_COLOR: [number, number, number] = [0.128, 0.225, 0.476];
+const CITY_MIN_SIZE = 0.008;
+const CITY_MAX_SIZE = 0.02;
+const USER_MARKER_SIZE = 0.055; // destaque único, bem maior que as cidades
+const MARKER_ELEVATION = 0.01; // rente à superfície (padrão da cobe é 0.05)
 
 const MOBILE_BREAKPOINT = 640;
 const MOBILE_CITY_COUNT = 50;
@@ -39,11 +39,7 @@ function buildCityMarkers(cities: City[]): Marker[] {
     return {
       location: [city.lat, city.lng],
       size: lerp(CITY_MIN_SIZE, CITY_MAX_SIZE, t),
-      color: [
-        lerp(CITY_COLOR_DIM[0], CITY_COLOR_BRIGHT[0], t),
-        lerp(CITY_COLOR_DIM[1], CITY_COLOR_BRIGHT[1], t),
-        lerp(CITY_COLOR_DIM[2], CITY_COLOR_BRIGHT[2], t),
-      ],
+      color: CITY_COLOR,
     };
   });
 }
@@ -96,8 +92,9 @@ export function HeroGlobe() {
         mapSamples,
         mapBrightness: 5,
         baseColor: BASE_COLOR,
-        markerColor: CITY_COLOR_BRIGHT,
+        markerColor: CITY_COLOR,
         glowColor: GLOW_COLOR,
+        markerElevation: MARKER_ELEVATION,
         opacity: 0.9,
         markers,
       };
