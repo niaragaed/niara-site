@@ -38,14 +38,14 @@ function TickerRow({ item, duplicate }: { item: TickerItem; duplicate: boolean }
   return (
     <div
       aria-hidden={duplicate || undefined}
-      className="flex shrink-0 items-center gap-2 whitespace-nowrap px-5 text-[11px] text-text-secondary transition-colors hover:text-text-primary sm:text-xs"
+      className="flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-md border border-border bg-bg-surface px-4 py-3 text-sm text-text-secondary transition-colors hover:border-accent-blue/40 hover:text-text-primary sm:gap-3 sm:px-5 sm:py-3.5 sm:text-base"
     >
       {item.flagCode ? (
-        <span className={`fi fi-${item.flagCode} rounded-[2px] text-sm`} />
+        <span className={`fi fi-${item.flagCode} rounded-[2px] text-base sm:text-lg`} />
       ) : item.icon === "bitcoin" ? (
-        <Bitcoin className="h-3.5 w-3.5 text-text-muted" />
+        <Bitcoin className="h-4 w-4 text-text-muted sm:h-5 sm:w-5" />
       ) : (
-        <Coins className="h-3.5 w-3.5 text-text-muted" />
+        <Coins className="h-4 w-4 text-text-muted sm:h-5 sm:w-5" />
       )}
       <span className="font-medium">{item.ticker}</span>
       <span className="font-mono tabular-nums text-text-primary">
@@ -68,9 +68,9 @@ export function IndexTicker() {
     <div
       role="group"
       aria-label="Índices e ativos — valores ilustrativos"
-      className="w-full overflow-hidden border-y border-border/60 bg-bg-surface/30 py-2 backdrop-blur-sm"
+      className="group w-full overflow-hidden border-y border-border/60 bg-bg-surface/20 py-6 backdrop-blur-sm sm:py-8"
     >
-      <div className="flex w-max animate-ticker divide-x divide-border/60">
+      <div className="flex w-max animate-ticker gap-3 group-hover:[animation-play-state:paused] sm:gap-4">
         {TICKER_ITEMS.map((item) => (
           <TickerRow key={item.ticker} item={item} duplicate={false} />
         ))}

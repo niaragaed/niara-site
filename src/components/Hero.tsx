@@ -54,7 +54,7 @@ export function Hero() {
         }}
       />
 
-      <div className="absolute inset-x-0 top-20 sm:top-24">
+      <div className="absolute inset-x-0 top-16 sm:top-20">
         <IndexTicker />
       </div>
 
