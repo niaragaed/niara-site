@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { HeroGlobe } from "@/components/HeroGlobe";
 
 export function Hero() {
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-bg-base px-6 text-center">
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-accent-blue/20 blur-[120px]"
+        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-accent-blue/10 blur-[120px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-accent-violet/20 blur-[120px]"
+        className="pointer-events-none absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-accent-violet/10 blur-[120px]"
       />
       <div
         aria-hidden
@@ -19,6 +20,25 @@ export function Hero() {
           backgroundImage:
             "radial-gradient(var(--color-border) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
+        }}
+      />
+
+      {/* "horizonte de planeta": globo grande, deslocado para baixo, só a
+          curvatura superior aparece atrás dos CTAs */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center"
+      >
+        <div className="aspect-square w-[140vw] max-w-[1100px] translate-y-[38%] sm:w-[110vw]">
+          <HeroGlobe />
+        </div>
+      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 60% at 50% 100%, transparent 30%, var(--color-bg-base) 90%)",
         }}
       />
 
