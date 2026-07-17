@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import createGlobe from "cobe";
+import createGlobe, { type Marker } from "cobe";
 
 // Centros financeiros — placeholder de marcadores para a fase de shell.
-const MARKERS: { location: [number, number]; size: number }[] = [
+const MARKERS: Marker[] = [
   { location: [40.71, -74.01], size: 0.05 }, // Nova York
   { location: [51.51, -0.13], size: 0.05 }, // Londres
   { location: [35.68, 139.69], size: 0.05 }, // Tóquio
@@ -19,8 +19,11 @@ const BASE_COLOR: [number, number, number] = [0.106, 0.141, 0.251];
 const MARKER_COLOR: [number, number, number] = [0.482, 0.247, 0.894];
 // #2E6BFF, com a intensidade rebaixada para não estourar o fundo escuro
 const GLOW_COLOR: [number, number, number] = [0.108, 0.252, 0.6];
+// #38BDF8 — marcador "você está aqui"
+const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 
 const MOBILE_BREAKPOINT = 640;
+const GEO_ENDPOINT = "https://ipwho.is/";
 
 export function HeroGlobe() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,22 +53,26 @@ export function HeroGlobe() {
     }
     readSize();
 
-    const globe = createGlobe(canvas, {
-      devicePixelRatio,
-      width,
-      height,
-      phi: 0,
-      theta: 0.32,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples,
-      mapBrightness: 5,
-      baseColor: BASE_COLOR,
-      markerColor: MARKER_COLOR,
-      glowColor: GLOW_COLOR,
-      opacity: 0.9,
-      markers: MARKERS,
-    });
+    function buildOptions(markers: Marker[]) {
+      return {
+        devicePixelRatio,
+        width,
+        height,
+        phi,
+        theta: 0.32,
+        dark: 1,
+        diffuse: 1.2,
+        mapSamples,
+        mapBrightness: 5,
+        baseColor: BASE_COLOR,
+        markerColor: MARKER_COLOR,
+        glowColor: GLOW_COLOR,
+        opacity: 0.9,
+        markers,
+      };
+    }
+
+    let globe = createGlobe(canvas, buildOptions(MARKERS));
 
     let frame: number;
     function animate() {
@@ -84,7 +91,48 @@ export function HeroGlobe() {
 
     const fadeInFrame = requestAnimationFrame(() => setReady(true));
 
+    // Geolocalização aproximada por IP (sem navigator.geolocation — evita o
+    // popup de permissão). Falha graciosa: sem marcador se bloquear/falhar.
+    // Localização não é armazenada, só usada em memória para recriar o globo.
+    let cancelled = false;
+    const geoController = new AbortController();
+
+    fetch(GEO_ENDPOINT, { signal: geoController.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("geo lookup failed");
+        return response.json();
+      })
+      .then((data: { success?: boolean; latitude?: number; longitude?: number }) => {
+        if (cancelled) return;
+        if (
+          data?.success === false ||
+          typeof data.latitude !== "number" ||
+          typeof data.longitude !== "number"
+        ) {
+          return;
+        }
+
+        const userMarker: Marker = {
+          location: [data.latitude, data.longitude],
+          size: 0.06,
+          color: USER_MARKER_COLOR,
+        };
+
+        // Aproximação: orienta o globo para a longitude do visitante ficar
+        // de frente ao carregar. Heurística simples, não uma projeção exata.
+        phi = (data.longitude * Math.PI) / 180;
+
+        globe.destroy();
+        globe = createGlobe(canvas, buildOptions([...MARKERS, userMarker]));
+      })
+      .catch(() => {
+        // API de geolocalização indisponível/bloqueada (rede, CORS, etc.) —
+        // segue sem o marcador do usuário, sem quebrar o globo.
+      });
+
     return () => {
+      cancelled = true;
+      geoController.abort();
       cancelAnimationFrame(frame);
       cancelAnimationFrame(fadeInFrame);
       resizeObserver.disconnect();

@@ -30,6 +30,7 @@
 
   /* Animação */
   --animate-marquee: marquee 40s linear infinite;
+  --animate-ticker: marquee 60s linear infinite;
 }
 
 @keyframes marquee {
