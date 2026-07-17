@@ -2,28 +2,51 @@
 
 import { useEffect, useRef, useState } from "react";
 import createGlobe, { type Marker } from "cobe";
-
-// Centros financeiros — placeholder de marcadores para a fase de shell.
-const MARKERS: Marker[] = [
-  { location: [40.71, -74.01], size: 0.05 }, // Nova York
-  { location: [51.51, -0.13], size: 0.05 }, // Londres
-  { location: [35.68, 139.69], size: 0.05 }, // Tóquio
-  { location: [1.35, 103.82], size: 0.04 }, // Singapura
-  { location: [50.11, 8.68], size: 0.04 }, // Frankfurt
-  { location: [-23.55, -46.63], size: 0.05 }, // São Paulo
-];
+import { CITIES, type City } from "@/lib/cities";
 
 // #1B2440
 const BASE_COLOR: [number, number, number] = [0.106, 0.141, 0.251];
-// #7B3FE4
-const MARKER_COLOR: [number, number, number] = [0.482, 0.247, 0.894];
 // #2E6BFF, com a intensidade rebaixada para não estourar o fundo escuro
 const GLOW_COLOR: [number, number, number] = [0.108, 0.252, 0.6];
 // #38BDF8 — marcador "você está aqui"
 const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 
+// "luz de cidade": azul-claro/branco-azulado derivado de accent-blue,
+// interpolado entre um tom mais apagado e um mais brilhante conforme a
+// população — cidades maiores ficam maiores E um pouco mais "acesas".
+const CITY_COLOR_DIM: [number, number, number] = [0.42, 0.55, 0.85];
+const CITY_COLOR_BRIGHT: [number, number, number] = [0.75, 0.85, 1];
+const CITY_MIN_SIZE = 0.02;
+const CITY_MAX_SIZE = 0.08;
+const USER_MARKER_SIZE = 0.09; // maior que qualquer cidade
+
 const MOBILE_BREAKPOINT = 640;
+const MOBILE_CITY_COUNT = 50;
 const GEO_ENDPOINT = "https://ipwho.is/";
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function buildCityMarkers(cities: City[]): Marker[] {
+  const logs = cities.map((city) => Math.log(city.pop));
+  const minLog = Math.min(...logs);
+  const maxLog = Math.max(...logs);
+  const range = maxLog - minLog || 1;
+
+  return cities.map((city) => {
+    const t = (Math.log(city.pop) - minLog) / range;
+    return {
+      location: [city.lat, city.lng],
+      size: lerp(CITY_MIN_SIZE, CITY_MAX_SIZE, t),
+      color: [
+        lerp(CITY_COLOR_DIM[0], CITY_COLOR_BRIGHT[0], t),
+        lerp(CITY_COLOR_DIM[1], CITY_COLOR_BRIGHT[1], t),
+        lerp(CITY_COLOR_DIM[2], CITY_COLOR_BRIGHT[2], t),
+      ],
+    };
+  });
+}
 
 export function HeroGlobe() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,6 +76,14 @@ export function HeroGlobe() {
     }
     readSize();
 
+    // Densidade de marcadores fixada no tamanho inicial da tela — evita
+    // recriar o globo a cada resize (só o canvas/resolução acompanham).
+    const isMobile = width < MOBILE_BREAKPOINT;
+    const cities = isMobile
+      ? [...CITIES].sort((a, b) => b.pop - a.pop).slice(0, MOBILE_CITY_COUNT)
+      : CITIES;
+    const cityMarkers = buildCityMarkers(cities);
+
     function buildOptions(markers: Marker[]) {
       return {
         devicePixelRatio,
@@ -65,14 +96,14 @@ export function HeroGlobe() {
         mapSamples,
         mapBrightness: 5,
         baseColor: BASE_COLOR,
-        markerColor: MARKER_COLOR,
+        markerColor: CITY_COLOR_BRIGHT,
         glowColor: GLOW_COLOR,
         opacity: 0.9,
         markers,
       };
     }
 
-    let globe = createGlobe(canvas, buildOptions(MARKERS));
+    let globe = createGlobe(canvas, buildOptions(cityMarkers));
 
     let frame: number;
     function animate() {
@@ -102,29 +133,38 @@ export function HeroGlobe() {
         if (!response.ok) throw new Error("geo lookup failed");
         return response.json();
       })
-      .then((data: { success?: boolean; latitude?: number; longitude?: number }) => {
-        if (cancelled) return;
-        if (
-          data?.success === false ||
-          typeof data.latitude !== "number" ||
-          typeof data.longitude !== "number"
-        ) {
-          return;
-        }
+      .then(
+        (data: {
+          success?: boolean;
+          latitude?: number;
+          longitude?: number;
+        }) => {
+          if (cancelled) return;
+          if (
+            data?.success === false ||
+            typeof data.latitude !== "number" ||
+            typeof data.longitude !== "number"
+          ) {
+            return;
+          }
 
-        const userMarker: Marker = {
-          location: [data.latitude, data.longitude],
-          size: 0.06,
-          color: USER_MARKER_COLOR,
-        };
+          const userMarker: Marker = {
+            location: [data.latitude, data.longitude],
+            size: USER_MARKER_SIZE,
+            color: USER_MARKER_COLOR,
+          };
 
-        // Aproximação: orienta o globo para a longitude do visitante ficar
-        // de frente ao carregar. Heurística simples, não uma projeção exata.
-        phi = (data.longitude * Math.PI) / 180;
+          // Aproximação: orienta o globo para a longitude do visitante ficar
+          // de frente ao carregar. Heurística simples, não uma projeção exata.
+          phi = (data.longitude * Math.PI) / 180;
 
-        globe.destroy();
-        globe = createGlobe(canvas, buildOptions([...MARKERS, userMarker]));
-      })
+          globe.destroy();
+          globe = createGlobe(
+            canvas,
+            buildOptions([...cityMarkers, userMarker]),
+          );
+        },
+      )
       .catch(() => {
         // API de geolocalização indisponível/bloqueada (rede, CORS, etc.) —
         // segue sem o marcador do usuário, sem quebrar o globo.

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { NAV_ITEMS } from "./nav-items";
 
@@ -5,9 +6,18 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-bg-base">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
-        <span className="font-display text-lg tracking-widest text-text-primary">
-          NIARA
-        </span>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/niara-mark.png"
+            alt="Niara"
+            width={29}
+            height={24}
+            className="h-6 w-auto"
+          />
+          <span className="font-display text-lg tracking-widest text-text-primary">
+            NIARA
+          </span>
+        </div>
 
         <nav aria-label="Links do rodapé">
           <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">

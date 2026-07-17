@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
@@ -27,11 +28,18 @@ export function Header() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link
-          href="/"
-          className="font-display text-lg tracking-widest text-text-primary"
-        >
-          NIARA
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/niara-mark.png"
+            alt="Niara"
+            width={36}
+            height={30}
+            priority
+            className="h-[30px] w-auto"
+          />
+          <span className="font-display text-lg tracking-widest text-text-primary">
+            NIARA
+          </span>
         </Link>
 
         <nav aria-label="Navegação principal" className="hidden md:block">
