@@ -3,12 +3,7 @@
 import { useMemo, useState } from "react";
 import { Coins, Search } from "lucide-react";
 import type { Asset } from "@/lib/mock-assets";
-
-type AssetSearchProps = {
-  assets: Asset[];
-  selected: Asset;
-  onSelect: (asset: Asset) => void;
-};
+import { useExchange } from "./ExchangeContext";
 
 function AssetFlag({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
   if (asset.country) {
@@ -19,7 +14,8 @@ function AssetFlag({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
   return <Coins className={`${boxSize} text-text-muted`} aria-hidden="true" />;
 }
 
-export function AssetSearch({ assets, selected, onSelect }: AssetSearchProps) {
+export function AssetSearch() {
+  const { assets, selectedAsset: selected, selectAsset: onSelect } = useExchange();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 

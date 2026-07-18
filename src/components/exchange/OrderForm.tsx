@@ -1,20 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Asset } from "@/lib/mock-assets";
-import type { OrderSide } from "@/lib/mock-orderbook";
+import { useExchange } from "./ExchangeContext";
+import type { OrderSide } from "@/lib/trading";
 
 const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
+const DEVIATION_WARNING_THRESHOLD = 0.2; // 20%
 
-type OrderFormProps = {
-  asset: Asset;
-  onExecute: (order: { side: OrderSide; qty: number; price: number }) => void;
-};
+// O componente pai monta este formulário com `key={selectedAsset.symbol}` —
+// trocar de ativo remonta o form do zero, resetando quantidade/preço/
+// aprovação sem precisar sincronizar estado via useEffect.
+export function OrderForm() {
+  const { selectedAsset, submitOrder } = useExchange();
 
-// O componente pai monta este formulário com `key={asset.symbol}` — trocar
-// de ativo remonta o form do zero, resetando quantidade/preço/aprovação sem
-// precisar sincronizar estado via useEffect.
-export function OrderForm({ asset, onExecute }: OrderFormProps) {
   const [side, setSide] = useState<OrderSide>("buy");
   const [qty, setQty] = useState("");
   const [price, setPrice] = useState("");
@@ -28,6 +26,11 @@ export function OrderForm({ asset, onExecute }: OrderFormProps) {
     qty.trim() !== "" && price.trim() !== "" && qtyNum > 0 && priceNum > 0;
   const total = isValid ? qtyNum * priceNum : 0;
   const fee = total * FEE_RATE;
+
+  const deviation = isValid
+    ? Math.abs(priceNum - selectedAsset.priceEth) / selectedAsset.priceEth
+    : 0;
+  const isFarFromMarket = isValid && deviation > DEVIATION_WARNING_THRESHOLD;
 
   function handleSideChange(next: OrderSide) {
     setSide(next);
@@ -47,13 +50,15 @@ export function OrderForm({ asset, onExecute }: OrderFormProps) {
 
   function handleExecute() {
     if (!approved || !isValid) return;
-    onExecute({ side, qty: qtyNum, price: priceNum });
+    const result = submitOrder(side, qtyNum, priceNum);
     setQty("");
     setPrice("");
     setApproved(false);
     setError(null);
     setConfirmation(
-      `Ordem simulada de ${side === "buy" ? "compra" : "venda"} registrada — nenhuma transação real foi executada.`,
+      result.status === "filled"
+        ? `Ordem simulada de ${side === "buy" ? "compra" : "venda"} executada a ${result.fillPrice.toFixed(6)} ETH — nenhuma transação real foi feita.`
+        : `Ordem simulada de ${side === "buy" ? "compra" : "venda"} registrada como aberta no livro — nenhuma transação real foi feita.`,
     );
   }
 
@@ -131,7 +136,7 @@ export function OrderForm({ asset, onExecute }: OrderFormProps) {
               setPrice(event.target.value);
               setApproved(false);
             }}
-            placeholder={asset.priceEth.toString()}
+            placeholder={selectedAsset.priceEth.toString()}
             className="w-full rounded-md border border-border bg-bg-base px-3 py-2 font-mono text-sm tabular-nums text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
           />
         </div>
@@ -148,6 +153,13 @@ export function OrderForm({ asset, onExecute }: OrderFormProps) {
         </div>
       </div>
 
+      {isFarFromMarket && (
+        <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+          Esse preço está a {(deviation * 100).toFixed(1)}% do preço de
+          referência ({selectedAsset.priceEth.toFixed(6)} ETH). Confira antes
+          de continuar.
+        </p>
+      )}
       {error && <p className="mt-3 text-xs text-negative">{error}</p>}
       {confirmation && (
         <p className="mt-3 rounded-md border border-positive/30 bg-positive/10 px-3 py-2 text-xs text-positive">
