@@ -1,0 +1,117 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Coins, Search } from "lucide-react";
+import type { Asset } from "@/lib/mock-assets";
+
+type AssetSearchProps = {
+  assets: Asset[];
+  selected: Asset;
+  onSelect: (asset: Asset) => void;
+};
+
+function AssetFlag({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
+  if (asset.country) {
+    const textSize = size === "sm" ? "text-base" : "text-2xl";
+    return <span className={`fi fi-${asset.country} rounded-[2px] ${textSize}`} />;
+  }
+  const boxSize = size === "sm" ? "h-4 w-4" : "h-6 w-6";
+  return <Coins className={`${boxSize} text-text-muted`} aria-hidden="true" />;
+}
+
+export function AssetSearch({ assets, selected, onSelect }: AssetSearchProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return assets;
+    return assets.filter(
+      (asset) =>
+        asset.symbol.toLowerCase().includes(q) ||
+        asset.name.toLowerCase().includes(q),
+    );
+  }, [assets, query]);
+
+  const positive = selected.change24h >= 0;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-md border border-border bg-bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative w-full sm:max-w-xs">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+          aria-hidden="true"
+        />
+        <label htmlFor="asset-search" className="sr-only">
+          Buscar ativo
+        </label>
+        <input
+          id="asset-search"
+          type="text"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Buscar ativo (ex.: PETR4)"
+          className="w-full rounded-md border border-border bg-bg-base py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent-blue"
+        />
+        {open && filtered.length > 0 && (
+          <ul
+            role="listbox"
+            aria-label="Resultados da busca de ativos"
+            className="absolute z-10 mt-1 max-h-64 w-full overflow-auto rounded-md border border-border bg-bg-elevated py-1 shadow-lg"
+          >
+            {filtered.map((asset) => (
+              <li key={asset.symbol}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={asset.symbol === selected.symbol}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    onSelect(asset);
+                    setQuery("");
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
+                >
+                  <AssetFlag asset={asset} size="sm" />
+                  <span className="font-medium text-text-primary">
+                    {asset.symbol}
+                  </span>
+                  <span className="truncate text-text-muted">
+                    {asset.name}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <AssetFlag asset={selected} size="lg" />
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-display text-lg text-text-primary">
+              {selected.symbol}
+            </span>
+            <span className="text-sm text-text-muted">{selected.name}</span>
+          </div>
+        </div>
+        <div className="ml-2 text-right font-mono tabular-nums">
+          <div className="text-base text-text-primary">
+            {selected.priceEth.toFixed(4)} ETH
+          </div>
+          <div className={`text-sm ${positive ? "text-positive" : "text-negative"}`}>
+            {positive ? "+" : ""}
+            {selected.change24h.toFixed(2)}%
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
