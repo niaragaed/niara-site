@@ -1,10 +1,8 @@
-import type { Asset } from "@/lib/mock-assets";
-import { generateMockOrderBook, type BookOrder } from "@/lib/mock-orderbook";
+"use client";
 
-type OrderBookProps = {
-  asset: Asset;
-  userOrders: BookOrder[];
-};
+import { useExchange } from "./ExchangeContext";
+import { getBestPrices } from "@/lib/trading";
+import type { BookOrder } from "@/lib/mock-orderbook";
 
 function DepthBar({
   qty,
@@ -15,6 +13,8 @@ function DepthBar({
   maxQty: number;
   side: "buy" | "sell";
 }) {
+  // normalizado pela maior quantidade do lado e sempre travado em 100% —
+  // uma ordem gigante nunca estoura a escala, só vira a barra "cheia".
   const pct = maxQty > 0 ? Math.min(100, (qty / maxQty) * 100) : 0;
   const colorVar =
     side === "buy" ? "var(--color-positive)" : "var(--color-negative)";
@@ -60,26 +60,25 @@ function OrderRow({
   );
 }
 
-export function OrderBook({ asset, userOrders }: OrderBookProps) {
-  const base = generateMockOrderBook(asset.symbol, asset.priceEth);
-
-  const userAsks = userOrders.filter((order) => order.side === "sell");
-  const userBids = userOrders.filter((order) => order.side === "buy");
-
-  // ordens do usuário ficam fixadas no topo do lado correspondente
-  const asks = [...userAsks, ...base.asks];
-  const bids = [...userBids, ...base.bids];
+export function OrderBook() {
+  const { selectedAsset, bookForSelected } = useExchange();
+  const { asks, bids } = bookForSelected;
 
   const maxAskQty = Math.max(...asks.map((order) => order.qty), 1);
   const maxBidQty = Math.max(...bids.map((order) => order.qty), 1);
 
-  const bestAsk = Math.min(...asks.map((order) => order.price));
-  const bestBid = Math.max(...bids.map((order) => order.price));
-  const spread = bestAsk - bestBid;
-  const spreadPct = bestAsk > 0 ? (spread / bestAsk) * 100 : 0;
+  const { bestAsk, bestBid } = getBestPrices(asks, bids);
+  // por construção (ordens que cruzam o livro executam na hora, ver
+  // trading.ts) bestAsk nunca fica abaixo de bestBid — o clamp aqui é só
+  // uma rede de segurança para nunca exibir spread negativo.
+  const spread =
+    bestAsk !== undefined && bestBid !== undefined
+      ? Math.max(bestAsk - bestBid, 0)
+      : 0;
+  const spreadPct = bestAsk ? (spread / bestAsk) * 100 : 0;
 
   return (
-    <div className="rounded-md border border-border bg-bg-surface">
+    <div className="flex h-full flex-col rounded-md border border-border bg-bg-surface">
       <div className="border-b border-border px-3 py-2">
         <h2 className="text-sm font-semibold text-text-primary">
           Livro de ofertas
@@ -92,33 +91,35 @@ export function OrderBook({ asset, userOrders }: OrderBookProps) {
         <span className="text-right">Preço (ETH)</span>
       </div>
 
-      <div>
-        {asks.map((order) => (
-          <OrderRow
-            key={order.id}
-            order={order}
-            maxQty={maxAskQty}
-            symbol={asset.symbol}
-          />
-        ))}
-      </div>
+      <div className="flex-1 overflow-auto">
+        <div>
+          {asks.map((order) => (
+            <OrderRow
+              key={order.id}
+              order={order}
+              maxQty={maxAskQty}
+              symbol={selectedAsset.symbol}
+            />
+          ))}
+        </div>
 
-      <div className="flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-2 font-mono text-xs tabular-nums text-text-muted">
-        <span>Spread</span>
-        <span>
-          {spread.toFixed(6)} ETH ({spreadPct.toFixed(2)}%)
-        </span>
-      </div>
+        <div className="flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-2 font-mono text-xs tabular-nums text-text-muted">
+          <span>Spread</span>
+          <span>
+            {spread.toFixed(6)} ETH ({spreadPct.toFixed(2)}%)
+          </span>
+        </div>
 
-      <div>
-        {bids.map((order) => (
-          <OrderRow
-            key={order.id}
-            order={order}
-            maxQty={maxBidQty}
-            symbol={asset.symbol}
-          />
-        ))}
+        <div>
+          {bids.map((order) => (
+            <OrderRow
+              key={order.id}
+              order={order}
+              maxQty={maxBidQty}
+              symbol={selectedAsset.symbol}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

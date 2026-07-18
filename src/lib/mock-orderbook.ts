@@ -1,4 +1,6 @@
-export type OrderSide = "buy" | "sell";
+import type { OrderSide } from "./trading";
+
+export type { OrderSide };
 
 export type BookOrder = {
   id: string;

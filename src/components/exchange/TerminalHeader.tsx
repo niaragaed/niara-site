@@ -11,31 +11,9 @@ export function TerminalHeader() {
   return (
     <div className="border-b border-border">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        <div role="tablist" aria-label="Seções do terminal" className="flex items-center gap-1">
-          <button
-            type="button"
-            role="tab"
-            aria-selected="true"
-            className="rounded-md bg-bg-elevated px-3 py-1.5 text-sm font-medium text-text-primary"
-          >
-            Terminal
-          </button>
-          {/* TODO: Dashboard do emissor com gráficos (Recharts) — volume, taxas e cashback acumulado */}
-          <button
-            type="button"
-            role="tab"
-            aria-selected="false"
-            aria-disabled="true"
-            disabled
-            title="Em breve"
-            className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-text-muted"
-          >
-            Dashboard
-            <span className="text-[10px] uppercase tracking-wide">
-              em breve
-            </span>
-          </button>
-        </div>
+        <span className="font-display text-sm tracking-wide text-text-primary">
+          Terminal
+        </span>
 
         <button
           type="button"
