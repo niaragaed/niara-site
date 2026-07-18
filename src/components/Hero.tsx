@@ -75,7 +75,7 @@ export function Hero() {
 
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <Link
-            href="/exchange"
+            href="/trade"
             className="rounded-md bg-gradient-primary px-6 py-3 text-sm font-semibold text-text-primary sm:text-base"
           >
             Acessar Terminal
