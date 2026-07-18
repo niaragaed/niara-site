@@ -58,7 +58,7 @@ export function Header() {
         </nav>
 
         <Link
-          href="/exchange"
+          href="/trade"
           className="hidden rounded-md bg-gradient-primary px-4 py-2 text-sm font-medium text-text-primary md:inline-block"
         >
           Acessar Terminal
@@ -98,7 +98,7 @@ export function Header() {
             ))}
             <li>
               <Link
-                href="/exchange"
+                href="/trade"
                 onClick={() => setMobileOpen(false)}
                 className="inline-block rounded-md bg-gradient-primary px-4 py-2 text-sm font-medium text-text-primary"
               >
