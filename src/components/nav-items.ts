@@ -3,7 +3,8 @@ export const NAV_ITEMS = [
   // se preferir, "Exchange" pode virar "Câmbio" — alterar apenas o label aqui
   { label: "Exchange", href: "/exchange" },
   { label: "Ativos", href: "#" },
-  { label: "Cashback", href: "#cashback" },
+  // Cashback é argumento para empresas emissoras — terá página própria
+  // voltada a emissores, fora do nav principal.
   { label: "Docs", href: "#" },
   { label: "Sobre", href: "#" },
 ];

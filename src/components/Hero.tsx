@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ArrowLeftRight, ChevronDown } from "lucide-react";
 import { HeroGlobe } from "@/components/HeroGlobe";
 import { IndexTicker } from "@/components/IndexTicker";
 
@@ -81,10 +81,11 @@ export function Hero() {
             Acessar Terminal
           </Link>
           <Link
-            href="#cashback"
-            className="rounded-md border border-border px-6 py-3 text-sm font-semibold text-text-primary sm:text-base"
+            href="/exchange"
+            className="flex items-center gap-2 rounded-md border border-border px-6 py-3 text-sm font-semibold text-text-primary sm:text-base"
           >
-            Conheça o Cashback
+            <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+            Acessar menu de câmbio
           </Link>
         </div>
       </div>
