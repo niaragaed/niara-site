@@ -1,6 +1,7 @@
 "use client";
 
 import { useExchange } from "./ExchangeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getBestPrices } from "@/lib/trading";
 import type { BookOrder } from "@/lib/mock-orderbook";
 
@@ -34,15 +35,17 @@ function OrderRow({
   order,
   maxQty,
   symbol,
+  formatPlain,
 }: {
   order: BookOrder;
   maxQty: number;
   symbol: string;
+  formatPlain: (valueInEth: number) => string;
 }) {
   const isBuy = order.side === "buy";
   return (
     <div
-      className={`relative grid grid-cols-3 items-center gap-2 overflow-hidden px-3 py-1 font-mono text-xs tabular-nums ${
+      className={`relative grid grid-cols-[1fr_1fr_auto] items-center gap-2 overflow-hidden px-3 py-1 font-mono text-xs tabular-nums ${
         order.isUser ? "ring-1 ring-inset ring-accent-cyan/40" : ""
       }`}
     >
@@ -54,7 +57,7 @@ function OrderRow({
       <span
         className={`relative z-10 text-right ${isBuy ? "text-positive" : "text-negative"}`}
       >
-        {order.price.toFixed(4)}
+        {formatPlain(order.price)}
       </span>
     </div>
   );
@@ -62,6 +65,7 @@ function OrderRow({
 
 export function OrderBook() {
   const { selectedAsset, bookForSelected } = useExchange();
+  const { currency, formatPlain, format } = useCurrency();
   const { asks, bids } = bookForSelected;
 
   const maxAskQty = Math.max(...asks.map((order) => order.qty), 1);
@@ -85,10 +89,10 @@ export function OrderBook() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 px-3 py-1.5 text-[10px] uppercase tracking-wide text-text-muted">
+      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 px-3 py-1.5 text-[10px] uppercase tracking-wide text-text-muted">
         <span>Qtd.</span>
         <span>Ativo</span>
-        <span className="text-right">Preço (ETH)</span>
+        <span className="text-right">Preço ({currency})</span>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -99,6 +103,7 @@ export function OrderBook() {
               order={order}
               maxQty={maxAskQty}
               symbol={selectedAsset.symbol}
+              formatPlain={formatPlain}
             />
           ))}
         </div>
@@ -106,7 +111,7 @@ export function OrderBook() {
         <div className="flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-2 font-mono text-xs tabular-nums text-text-muted">
           <span>Spread</span>
           <span>
-            {spread.toFixed(6)} ETH ({spreadPct.toFixed(2)}%)
+            {format(spread, 6)} ({spreadPct.toFixed(2)}%)
           </span>
         </div>
 
@@ -117,6 +122,7 @@ export function OrderBook() {
               order={order}
               maxQty={maxBidQty}
               symbol={selectedAsset.symbol}
+              formatPlain={formatPlain}
             />
           ))}
         </div>

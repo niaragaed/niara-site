@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Coins, Search } from "lucide-react";
 import type { Asset } from "@/lib/mock-assets";
 import { useExchange } from "./ExchangeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 
 function AssetFlag({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
   if (asset.country) {
@@ -16,6 +17,7 @@ function AssetFlag({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
 
 export function AssetSearch() {
   const { assets, selectedAsset: selected, selectAsset: onSelect } = useExchange();
+  const { format } = useCurrency();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -100,7 +102,7 @@ export function AssetSearch() {
         </div>
         <div className="ml-2 text-right font-mono tabular-nums">
           <div className="text-base text-text-primary">
-            {selected.priceEth.toFixed(4)} ETH
+            {format(selected.priceEth)}
           </div>
           <div className={`text-sm ${positive ? "text-positive" : "text-negative"}`}>
             {positive ? "+" : ""}

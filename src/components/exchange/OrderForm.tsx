@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useExchange } from "./ExchangeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import type { OrderSide } from "@/lib/trading";
 
 const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
@@ -12,24 +13,48 @@ const DEVIATION_WARNING_THRESHOLD = 0.2; // 20%
 // aprovação sem precisar sincronizar estado via useEffect.
 export function OrderForm() {
   const { selectedAsset, submitOrder } = useExchange();
+  const { currency, convert, toEth, format, formatPlain } = useCurrency();
 
   const [side, setSide] = useState<OrderSide>("buy");
   const [qty, setQty] = useState("");
-  const [price, setPrice] = useState("");
+  // `priceEth` é a fonte da verdade (sempre em ETH); `priceInput` é só o
+  // texto exibido/editado, na moeda selecionada no momento.
+  const [priceEth, setPriceEth] = useState<number | null>(null);
+  const [priceInput, setPriceInput] = useState("");
   const [approved, setApproved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  const qtyNum = Number(qty);
-  const priceNum = Number(price);
-  const isValid =
-    qty.trim() !== "" && price.trim() !== "" && qtyNum > 0 && priceNum > 0;
-  const total = isValid ? qtyNum * priceNum : 0;
-  const fee = total * FEE_RATE;
+  // Troca de moeda: reexibe o mesmo valor (o `priceEth` armazenado nunca
+  // muda) convertido pra nova moeda — evita arredondamento acumulado, já
+  // que nunca reconverte em cima de um número já arredondado na tela.
+  // Ajuste feito durante o render (padrão recomendado pelo React para
+  // "reagir a uma prop/dependência mudando"), não em useEffect.
+  const [prevCurrency, setPrevCurrency] = useState(currency);
+  if (currency !== prevCurrency) {
+    setPrevCurrency(currency);
+    if (priceEth !== null) {
+      setPriceInput(String(convert(priceEth)));
+    }
+  }
 
-  const deviation = isValid
-    ? Math.abs(priceNum - selectedAsset.priceEth) / selectedAsset.priceEth
-    : 0;
+  function handlePriceChange(raw: string) {
+    setPriceInput(raw);
+    const num = Number(raw);
+    setPriceEth(raw.trim() !== "" && Number.isFinite(num) ? toEth(num) : null);
+    setApproved(false);
+  }
+
+  const qtyNum = Number(qty);
+  const isValid =
+    qty.trim() !== "" && qtyNum > 0 && priceEth !== null && priceEth > 0;
+  const totalEth = isValid ? qtyNum * (priceEth as number) : 0;
+  const feeEth = totalEth * FEE_RATE;
+
+  const deviation =
+    isValid && priceEth !== null
+      ? Math.abs(priceEth - selectedAsset.priceEth) / selectedAsset.priceEth
+      : 0;
   const isFarFromMarket = isValid && deviation > DEVIATION_WARNING_THRESHOLD;
 
   function handleSideChange(next: OrderSide) {
@@ -49,15 +74,16 @@ export function OrderForm() {
   }
 
   function handleExecute() {
-    if (!approved || !isValid) return;
-    const result = submitOrder(side, qtyNum, priceNum);
+    if (!approved || priceEth === null || priceEth <= 0 || qtyNum <= 0) return;
+    const result = submitOrder(side, qtyNum, priceEth);
     setQty("");
-    setPrice("");
+    setPriceEth(null);
+    setPriceInput("");
     setApproved(false);
     setError(null);
     setConfirmation(
       result.status === "filled"
-        ? `Ordem simulada de ${side === "buy" ? "compra" : "venda"} executada a ${result.fillPrice.toFixed(6)} ETH — nenhuma transação real foi feita.`
+        ? `Ordem simulada de ${side === "buy" ? "compra" : "venda"} executada a ${format(result.fillPrice, 6)} — nenhuma transação real foi feita.`
         : `Ordem simulada de ${side === "buy" ? "compra" : "venda"} registrada como aberta no livro — nenhuma transação real foi feita.`,
     );
   }
@@ -124,19 +150,16 @@ export function OrderForm() {
             htmlFor="order-price"
             className="mb-1 block text-xs text-text-muted"
           >
-            Preço (ETH)
+            Preço ({currency})
           </label>
           <input
             id="order-price"
             type="number"
             min="0"
             step="any"
-            value={price}
-            onChange={(event) => {
-              setPrice(event.target.value);
-              setApproved(false);
-            }}
-            placeholder={selectedAsset.priceEth.toString()}
+            value={priceInput}
+            onChange={(event) => handlePriceChange(event.target.value)}
+            placeholder={formatPlain(selectedAsset.priceEth)}
             className="w-full rounded-md border border-border bg-bg-base px-3 py-2 font-mono text-sm tabular-nums text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
           />
         </div>
@@ -145,19 +168,19 @@ export function OrderForm() {
       <div className="mt-4 space-y-1 border-t border-border pt-3 font-mono text-xs tabular-nums text-text-secondary">
         <div className="flex justify-between">
           <span>Total</span>
-          <span className="text-text-primary">{total.toFixed(6)} ETH</span>
+          <span className="text-text-primary">{format(totalEth, 6)}</span>
         </div>
         <div className="flex justify-between text-text-muted">
           <span>Taxa estimada da Niara (0,1%)</span>
-          <span>{fee.toFixed(6)} ETH</span>
+          <span>{format(feeEth, 6)}</span>
         </div>
       </div>
 
       {isFarFromMarket && (
         <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
           Esse preço está a {(deviation * 100).toFixed(1)}% do preço de
-          referência ({selectedAsset.priceEth.toFixed(6)} ETH). Confira antes
-          de continuar.
+          referência ({format(selectedAsset.priceEth)}). Confira antes de
+          continuar.
         </p>
       )}
       {error && <p className="mt-3 text-xs text-negative">{error}</p>}
