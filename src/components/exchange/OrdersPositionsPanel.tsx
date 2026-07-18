@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useExchange } from "./ExchangeContext";
+import { useCurrency } from "@/context/CurrencyContext";
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString("pt-BR", {
@@ -14,6 +15,7 @@ function formatTime(ts: number): string {
 export function OrdersPositionsPanel() {
   const [tab, setTab] = useState<"orders" | "positions">("orders");
   const { openOrders, positions, cancelOrder, closePosition, assets } = useExchange();
+  const { currency, formatPlain } = useCurrency();
 
   const priceBySymbol = new Map(assets.map((asset) => [asset.symbol, asset.priceEth]));
 
@@ -67,8 +69,8 @@ export function OrdersPositionsPanel() {
                   <th className="px-3 py-2 font-normal">Ativo</th>
                   <th className="px-3 py-2 font-normal">Lado</th>
                   <th className="px-3 py-2 text-right font-normal">Qtd</th>
-                  <th className="px-3 py-2 text-right font-normal">Preço</th>
-                  <th className="px-3 py-2 text-right font-normal">Total</th>
+                  <th className="px-3 py-2 text-right font-normal">Preço ({currency})</th>
+                  <th className="px-3 py-2 text-right font-normal">Total ({currency})</th>
                   <th className="px-3 py-2 font-normal">Status</th>
                   <th className="px-3 py-2 font-normal">
                     <span className="sr-only">Ações</span>
@@ -89,10 +91,10 @@ export function OrdersPositionsPanel() {
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">{order.qty}</td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {order.price.toFixed(6)}
+                      {formatPlain(order.price, 6)}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {(order.qty * order.price).toFixed(6)}
+                      {formatPlain(order.qty * order.price, 6)}
                     </td>
                     <td className="px-3 py-2 text-text-muted">Aberta</td>
                     <td className="px-3 py-2 text-right">
@@ -117,9 +119,9 @@ export function OrdersPositionsPanel() {
               <tr className="border-b border-border text-left text-[10px] uppercase tracking-wide text-text-muted">
                 <th className="px-3 py-2 font-normal">Ativo</th>
                 <th className="px-3 py-2 text-right font-normal">Qtd</th>
-                <th className="px-3 py-2 text-right font-normal">Preço médio</th>
-                <th className="px-3 py-2 text-right font-normal">Preço atual</th>
-                <th className="px-3 py-2 text-right font-normal">P/L</th>
+                <th className="px-3 py-2 text-right font-normal">Preço médio ({currency})</th>
+                <th className="px-3 py-2 text-right font-normal">Preço atual ({currency})</th>
+                <th className="px-3 py-2 text-right font-normal">P/L ({currency})</th>
                 <th className="px-3 py-2 font-normal">
                   <span className="sr-only">Ações</span>
                 </th>
@@ -144,10 +146,10 @@ export function OrdersPositionsPanel() {
                       {position.qty}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {position.avgPrice.toFixed(6)}
+                      {formatPlain(position.avgPrice, 6)}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {currentPrice.toFixed(6)}
+                      {formatPlain(currentPrice, 6)}
                     </td>
                     <td
                       className={`px-3 py-2 text-right ${
@@ -155,7 +157,7 @@ export function OrdersPositionsPanel() {
                       }`}
                     >
                       {positive ? "+" : ""}
-                      {pnl.toFixed(6)} ({positive ? "+" : ""}
+                      {formatPlain(pnl, 6)} ({positive ? "+" : ""}
                       {pnlPct.toFixed(2)}%)
                     </td>
                     <td className="px-3 py-2 text-right">
