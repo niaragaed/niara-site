@@ -1,18 +1,32 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Coins, Search } from "lucide-react";
+import { Bitcoin, Coins, Search } from "lucide-react";
 import type { Asset } from "@/lib/mock-assets";
 import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
 
+// mesma largura da <Flag> em cada tamanho (1.333em de 16px/20px), pra coluna
+// do símbolo começar sempre na mesma posição, com ou sem bandeira
+const ICON_BOX_WIDTH: Record<"sm" | "lg", string> = {
+  sm: "w-[21px]",
+  lg: "w-[27px]",
+};
+
 function AssetIcon({ asset, size }: { asset: Asset; size: "sm" | "lg" }) {
   if (asset.country) {
     return <Flag country={asset.country} size={size} />;
   }
-  const boxSize = size === "sm" ? "h-4 w-4" : "h-5 w-5";
-  return <Coins className={`${boxSize} text-text-muted`} aria-hidden="true" />;
+  const iconSize = size === "sm" ? "h-4 w-4" : "h-5 w-5";
+  const Icon = asset.symbol === "BTC" ? Bitcoin : Coins;
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center ${ICON_BOX_WIDTH[size]}`}
+    >
+      <Icon className={`${iconSize} text-text-muted`} aria-hidden="true" />
+    </span>
+  );
 }
 
 export function AssetSearch() {
