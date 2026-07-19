@@ -179,8 +179,8 @@ Identidade Git deste repositório: `Niara <niaragaed@gmail.com>` (local, sem `--
 
 ## Pendências conhecidas
 
-- `/profile`: seções de suitability, carteira, segurança e preferências (a de
-  dados pessoais já existe)
+- `/profile`: concluído — dados pessoais, perfil de investidor (suitability) e
+  carteira. Não terá seções de segurança nem preferências.
 - Home: faltam as seções de conteúdo abaixo do hero (problema, solução, cashback,
   como funciona, roadmap, captura de contato)
 - Página para empresas emissoras (cashback como centro do discurso)
