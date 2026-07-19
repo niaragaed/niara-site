@@ -6,6 +6,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { MOCK_ASSETS, type Asset } from "@/lib/mock-assets";
 import { MOCK_HOLDINGS } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
+import { Flag } from "@/components/ui/Flag";
 
 type ViewMode = "classe" | "ativo" | "regiao";
 
@@ -63,9 +64,9 @@ function computeAllocation(mode: ViewMode): AllocationItem[] {
 function RegionFlag({ region }: { region: string }) {
   const code = region === "BR" ? "br" : region === "US" ? "us" : region === "EU" ? "eu" : undefined;
   if (code) {
-    return <span className={`fi fi-${code} rounded-[2px] text-sm`} aria-hidden="true" />;
+    return <Flag country={code} size="sm" />;
   }
-  return <Globe className="h-3.5 w-3.5 text-text-muted" aria-hidden="true" />;
+  return <Globe className="h-4 w-4 text-text-muted" aria-hidden="true" />;
 }
 
 // tipo local (em vez do genérico do Recharts) — evita conflito de
@@ -98,7 +99,7 @@ export function AllocationDonut() {
   const data = useMemo(() => computeAllocation(mode), [mode]);
 
   return (
-    <div className="rounded-md border border-border bg-bg-surface p-4">
+    <div className="@container rounded-md border border-border bg-bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-text-primary">Alocação</h2>
         <div role="group" aria-label="Ver alocação" className="flex items-center gap-1">
@@ -120,8 +121,10 @@ export function AllocationDonut() {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
-        <div aria-hidden="true" className="mx-auto h-56 w-56 shrink-0">
+      {/* flex-col por padrão (empilha quando o CARD fica estreito, não só o
+          viewport — daí @container/@md em vez de sm:) */}
+      <div className="mt-4 flex flex-col gap-6 @md:flex-row @md:items-center">
+        <div aria-hidden="true" className="mx-auto h-44 w-44 shrink-0 @md:h-48 @md:w-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -145,29 +148,22 @@ export function AllocationDonut() {
 
         <div className="min-w-0 flex-1 divide-y divide-border">
           {data.map((item, index) => (
-            <div
-              key={item.key}
-              className="flex items-center justify-between gap-3 py-1.5 text-sm"
-            >
-              <div className="flex min-w-0 items-center gap-2">
-                <span
-                  aria-hidden="true"
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: PALETTE[index % PALETTE.length] }}
-                />
-                {mode === "regiao" && <RegionFlag region={item.key} />}
-                {mode === "ativo" && item.asset?.country && (
-                  <span
-                    className={`fi fi-${item.asset.country} rounded-[2px] text-sm`}
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="truncate text-text-secondary">{item.key}</span>
-              </div>
-              <div className="flex shrink-0 items-center gap-3 font-mono text-xs tabular-nums">
+            <div key={item.key} className="flex items-center gap-2 py-2 text-sm">
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: PALETTE[index % PALETTE.length] }}
+              />
+              {mode === "regiao" && <RegionFlag region={item.key} />}
+              {mode === "ativo" && item.asset?.country && (
+                <Flag country={item.asset.country} size="sm" />
+              )}
+              <span className="min-w-0 flex-1 truncate text-text-secondary">{item.key}</span>
+              <span className="shrink-0 whitespace-nowrap font-mono text-xs tabular-nums">
                 <span className="text-text-muted">{item.pct.toFixed(1)}%</span>
+                <span className="mx-1.5 text-text-muted">—</span>
                 <span className="text-text-primary">{format(item.value)}</span>
-              </div>
+              </span>
             </div>
           ))}
         </div>

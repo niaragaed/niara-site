@@ -5,15 +5,14 @@ import Link from "next/link";
 import { Coins, Search } from "lucide-react";
 import { MOCK_ASSETS, type Asset, type AssetClass, type Region } from "@/lib/mock-assets";
 import { useCurrency } from "@/context/CurrencyContext";
+import { Flag } from "@/components/ui/Flag";
 
 const CLASS_FILTERS: AssetClass[] = ["Ações", "ETFs", "Commodities", "Cripto", "Stablecoins"];
 const REGION_FILTERS: Region[] = ["BR", "US", "EU", "Global"];
 
 function AssetFlag({ asset }: { asset: Asset }) {
   if (asset.country) {
-    return (
-      <span className={`fi fi-${asset.country} rounded-[2px] text-base`} aria-hidden="true" />
-    );
+    return <Flag country={asset.country} size="sm" />;
   }
   return <Coins className="h-4 w-4 text-text-muted" aria-hidden="true" />;
 }
