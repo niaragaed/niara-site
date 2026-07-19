@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Coins } from "lucide-react";
 import { MOCK_ASSETS } from "@/lib/mock-assets";
 import { MOCK_HOLDINGS } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
+import { Flag } from "@/components/ui/Flag";
 
 type Row = {
   symbol: string;
@@ -147,10 +148,7 @@ export function HoldingsTable() {
                     <td className="px-4 py-2">
                       <div className="flex items-center gap-2 font-sans">
                         {row.country ? (
-                          <span
-                            className={`fi fi-${row.country} rounded-[2px] text-base`}
-                            aria-hidden="true"
-                          />
+                          <Flag country={row.country} size="sm" />
                         ) : (
                           <Coins className="h-4 w-4 text-text-muted" aria-hidden="true" />
                         )}
