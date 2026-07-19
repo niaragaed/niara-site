@@ -62,8 +62,18 @@ export function useExchange(): ExchangeState {
   return ctx;
 }
 
-export function ExchangeProvider({ children }: { children: ReactNode }) {
-  const [selectedAsset, setSelectedAsset] = useState<Asset>(MOCK_ASSETS[0]);
+export function ExchangeProvider({
+  children,
+  initialSymbol,
+}: {
+  children: ReactNode;
+  initialSymbol?: string;
+}) {
+  // só usado na primeira renderização (useState ignora mudanças depois) —
+  // é assim que /trade?asset=XXXX pré-seleciona o ativo vindo de /ativos
+  const [selectedAsset, setSelectedAsset] = useState<Asset>(
+    () => MOCK_ASSETS.find((asset) => asset.symbol === initialSymbol) ?? MOCK_ASSETS[0],
+  );
   const [balance, setBalance] = useState(INITIAL_BALANCE_ETH);
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const [positions, setPositions] = useState<Position[]>(SEED_POSITIONS);

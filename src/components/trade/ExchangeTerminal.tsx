@@ -44,9 +44,9 @@ function ExchangeLayout() {
   );
 }
 
-export function ExchangeTerminal() {
+export function ExchangeTerminal({ initialSymbol }: { initialSymbol?: string }) {
   return (
-    <ExchangeProvider>
+    <ExchangeProvider initialSymbol={initialSymbol}>
       <div className="flex min-h-[70vh] flex-col bg-bg-base">
         <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-text-secondary sm:text-sm">
           <span className="font-semibold text-warning">Demonstração</span> —
