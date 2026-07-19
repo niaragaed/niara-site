@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
-import { Pencil, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Pencil, ShieldAlert, TrendingUp } from "lucide-react";
 import { AvatarUpload } from "./AvatarUpload";
+import { useInvestorProfile } from "@/context/InvestorProfileContext";
+import { INVESTOR_CATEGORY_LABELS } from "@/lib/investor-profile";
 import {
   maskCEP,
   maskCPF,
@@ -94,6 +96,7 @@ export function PersonalDataSection() {
   const [mode, setMode] = useState<"view" | "edit">("edit");
   const [errors, setErrors] = useState<FormErrors>({});
   const [justSaved, setJustSaved] = useState(false);
+  const { result: investorResult, hydrated: investorHydrated } = useInvestorProfile();
 
   function startEdit() {
     setDraft(saved);
@@ -132,10 +135,24 @@ export function PersonalDataSection() {
         <h2 id="dados-pessoais-heading" className="font-display text-xl text-text-primary">
           Dados pessoais
         </h2>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
-          <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
-          Não verificado
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
+            <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
+            Não verificado
+          </span>
+          {investorHydrated &&
+            (investorResult ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-blue/40 bg-accent-blue/10 px-2.5 py-1 text-xs font-medium text-accent-blue">
+                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+                Perfil de investidor: {INVESTOR_CATEGORY_LABELS[investorResult.category]}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-negative/40 bg-negative/10 px-2.5 py-1 text-xs font-medium text-negative">
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                Perfil de investidor: pendente
+              </span>
+            ))}
+        </div>
       </div>
       <p className="mt-1 text-xs text-text-secondary">
         A verificação de identidade (KYC) será exigida quando o produto
