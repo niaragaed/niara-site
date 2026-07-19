@@ -7,6 +7,13 @@ export const metadata: Metadata = {
     "Terminal de negociação simulado da Niara: gráfico, livro de ofertas, ordens e posições.",
 };
 
-export default function TradePage() {
-  return <ExchangeTerminal />;
+type TradePageProps = {
+  searchParams: Promise<{ asset?: string | string[] }>;
+};
+
+export default async function TradePage({ searchParams }: TradePageProps) {
+  const params = await searchParams;
+  const assetParam = Array.isArray(params.asset) ? params.asset[0] : params.asset;
+
+  return <ExchangeTerminal initialSymbol={assetParam} />;
 }
