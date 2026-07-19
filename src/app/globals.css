@@ -32,6 +32,7 @@
   /* Animação */
   --animate-marquee: marquee 40s linear infinite;
   --animate-ticker: marquee 60s linear infinite;
+  --animate-dropdown: dropdown-in 150ms ease-out forwards;
 }
 
 @keyframes marquee {
@@ -40,6 +41,17 @@
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 }
 

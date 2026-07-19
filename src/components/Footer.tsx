@@ -21,13 +21,15 @@ export function Footer() {
 
         <nav aria-label="Links do rodapé">
           <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
+            {/* itens com submenu (About) viram links planos aqui — sem
+                dropdown no rodapé, só os filhos direto */}
+            {NAV_ITEMS.flatMap((item) => item.children ?? [item]).map((link) => (
+              <li key={link.href}>
                 <Link
-                  href={item.href}
+                  href={link.href}
                   className="text-sm text-text-secondary transition-colors hover:text-text-primary"
                 >
-                  {item.label}
+                  {link.label}
                 </Link>
               </li>
             ))}
