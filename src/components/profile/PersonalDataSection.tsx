@@ -1,26 +1,26 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Pencil, ShieldAlert, TrendingUp } from "lucide-react";
 import { AvatarUpload } from "./AvatarUpload";
+import { CountrySelect } from "./CountrySelect";
+import { Flag } from "@/components/ui/Flag";
 import { useInvestorProfile } from "@/context/InvestorProfileContext";
 import { INVESTOR_CATEGORY_LABELS } from "@/lib/investor-profile";
 import { en } from "@/lib/i18n/en";
+import { COUNTRIES, getCountryConfig, getCountryName } from "@/lib/countries";
 import {
-  maskCEP,
-  maskCPF,
-  maskDataNascimento,
-  maskTelefone,
-  validaCEP,
-  validaCPF,
-  validaDataNascimento,
+  dateFormatPlaceholder,
+  getDocumentRule,
+  maskData,
+  validaData,
   validaEmail,
-  validaTelefone,
 } from "@/lib/validators";
 
 type FormData = {
+  pais: string;
   nomeCompleto: string;
-  cpf: string;
+  documento: string;
   dataNascimento: string;
   email: string;
   telefone: string;
@@ -30,14 +30,15 @@ type FormData = {
   complemento: string;
   bairro: string;
   cidade: string;
-  uf: string;
+  estado: string;
 };
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const EMPTY_FORM: FormData = {
+  pais: "",
   nomeCompleto: "",
-  cpf: "",
+  documento: "",
   dataNascimento: "",
   email: "",
   telefone: "",
@@ -47,36 +48,45 @@ const EMPTY_FORM: FormData = {
   complemento: "",
   bairro: "",
   cidade: "",
-  uf: "",
+  estado: "",
 };
 
-const UF_OPTIONS = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
-  "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-  "SP", "SE", "TO",
-];
+const GEO_ENDPOINT = "https://ipwho.is/";
 
-const MASKS: Partial<Record<keyof FormData, (value: string) => string>> = {
-  cpf: maskCPF,
-  dataNascimento: maskDataNascimento,
-  telefone: maskTelefone,
-  cep: maskCEP,
-};
+function getDocumentText(countryCode: string): { label: string; placeholder: string } {
+  return en.profile.personalData.documents[countryCode] ?? en.profile.personalData.genericDocument;
+}
+
+function getPostalLabel(countryCode: string): string {
+  return en.profile.personalData.postalLabels[countryCode] ?? en.profile.personalData.postalLabelDefault;
+}
+
+function getRegionLabel(countryCode: string): string {
+  return countryCode === "BR"
+    ? en.profile.personalData.regionLabelBR
+    : en.profile.personalData.regionLabelDefault;
+}
 
 function validate(data: FormData): FormErrors {
   const errors: FormErrors = {};
   const t = en.profile.personalData.errors;
+  const config = getCountryConfig(data.pais);
+  const documentRule = getDocumentRule(data.pais);
+
+  if (!data.pais) errors.pais = t.country;
   if (!data.nomeCompleto.trim()) errors.nomeCompleto = t.fullName;
-  if (!validaCPF(data.cpf)) errors.cpf = t.cpf;
-  if (!validaDataNascimento(data.dataNascimento)) errors.dataNascimento = t.dob;
+  if (!documentRule.valida(data.documento)) errors.documento = t.document(getDocumentText(data.pais).label);
+  if (!validaData(data.dataNascimento, config.dateFormat)) errors.dataNascimento = t.dob;
   if (!validaEmail(data.email)) errors.email = t.email;
-  if (!validaTelefone(data.telefone)) errors.telefone = t.phone;
-  if (!validaCEP(data.cep)) errors.cep = t.postalCode;
+  if (!config.phone.valida(data.telefone)) errors.telefone = t.phone;
+  if (config.postalValida && !config.postalValida(data.cep)) {
+    errors.cep = t.postalCode(getPostalLabel(data.pais));
+  }
   if (!data.logradouro.trim()) errors.logradouro = t.street;
   if (!data.numero.trim()) errors.numero = t.number;
   if (!data.bairro.trim()) errors.bairro = t.neighborhood;
   if (!data.cidade.trim()) errors.cidade = t.city;
-  if (!data.uf) errors.uf = t.state;
+  if (!data.estado.trim()) errors.estado = t.region(getRegionLabel(data.pais));
   return errors;
 }
 
@@ -85,20 +95,60 @@ function display(value: string): string {
 }
 
 export function PersonalDataSection() {
-  // CPF, data de nascimento e endereço são dados sensíveis (LGPD) e, como o
-  // site ainda não tem backend, vivem só neste estado de componente — nunca
-  // em localStorage, cookies ou qualquer outro storage persistente. Os
-  // demais campos seguem a mesma regra por simplicidade, já que nada aqui é
-  // realmente salvo em lugar nenhum.
+  // CPF (ou equivalente por país), data de nascimento e endereço são dados
+  // sensíveis (LGPD) e, como o site ainda não tem backend, vivem só neste
+  // estado de componente — nunca em localStorage, cookies ou qualquer outro
+  // storage persistente. Os demais campos seguem a mesma regra por
+  // simplicidade, já que nada aqui é realmente salvo em lugar nenhum.
   // TODO: ao integrar backend — consentimento LGPD, criptografia em
-  // trânsito e repouso, política de privacidade e base legal para coleta de CPF.
-  // TODO: suportar documentos de outros países no cadastro internacional.
+  // trânsito e repouso, política de privacidade e base legal para coleta de
+  // documentos de identificação.
   const [saved, setSaved] = useState<FormData>(EMPTY_FORM);
   const [draft, setDraft] = useState<FormData>(EMPTY_FORM);
   const [mode, setMode] = useState<"view" | "edit">("edit");
   const [errors, setErrors] = useState<FormErrors>({});
   const [justSaved, setJustSaved] = useState(false);
   const { result: investorResult, hydrated: investorHydrated } = useInvestorProfile();
+
+  // País por geolocalização de IP (mesma abordagem do HeroGlobe: ipwho.is,
+  // sem navigator.geolocation, falha graciosa) — só como sugestão inicial;
+  // nunca sobrescreve uma escolha que o usuário já tenha feito, e se a
+  // detecção falhar o campo fica vazio, obrigando a escolha manual.
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetch(GEO_ENDPOINT, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("geo lookup failed");
+        return response.json();
+      })
+      .then((data: { success?: boolean; country_code?: string }) => {
+        if (cancelled) return;
+        if (data?.success === false || typeof data.country_code !== "string") return;
+        const code = data.country_code.toUpperCase();
+        if (!COUNTRIES.some((country) => country.code === code)) return;
+        setDraft((current) => (current.pais ? current : { ...current, pais: code }));
+      })
+      .catch(() => {
+        // API de geolocalização indisponível/bloqueada — deixa o país
+        // vazio, o usuário escolhe manualmente.
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
+
+  const countryConfig = getCountryConfig(draft.pais);
+  const documentRule = getDocumentRule(draft.pais);
+  const documentText = getDocumentText(draft.pais);
+  const postalLabel = getPostalLabel(draft.pais);
+  const regionLabel = getRegionLabel(draft.pais);
+
+  const savedDocumentText = getDocumentText(saved.pais);
+  const savedPostalLabel = getPostalLabel(saved.pais);
 
   function startEdit() {
     setDraft(saved);
@@ -112,10 +162,21 @@ export function PersonalDataSection() {
     setMode("view");
   }
 
+  function handleCountryChange(code: string) {
+    // trocar o país limpa o documento e o erro — um CPF válido não pode
+    // ficar preenchido num campo que virou SSN
+    setDraft((current) => ({ ...current, pais: code, documento: "" }));
+    setErrors((current) => ({ ...current, pais: undefined, documento: undefined }));
+  }
+
   function handleFieldChange(field: keyof FormData) {
     return (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const raw = event.target.value;
-      const masked = MASKS[field]?.(raw) ?? raw;
+      let masked = raw;
+      if (field === "documento") masked = documentRule.mask ? documentRule.mask(raw) : raw;
+      else if (field === "dataNascimento") masked = maskData(raw, countryConfig.dateFormat);
+      else if (field === "telefone") masked = countryConfig.phone.mask(raw);
+      else if (field === "cep") masked = countryConfig.postalMask ? countryConfig.postalMask(raw) : raw;
       setDraft((current) => ({ ...current, [field]: masked }));
     };
   }
@@ -172,8 +233,21 @@ export function PersonalDataSection() {
           )}
 
           <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-text-muted">{en.profile.personalData.country}</dt>
+              <dd className="mt-0.5 flex items-center gap-2 text-sm text-text-primary">
+                {saved.pais ? (
+                  <>
+                    <Flag country={saved.pais.toLowerCase()} size="sm" />
+                    {getCountryName(saved.pais)}
+                  </>
+                ) : (
+                  en.profile.personalData.notInformed
+                )}
+              </dd>
+            </div>
             <ReadField label={en.profile.personalData.fullName} value={display(saved.nomeCompleto)} />
-            <ReadField label={en.profile.personalData.cpf} value={display(saved.cpf)} mono />
+            <ReadField label={savedDocumentText.label} value={display(saved.documento)} mono />
             <ReadField label={en.profile.personalData.dob} value={display(saved.dataNascimento)} mono />
             <ReadField label={en.profile.personalData.email} value={display(saved.email)} />
             <ReadField label={en.profile.personalData.phone} value={display(saved.telefone)} mono />
@@ -184,7 +258,7 @@ export function PersonalDataSection() {
               {en.profile.personalData.addressSection}
             </h3>
             <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-              <ReadField label={en.profile.personalData.postalCode} value={display(saved.cep)} mono />
+              <ReadField label={savedPostalLabel} value={display(saved.cep)} mono />
               <ReadField label={en.profile.personalData.street} value={display(saved.logradouro)} />
               <ReadField label={en.profile.personalData.number} value={display(saved.numero)} />
               <ReadField label={en.profile.personalData.complement} value={display(saved.complemento)} />
@@ -192,8 +266,8 @@ export function PersonalDataSection() {
               <ReadField
                 label={en.profile.personalData.cityState}
                 value={
-                  saved.cidade.trim() || saved.uf
-                    ? `${display(saved.cidade)} / ${saved.uf || "—"}`
+                  saved.cidade.trim() || saved.estado.trim()
+                    ? `${display(saved.cidade)} / ${saved.estado || "—"}`
                     : en.profile.personalData.notInformed
                 }
               />
@@ -220,6 +294,7 @@ export function PersonalDataSection() {
               {en.profile.personalData.personalSection}
             </legend>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <CountrySelect value={draft.pais} onChange={handleCountryChange} error={errors.pais} />
               <TextField
                 id="pd-nome"
                 label={en.profile.personalData.fullName}
@@ -229,13 +304,12 @@ export function PersonalDataSection() {
                 autoComplete="name"
               />
               <TextField
-                id="pd-cpf"
-                label={en.profile.personalData.cpf}
-                value={draft.cpf}
-                onChange={handleFieldChange("cpf")}
-                error={errors.cpf}
-                inputMode="numeric"
-                placeholder="000.000.000-00"
+                id="pd-documento"
+                label={documentText.label}
+                value={draft.documento}
+                onChange={handleFieldChange("documento")}
+                error={errors.documento}
+                placeholder={documentText.placeholder}
               />
               <TextField
                 id="pd-nascimento"
@@ -244,7 +318,7 @@ export function PersonalDataSection() {
                 onChange={handleFieldChange("dataNascimento")}
                 error={errors.dataNascimento}
                 inputMode="numeric"
-                placeholder="DD/MM/YYYY"
+                placeholder={dateFormatPlaceholder(countryConfig.dateFormat)}
               />
               <TextField
                 id="pd-email"
@@ -262,7 +336,7 @@ export function PersonalDataSection() {
                 onChange={handleFieldChange("telefone")}
                 error={errors.telefone}
                 inputMode="tel"
-                placeholder="(00) 00000-0000"
+                placeholder={countryConfig.phone.dialCode}
                 autoComplete="tel"
               />
             </div>
@@ -275,12 +349,10 @@ export function PersonalDataSection() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
                 id="pd-cep"
-                label={en.profile.personalData.postalCode}
+                label={postalLabel}
                 value={draft.cep}
                 onChange={handleFieldChange("cep")}
                 error={errors.cep}
-                inputMode="numeric"
-                placeholder="00000-000"
               />
               <TextField
                 id="pd-logradouro"
@@ -318,33 +390,44 @@ export function PersonalDataSection() {
                 error={errors.cidade}
                 autoComplete="address-level2"
               />
-              <div>
-                <label htmlFor="pd-uf" className="mb-1 block text-xs text-text-muted">
-                  {en.profile.personalData.state}
-                </label>
-                <select
-                  id="pd-uf"
-                  value={draft.uf}
-                  onChange={handleFieldChange("uf")}
-                  aria-invalid={Boolean(errors.uf)}
-                  aria-describedby={errors.uf ? "pd-uf-error" : undefined}
-                  className={`w-full rounded-md border bg-bg-base px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue ${
-                    errors.uf ? "border-negative" : "border-border"
-                  }`}
-                >
-                  <option value="">{en.profile.personalData.selectState}</option>
-                  {UF_OPTIONS.map((uf) => (
-                    <option key={uf} value={uf}>
-                      {uf}
-                    </option>
-                  ))}
-                </select>
-                {errors.uf && (
-                  <p id="pd-uf-error" role="alert" className="mt-1 text-xs text-negative">
-                    {errors.uf}
-                  </p>
-                )}
-              </div>
+              {countryConfig.states ? (
+                <div>
+                  <label htmlFor="pd-estado" className="mb-1 block text-xs text-text-muted">
+                    {regionLabel}
+                  </label>
+                  <select
+                    id="pd-estado"
+                    value={draft.estado}
+                    onChange={handleFieldChange("estado")}
+                    aria-invalid={Boolean(errors.estado)}
+                    aria-describedby={errors.estado ? "pd-estado-error" : undefined}
+                    className={`w-full rounded-md border bg-bg-base px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue ${
+                      errors.estado ? "border-negative" : "border-border"
+                    }`}
+                  >
+                    <option value="">{en.profile.personalData.selectState}</option>
+                    {countryConfig.states.map((uf) => (
+                      <option key={uf} value={uf}>
+                        {uf}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.estado && (
+                    <p id="pd-estado-error" role="alert" className="mt-1 text-xs text-negative">
+                      {errors.estado}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <TextField
+                  id="pd-estado"
+                  label={regionLabel}
+                  value={draft.estado}
+                  onChange={handleFieldChange("estado")}
+                  error={errors.estado}
+                  autoComplete="address-level1"
+                />
+              )}
             </div>
           </fieldset>
 
