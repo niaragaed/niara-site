@@ -18,7 +18,7 @@ export function OrdersPositionsPanel() {
   const { openOrders, positions, cancelOrder, closePosition, assets } = useExchange();
   const { currency, formatPlain } = useCurrency();
 
-  const priceBySymbol = new Map(assets.map((asset) => [asset.symbol, asset.priceEth]));
+  const priceBySymbol = new Map(assets.map((asset) => [asset.symbol, asset.priceUsdt]));
 
   return (
     <div className="flex h-full flex-col rounded-md border border-border bg-bg-surface">
@@ -100,10 +100,10 @@ export function OrdersPositionsPanel() {
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">{order.qty}</td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {formatPlain(order.price, 6)}
+                      {formatPlain(order.price)}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {formatPlain(order.qty * order.price, 6)}
+                      {formatPlain(order.qty * order.price)}
                     </td>
                     <td className="px-3 py-2 text-text-muted">{en.trade.ordersPositions.open}</td>
                     <td className="px-3 py-2 text-right">
@@ -163,10 +163,10 @@ export function OrdersPositionsPanel() {
                       {position.qty}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {formatPlain(position.avgPrice, 6)}
+                      {formatPlain(position.avgPrice)}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">
-                      {formatPlain(currentPrice, 6)}
+                      {formatPlain(currentPrice)}
                     </td>
                     <td
                       className={`px-3 py-2 text-right ${
@@ -174,7 +174,7 @@ export function OrdersPositionsPanel() {
                       }`}
                     >
                       {positive ? "+" : ""}
-                      {formatPlain(pnl, 6)} ({positive ? "+" : ""}
+                      {formatPlain(pnl)} ({positive ? "+" : ""}
                       {pnlPct.toFixed(2)}%)
                     </td>
                     <td className="px-3 py-2 text-right">

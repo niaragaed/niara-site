@@ -26,7 +26,7 @@ function hashString(value: string): number {
 // cliente. Dados ilustrativos, não refletem oferta/demanda real.
 export function generateMockOrderBook(
   symbol: string,
-  priceEth: number,
+  priceUsdt: number,
 ): { bids: BookOrder[]; asks: BookOrder[] } {
   const seed = hashString(symbol);
 
@@ -42,13 +42,13 @@ export function generateMockOrderBook(
       id: `ask-${symbol}-${i}`,
       side: "sell",
       qty: askQty,
-      price: priceEth * (1 + offset),
+      price: priceUsdt * (1 + offset),
     });
     bids.push({
       id: `bid-${symbol}-${i}`,
       side: "buy",
       qty: bidQty,
-      price: priceEth * (1 - offset),
+      price: priceUsdt * (1 - offset),
     });
   }
 

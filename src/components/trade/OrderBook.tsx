@@ -41,7 +41,7 @@ function OrderRow({
   order: BookOrder;
   maxQty: number;
   symbol: string;
-  formatPlain: (valueInEth: number) => string;
+  formatPlain: (valueInUsdt: number) => string;
 }) {
   const isBuy = order.side === "buy";
   return (
@@ -114,7 +114,7 @@ export function OrderBook() {
         <div className="flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-2 font-mono text-xs tabular-nums text-text-muted">
           <span>{en.trade.orderBook.spread}</span>
           <span>
-            {format(spread, 6)} ({spreadPct.toFixed(2)}%)
+            {format(spread)} ({spreadPct.toFixed(2)}%)
           </span>
         </div>
 

@@ -141,7 +141,7 @@ export function AssetCatalog() {
                         {asset.assetClass}
                       </td>
                       <td className="px-4 py-2 text-right text-text-primary">
-                        {format(asset.priceEth)}
+                        {format(asset.priceUsdt)}
                       </td>
                       <td
                         className={`px-4 py-2 text-right ${positive ? "text-positive" : "text-negative"}`}
@@ -150,7 +150,7 @@ export function AssetCatalog() {
                         {asset.change24h.toFixed(2)}%
                       </td>
                       <td className="px-4 py-2 text-right text-text-secondary">
-                        {formatPlain(asset.volume24hEth)}
+                        {formatPlain(asset.volume24hUsdt)}
                       </td>
                       <td className="px-4 py-2 text-right">
                         <Link

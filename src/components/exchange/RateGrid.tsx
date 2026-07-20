@@ -4,13 +4,9 @@ import { en } from "@/lib/i18n/en";
 type Pair = { base: ExchangeCurrency; quote: ExchangeCurrency };
 
 const PAIRS: Pair[] = [
-  { base: "BRL", quote: "USD" },
-  { base: "EUR", quote: "USD" },
-  { base: "ETH", quote: "USD" },
-  { base: "ETH", quote: "BRL" },
-  { base: "BTC", quote: "USD" },
-  { base: "BTC", quote: "BRL" },
-  { base: "USDC", quote: "BRL" },
+  { base: "USDT", quote: "BTC" },
+  { base: "USDT", quote: "BRL" },
+  { base: "BTC", quote: "USDT" },
   { base: "USDT", quote: "USD" },
 ];
 

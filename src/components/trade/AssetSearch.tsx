@@ -95,7 +95,7 @@ export function AssetSearch() {
                   <span className="font-medium text-text-primary">{asset.symbol}</span>
                   <span className="truncate text-text-muted">{asset.name}</span>
                   <span className="ml-auto shrink-0 whitespace-nowrap font-mono text-xs tabular-nums text-text-secondary">
-                    {format(asset.priceEth)}
+                    {format(asset.priceUsdt)}
                   </span>
                 </button>
               </li>
@@ -116,7 +116,7 @@ export function AssetSearch() {
         </div>
         <div className="ml-2 text-right font-mono tabular-nums">
           <div className="text-base text-text-primary">
-            {format(selected.priceEth)}
+            {format(selected.priceUsdt)}
           </div>
           <div className={`text-sm ${positive ? "text-positive" : "text-negative"}`}>
             {positive ? "+" : ""}

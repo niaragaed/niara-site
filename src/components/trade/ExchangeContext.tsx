@@ -16,7 +16,7 @@ import {
 } from "react";
 import { MOCK_ASSETS, type Asset } from "@/lib/mock-assets";
 import { generateMockOrderBook, type BookOrder } from "@/lib/mock-orderbook";
-import { INITIAL_BALANCE_ETH, SEED_POSITIONS } from "@/lib/mock-account";
+import { INITIAL_BALANCE_USDT, SEED_POSITIONS } from "@/lib/mock-account";
 import {
   applyFillToPosition,
   getBestPrices,
@@ -74,13 +74,13 @@ export function ExchangeProvider({
   const [selectedAsset, setSelectedAsset] = useState<Asset>(
     () => MOCK_ASSETS.find((asset) => asset.symbol === initialSymbol) ?? MOCK_ASSETS[0],
   );
-  const [balance, setBalance] = useState(INITIAL_BALANCE_ETH);
+  const [balance, setBalance] = useState(INITIAL_BALANCE_USDT);
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const [positions, setPositions] = useState<Position[]>(SEED_POSITIONS);
 
   const priceBySymbol = useMemo(() => {
     const map = new Map<string, number>();
-    MOCK_ASSETS.forEach((asset) => map.set(asset.symbol, asset.priceEth));
+    MOCK_ASSETS.forEach((asset) => map.set(asset.symbol, asset.priceUsdt));
     return map;
   }, []);
 
@@ -105,7 +105,7 @@ export function ExchangeProvider({
   const bookForSelected = useMemo(() => {
     const base = generateMockOrderBook(
       selectedAsset.symbol,
-      selectedAsset.priceEth,
+      selectedAsset.priceUsdt,
     );
     const resting = openOrders.filter((o) => o.symbol === selectedAsset.symbol);
     const restingAsks: BookOrder[] = resting
