@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star, Trash2, Wallet } from "lucide-react";
 import { MOCK_LINKED_WALLETS, truncateAddress, type LinkedWallet } from "@/lib/mock-wallets";
+import { en } from "@/lib/i18n/en";
 
 // TODO: integrar wagmi/ethers + WalletConnect — hoje é só uma simulação
 // local, sem conexão on-chain de verdade.
@@ -23,14 +24,11 @@ export function WalletSection() {
   }
 
   return (
-    <section id="carteira" aria-labelledby="carteira-heading" className="scroll-mt-24">
-      <h2 id="carteira-heading" className="font-display text-xl text-text-primary">
-        Carteira
+    <section id="wallet" aria-labelledby="wallet-heading" className="scroll-mt-24">
+      <h2 id="wallet-heading" className="font-display text-xl text-text-primary">
+        {en.profile.wallet.title}
       </h2>
-      <p className="mt-1 text-xs text-text-secondary">
-        Simulação de conexão de carteira — nenhuma transação on-chain
-        acontece aqui.
-      </p>
+      <p className="mt-1 text-xs text-text-secondary">{en.profile.wallet.subtitle}</p>
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
         {connected ? (
@@ -48,7 +46,7 @@ export function WalletSection() {
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-wide text-text-muted">
-                Saldo simulado
+                {en.profile.wallet.simulatedBalance}
               </p>
               <p className="font-mono text-sm tabular-nums text-text-primary">
                 {CONNECTED_BALANCE_ETH.toFixed(4)} ETH
@@ -59,21 +57,21 @@ export function WalletSection() {
               onClick={() => setConnected(false)}
               className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
             >
-              Desconectar
+              {en.profile.wallet.disconnect}
             </button>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-sm text-text-secondary">
               <Wallet className="h-5 w-5 text-text-muted" aria-hidden="true" />
-              Nenhuma carteira conectada nesta sessão.
+              {en.profile.wallet.noWalletConnected}
             </div>
             <button
               type="button"
               onClick={() => setConnected(true)}
               className="rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary"
             >
-              Conectar carteira (simulação)
+              {en.profile.wallet.connect}
             </button>
           </div>
         )}
@@ -81,7 +79,7 @@ export function WalletSection() {
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
         <h3 className="text-xs font-medium uppercase tracking-wide text-text-muted">
-          Carteiras vinculadas
+          {en.profile.wallet.linkedWallets}
         </h3>
         <ul className="mt-3 flex flex-col gap-2">
           {wallets.map((wallet) => (
@@ -94,7 +92,7 @@ export function WalletSection() {
                   {wallet.label}
                   {wallet.isPrimary && (
                     <span className="ml-2 rounded-full border border-accent-blue/40 bg-accent-blue/10 px-2 py-0.5 text-[10px] font-medium text-accent-blue">
-                      Principal
+                      {en.profile.wallet.primary}
                     </span>
                   )}
                 </p>
@@ -110,7 +108,7 @@ export function WalletSection() {
                     className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-text-secondary hover:border-accent-blue hover:text-text-primary"
                   >
                     <Star className="h-3 w-3" aria-hidden="true" />
-                    Definir como principal
+                    {en.profile.wallet.setPrimary}
                   </button>
                 )}
                 <button
@@ -119,13 +117,13 @@ export function WalletSection() {
                   className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-text-secondary hover:border-negative hover:text-negative"
                 >
                   <Trash2 className="h-3 w-3" aria-hidden="true" />
-                  Remover
+                  {en.profile.wallet.remove}
                 </button>
               </div>
             </li>
           ))}
           {wallets.length === 0 && (
-            <li className="text-xs text-text-muted">Nenhuma carteira vinculada.</li>
+            <li className="text-xs text-text-muted">{en.profile.wallet.none}</li>
           )}
         </ul>
       </div>

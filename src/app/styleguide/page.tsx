@@ -1,3 +1,5 @@
+import { en } from "@/lib/i18n/en";
+
 type Swatch = {
   label: string;
   hex: string;
@@ -66,27 +68,24 @@ export default function StyleGuide() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-16 px-6 py-16">
       <header className="flex flex-col gap-2 border-b border-border pb-8">
-        <h1 className="text-3xl font-semibold">Niara — Style Guide</h1>
-        <p className="text-text-muted">
-          Referência interna dos tokens de design. Não é conteúdo de
-          marketing.
-        </p>
+        <h1 className="text-3xl font-semibold">{en.styleguide.title}</h1>
+        <p className="text-text-muted">{en.styleguide.subtitle}</p>
       </header>
 
-      <Section title="Cores — Superfícies">
+      <Section title={en.styleguide.surfaces}>
         <SwatchGrid swatches={surfaceSwatches} />
       </Section>
 
-      <Section title="Cores — Texto">
+      <Section title={en.styleguide.text}>
         <SwatchGrid swatches={textSwatches} />
       </Section>
 
-      <Section title="Cores — Acento">
+      <Section title={en.styleguide.accent}>
         <SwatchGrid swatches={accentSwatches} />
         <div className="flex flex-col gap-2">
           <div className="h-16 w-full rounded-lg bg-gradient-primary sm:w-1/2" />
           <div>
-            <p className="text-sm text-text-primary">gradiente primário</p>
+            <p className="text-sm text-text-primary">{en.styleguide.primaryGradient}</p>
             <p className="font-mono text-xs text-text-muted">
               linear-gradient(135deg, #2E6BFF, #7B3FE4)
             </p>
@@ -94,19 +93,17 @@ export default function StyleGuide() {
         </div>
       </Section>
 
-      <Section title="Cores — Semânticos">
+      <Section title={en.styleguide.semantic}>
         <SwatchGrid swatches={semanticSwatches} />
       </Section>
 
-      <Section title="Tipografia">
+      <Section title={en.styleguide.typography}>
         <div className="flex flex-col gap-6">
           <h1 className="font-display text-5xl font-bold tracking-[0.2em] text-text-primary">
             NIARA
           </h1>
           <p className="max-w-2xl font-sans text-base text-text-secondary">
-            Este parágrafo usa Inter, a fonte padrão do corpo do texto. É a
-            família usada para interface, textos longos e conteúdo geral do
-            site — legibilidade em qualquer tamanho.
+            {en.styleguide.typographyBody}
           </p>
           <p className="font-mono text-2xl tabular-nums text-text-primary">
             BTC/USD 67,240.15{" "}
@@ -116,41 +113,39 @@ export default function StyleGuide() {
         </div>
       </Section>
 
-      <Section title="Botões e links">
+      <Section title={en.styleguide.buttonsLinks}>
         <div className="flex flex-wrap items-center gap-4">
           <button className="rounded-md bg-gradient-primary px-5 py-2.5 font-sans text-sm font-medium text-text-primary">
-            Botão primário
+            {en.styleguide.primaryButton}
           </button>
           <button className="rounded-md border border-border px-5 py-2.5 font-sans text-sm font-medium text-text-primary">
-            Botão secundário
+            {en.styleguide.secondaryButton}
           </button>
           <a
             href="#"
             className="font-sans text-sm font-medium text-accent-cyan underline underline-offset-4"
           >
-            Link em destaque
+            {en.styleguide.featuredLink}
           </a>
         </div>
       </Section>
 
-      <Section title="Cards">
+      <Section title={en.styleguide.cards}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-bg-surface p-6">
             <p className="font-display text-lg text-text-primary">
-              bg-surface
+              {en.styleguide.surfaceCardTitle}
             </p>
             <p className="mt-2 text-sm text-text-secondary">
-              Card padrão sobre o fundo base, usado para painéis e blocos de
-              conteúdo.
+              {en.styleguide.surfaceCardText}
             </p>
           </div>
           <div className="rounded-lg border border-border bg-bg-elevated p-6">
             <p className="font-display text-lg text-text-primary">
-              bg-elevated
+              {en.styleguide.elevatedCardTitle}
             </p>
             <p className="mt-2 text-sm text-text-secondary">
-              Card elevado, usado em hover ou para destacar um elemento sobre
-              bg-surface.
+              {en.styleguide.elevatedCardText}
             </p>
           </div>
         </div>

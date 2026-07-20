@@ -7,13 +7,14 @@ import { MOCK_ASSETS, type Asset } from "@/lib/mock-assets";
 import { MOCK_HOLDINGS } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
+import { en } from "@/lib/i18n/en";
 
 type ViewMode = "classe" | "ativo" | "regiao";
 
 const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
-  { value: "classe", label: "Por classe" },
-  { value: "ativo", label: "Por ativo" },
-  { value: "regiao", label: "Por país/região" },
+  { value: "classe", label: en.assets.allocation.byClass },
+  { value: "ativo", label: en.assets.allocation.byAsset },
+  { value: "regiao", label: en.assets.allocation.byRegion },
 ];
 
 // paleta derivada dos tokens de acento (variação de luminosidade via
@@ -101,8 +102,8 @@ export function AllocationDonut() {
   return (
     <div className="@container rounded-md border border-border bg-bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-text-primary">Alocação</h2>
-        <div role="group" aria-label="Ver alocação" className="flex items-center gap-1">
+        <h2 className="text-sm font-semibold text-text-primary">{en.assets.allocation.title}</h2>
+        <div role="group" aria-label={en.assets.allocation.viewAriaLabel} className="flex items-center gap-1">
           {VIEW_OPTIONS.map((option) => (
             <button
               key={option.value}

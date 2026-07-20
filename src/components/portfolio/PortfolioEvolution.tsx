@@ -13,12 +13,13 @@ import {
 } from "recharts";
 import { MOCK_EVOLUTION } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
+import { en } from "@/lib/i18n/en";
 
 const PERIODS = [
   { label: "3M", months: 3 },
   { label: "6M", months: 6 },
   { label: "12M", months: 12 },
-  { label: "Máx", months: MOCK_EVOLUTION.length },
+  { label: en.assets.evolution.max, months: MOCK_EVOLUTION.length },
 ] as const;
 
 type PeriodLabel = (typeof PERIODS)[number]["label"];
@@ -74,9 +75,9 @@ export function PortfolioEvolution() {
     <div className="rounded-md border border-border bg-bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-text-primary">
-          Evolução do patrimônio
+          {en.assets.evolution.title}
         </h2>
-        <div role="group" aria-label="Período" className="flex items-center gap-1">
+        <div role="group" aria-label={en.assets.evolution.periodAriaLabel} className="flex items-center gap-1">
           {PERIODS.map((p) => (
             <button
               key={p.label}
@@ -120,13 +121,13 @@ export function PortfolioEvolution() {
             />
             <Bar
               dataKey="investedEth"
-              name="Valor aplicado"
+              name={en.assets.evolution.investedValue}
               stackId="a"
               fill="var(--color-accent-blue)"
             />
             <Bar
               dataKey="gainEth"
-              name="Ganho de capital"
+              name={en.assets.evolution.capitalGain}
               stackId="a"
               fill="var(--color-positive)"
               radius={[3, 3, 0, 0]}
@@ -136,9 +137,7 @@ export function PortfolioEvolution() {
       </div>
 
       <p className="mt-2 text-[11px] text-text-muted">
-        Descrição textual do gráfico: valor aplicado e ganho de capital
-        acumulados, mês a mês, nos últimos {data.length} meses — os mesmos
-        dados aparecem na tabela de posições abaixo.
+        {en.assets.evolution.description(data.length)}
       </p>
     </div>
   );

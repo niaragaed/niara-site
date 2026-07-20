@@ -1,12 +1,14 @@
+import { en } from "@/lib/i18n/en";
+
 type ProfileSection = {
   id: string;
   label: string;
 };
 
 const SECTIONS: ProfileSection[] = [
-  { id: "dados-pessoais", label: "Dados pessoais" },
-  { id: "perfil-investidor", label: "Perfil de investidor" },
-  { id: "carteira", label: "Carteira" },
+  { id: "personal-data", label: en.profile.nav.personalData },
+  { id: "investor-profile", label: en.profile.nav.investorProfile },
+  { id: "wallet", label: en.profile.nav.wallet },
 ];
 
 export function ProfileNav() {
@@ -14,7 +16,7 @@ export function ProfileNav() {
     <>
       {/* Desktop: sidebar sticky */}
       <nav
-        aria-label="Seções do perfil"
+        aria-label={en.profile.sectionsAriaLabel}
         className="hidden shrink-0 lg:sticky lg:top-24 lg:block lg:w-56"
       >
         <ul className="flex flex-col gap-1">
@@ -34,7 +36,7 @@ export function ProfileNav() {
       {/* Mobile: abas horizontais roláveis */}
       <div
         role="tablist"
-        aria-label="Seções do perfil"
+        aria-label={en.profile.sectionsAriaLabel}
         className="-mx-4 flex gap-1 overflow-x-auto border-b border-border px-4 pb-px lg:hidden"
       >
         {SECTIONS.map((section) => (

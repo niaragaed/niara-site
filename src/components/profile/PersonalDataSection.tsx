@@ -5,6 +5,7 @@ import { AlertTriangle, Pencil, ShieldAlert, TrendingUp } from "lucide-react";
 import { AvatarUpload } from "./AvatarUpload";
 import { useInvestorProfile } from "@/context/InvestorProfileContext";
 import { INVESTOR_CATEGORY_LABELS } from "@/lib/investor-profile";
+import { en } from "@/lib/i18n/en";
 import {
   maskCEP,
   maskCPF,
@@ -64,23 +65,23 @@ const MASKS: Partial<Record<keyof FormData, (value: string) => string>> = {
 
 function validate(data: FormData): FormErrors {
   const errors: FormErrors = {};
-  if (!data.nomeCompleto.trim()) errors.nomeCompleto = "Informe seu nome completo.";
-  if (!validaCPF(data.cpf)) errors.cpf = "CPF inválido.";
-  if (!validaDataNascimento(data.dataNascimento))
-    errors.dataNascimento = "Data inválida ou é preciso ter 18 anos ou mais.";
-  if (!validaEmail(data.email)) errors.email = "E-mail inválido.";
-  if (!validaTelefone(data.telefone)) errors.telefone = "Telefone inválido.";
-  if (!validaCEP(data.cep)) errors.cep = "CEP inválido.";
-  if (!data.logradouro.trim()) errors.logradouro = "Informe o logradouro.";
-  if (!data.numero.trim()) errors.numero = "Informe o número.";
-  if (!data.bairro.trim()) errors.bairro = "Informe o bairro.";
-  if (!data.cidade.trim()) errors.cidade = "Informe a cidade.";
-  if (!data.uf) errors.uf = "Selecione a UF.";
+  const t = en.profile.personalData.errors;
+  if (!data.nomeCompleto.trim()) errors.nomeCompleto = t.fullName;
+  if (!validaCPF(data.cpf)) errors.cpf = t.cpf;
+  if (!validaDataNascimento(data.dataNascimento)) errors.dataNascimento = t.dob;
+  if (!validaEmail(data.email)) errors.email = t.email;
+  if (!validaTelefone(data.telefone)) errors.telefone = t.phone;
+  if (!validaCEP(data.cep)) errors.cep = t.postalCode;
+  if (!data.logradouro.trim()) errors.logradouro = t.street;
+  if (!data.numero.trim()) errors.numero = t.number;
+  if (!data.bairro.trim()) errors.bairro = t.neighborhood;
+  if (!data.cidade.trim()) errors.cidade = t.city;
+  if (!data.uf) errors.uf = t.state;
   return errors;
 }
 
 function display(value: string): string {
-  return value.trim() || "Não informado";
+  return value.trim() || en.profile.personalData.notInformed;
 }
 
 export function PersonalDataSection() {
@@ -91,6 +92,7 @@ export function PersonalDataSection() {
   // realmente salvo em lugar nenhum.
   // TODO: ao integrar backend — consentimento LGPD, criptografia em
   // trânsito e repouso, política de privacidade e base legal para coleta de CPF.
+  // TODO: suportar documentos de outros países no cadastro internacional.
   const [saved, setSaved] = useState<FormData>(EMPTY_FORM);
   const [draft, setDraft] = useState<FormData>(EMPTY_FORM);
   const [mode, setMode] = useState<"view" | "edit">("edit");
@@ -130,34 +132,32 @@ export function PersonalDataSection() {
   }
 
   return (
-    <section id="dados-pessoais" aria-labelledby="dados-pessoais-heading" className="scroll-mt-24">
+    <section id="personal-data" aria-labelledby="personal-data-heading" className="scroll-mt-24">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="dados-pessoais-heading" className="font-display text-xl text-text-primary">
-          Dados pessoais
+        <h2 id="personal-data-heading" className="font-display text-xl text-text-primary">
+          {en.profile.nav.personalData}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
             <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
-            Não verificado
+            {en.profile.personalData.notVerified}
           </span>
           {investorHydrated &&
             (investorResult ? (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-blue/40 bg-accent-blue/10 px-2.5 py-1 text-xs font-medium text-accent-blue">
                 <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
-                Perfil de investidor: {INVESTOR_CATEGORY_LABELS[investorResult.category]}
+                {en.profile.personalData.investorLabelPrefix}{" "}
+                {INVESTOR_CATEGORY_LABELS[investorResult.category]}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-negative/40 bg-negative/10 px-2.5 py-1 text-xs font-medium text-negative">
                 <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-                Perfil de investidor: pendente
+                {en.profile.personalData.investorPending}
               </span>
             ))}
         </div>
       </div>
-      <p className="mt-1 text-xs text-text-secondary">
-        A verificação de identidade (KYC) será exigida quando o produto
-        entrar em operação. Nenhuma aprovação é simulada aqui.
-      </p>
+      <p className="mt-1 text-xs text-text-secondary">{en.profile.personalData.kycNote}</p>
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
         <AvatarUpload />
@@ -167,35 +167,34 @@ export function PersonalDataSection() {
         <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
           {justSaved && (
             <p className="mb-5 rounded-md border border-positive/30 bg-positive/10 px-3 py-2 text-xs text-positive">
-              Dados salvos — confirmação simulada, nada foi enviado a um
-              servidor.
+              {en.profile.personalData.savedConfirmation}
             </p>
           )}
 
           <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-            <ReadField label="Nome completo" value={display(saved.nomeCompleto)} />
-            <ReadField label="CPF" value={display(saved.cpf)} mono />
-            <ReadField label="Data de nascimento" value={display(saved.dataNascimento)} mono />
-            <ReadField label="E-mail" value={display(saved.email)} />
-            <ReadField label="Telefone" value={display(saved.telefone)} mono />
+            <ReadField label={en.profile.personalData.fullName} value={display(saved.nomeCompleto)} />
+            <ReadField label={en.profile.personalData.cpf} value={display(saved.cpf)} mono />
+            <ReadField label={en.profile.personalData.dob} value={display(saved.dataNascimento)} mono />
+            <ReadField label={en.profile.personalData.email} value={display(saved.email)} />
+            <ReadField label={en.profile.personalData.phone} value={display(saved.telefone)} mono />
           </div>
 
           <div className="mt-6 border-t border-border pt-5">
             <h3 className="text-xs font-medium uppercase tracking-wide text-text-muted">
-              Endereço
+              {en.profile.personalData.addressSection}
             </h3>
             <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-              <ReadField label="CEP" value={display(saved.cep)} mono />
-              <ReadField label="Logradouro" value={display(saved.logradouro)} />
-              <ReadField label="Número" value={display(saved.numero)} />
-              <ReadField label="Complemento" value={display(saved.complemento)} />
-              <ReadField label="Bairro" value={display(saved.bairro)} />
+              <ReadField label={en.profile.personalData.postalCode} value={display(saved.cep)} mono />
+              <ReadField label={en.profile.personalData.street} value={display(saved.logradouro)} />
+              <ReadField label={en.profile.personalData.number} value={display(saved.numero)} />
+              <ReadField label={en.profile.personalData.complement} value={display(saved.complemento)} />
+              <ReadField label={en.profile.personalData.neighborhood} value={display(saved.bairro)} />
               <ReadField
-                label="Cidade / UF"
+                label={en.profile.personalData.cityState}
                 value={
                   saved.cidade.trim() || saved.uf
                     ? `${display(saved.cidade)} / ${saved.uf || "—"}`
-                    : "Não informado"
+                    : en.profile.personalData.notInformed
                 }
               />
             </div>
@@ -207,7 +206,7 @@ export function PersonalDataSection() {
             className="mt-6 inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary hover:border-accent-blue"
           >
             <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-            Editar
+            {en.profile.personalData.edit}
           </button>
         </div>
       ) : (
@@ -218,12 +217,12 @@ export function PersonalDataSection() {
         >
           <fieldset className="flex flex-col gap-4">
             <legend className="text-xs font-medium uppercase tracking-wide text-text-muted">
-              Pessoais
+              {en.profile.personalData.personalSection}
             </legend>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
                 id="pd-nome"
-                label="Nome completo"
+                label={en.profile.personalData.fullName}
                 value={draft.nomeCompleto}
                 onChange={handleFieldChange("nomeCompleto")}
                 error={errors.nomeCompleto}
@@ -231,7 +230,7 @@ export function PersonalDataSection() {
               />
               <TextField
                 id="pd-cpf"
-                label="CPF"
+                label={en.profile.personalData.cpf}
                 value={draft.cpf}
                 onChange={handleFieldChange("cpf")}
                 error={errors.cpf}
@@ -240,16 +239,16 @@ export function PersonalDataSection() {
               />
               <TextField
                 id="pd-nascimento"
-                label="Data de nascimento"
+                label={en.profile.personalData.dob}
                 value={draft.dataNascimento}
                 onChange={handleFieldChange("dataNascimento")}
                 error={errors.dataNascimento}
                 inputMode="numeric"
-                placeholder="DD/MM/AAAA"
+                placeholder="DD/MM/YYYY"
               />
               <TextField
                 id="pd-email"
-                label="E-mail"
+                label={en.profile.personalData.email}
                 type="email"
                 value={draft.email}
                 onChange={handleFieldChange("email")}
@@ -258,7 +257,7 @@ export function PersonalDataSection() {
               />
               <TextField
                 id="pd-telefone"
-                label="Telefone"
+                label={en.profile.personalData.phone}
                 value={draft.telefone}
                 onChange={handleFieldChange("telefone")}
                 error={errors.telefone}
@@ -271,12 +270,12 @@ export function PersonalDataSection() {
 
           <fieldset className="flex flex-col gap-4">
             <legend className="text-xs font-medium uppercase tracking-wide text-text-muted">
-              Endereço
+              {en.profile.personalData.addressSection}
             </legend>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
                 id="pd-cep"
-                label="CEP"
+                label={en.profile.personalData.postalCode}
                 value={draft.cep}
                 onChange={handleFieldChange("cep")}
                 error={errors.cep}
@@ -285,7 +284,7 @@ export function PersonalDataSection() {
               />
               <TextField
                 id="pd-logradouro"
-                label="Logradouro"
+                label={en.profile.personalData.street}
                 value={draft.logradouro}
                 onChange={handleFieldChange("logradouro")}
                 error={errors.logradouro}
@@ -293,27 +292,27 @@ export function PersonalDataSection() {
               />
               <TextField
                 id="pd-numero"
-                label="Número"
+                label={en.profile.personalData.number}
                 value={draft.numero}
                 onChange={handleFieldChange("numero")}
                 error={errors.numero}
               />
               <TextField
                 id="pd-complemento"
-                label="Complemento"
+                label={en.profile.personalData.complement}
                 value={draft.complemento}
                 onChange={handleFieldChange("complemento")}
               />
               <TextField
                 id="pd-bairro"
-                label="Bairro"
+                label={en.profile.personalData.neighborhood}
                 value={draft.bairro}
                 onChange={handleFieldChange("bairro")}
                 error={errors.bairro}
               />
               <TextField
                 id="pd-cidade"
-                label="Cidade"
+                label={en.profile.personalData.city}
                 value={draft.cidade}
                 onChange={handleFieldChange("cidade")}
                 error={errors.cidade}
@@ -321,7 +320,7 @@ export function PersonalDataSection() {
               />
               <div>
                 <label htmlFor="pd-uf" className="mb-1 block text-xs text-text-muted">
-                  UF
+                  {en.profile.personalData.state}
                 </label>
                 <select
                   id="pd-uf"
@@ -333,7 +332,7 @@ export function PersonalDataSection() {
                     errors.uf ? "border-negative" : "border-border"
                   }`}
                 >
-                  <option value="">Selecione</option>
+                  <option value="">{en.profile.personalData.selectState}</option>
                   {UF_OPTIONS.map((uf) => (
                     <option key={uf} value={uf}>
                       {uf}
@@ -349,24 +348,21 @@ export function PersonalDataSection() {
             </div>
           </fieldset>
 
-          <p className="text-[11px] text-text-muted">
-            Ao salvar, os dados ficam só nesta página (estado do navegador) —
-            é uma simulação, nada é enviado a um servidor.
-          </p>
+          <p className="text-[11px] text-text-muted">{en.profile.personalData.saveHint}</p>
 
           <div className="flex gap-2">
             <button
               type="submit"
               className="rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary"
             >
-              Salvar (simulação)
+              {en.profile.personalData.save}
             </button>
             <button
               type="button"
               onClick={cancelEdit}
               className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
             >
-              Cancelar
+              {en.profile.personalData.cancel}
             </button>
           </div>
         </form>

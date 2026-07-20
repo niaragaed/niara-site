@@ -1,4 +1,5 @@
 import { BookOpen, Mail, type LucideIcon } from "lucide-react";
+import { en } from "@/lib/i18n/en";
 
 export type NavChild = {
   label: string;
@@ -15,31 +16,27 @@ export type NavItem = {
   children?: NavChild[];
 };
 
-// se preferir consistência com o português do site, trocar os labels para
-// "Perfil" e "Sobre" — alterar apenas aqui
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Trade", href: "/trade" },
-  // se preferir, "Exchange" pode virar "Câmbio" — alterar apenas o label aqui
-  { label: "Exchange", href: "/exchange" },
-  { label: "Ativos", href: "/ativos" },
-  { label: "Profile", href: "/profile" },
+  { label: en.nav.trade, href: "/trade" },
+  { label: en.nav.exchange, href: "/exchange" },
+  { label: en.nav.assets, href: "/assets" },
+  { label: en.nav.profile, href: "/profile" },
   // Cashback é argumento para empresas emissoras — terá página própria
   // voltada a emissores, fora do nav principal.
   {
-    label: "About",
+    label: en.nav.about,
     href: "#",
     children: [
       {
-        label: "Docs & FAQs",
+        label: en.nav.docsLabel,
         href: "/docs",
-        description: "Conheça o produto, a tecnologia e o modelo da Niara.",
+        description: en.nav.docsDescription,
         icon: BookOpen,
       },
       {
-        label: "Contato",
-        href: "/contato",
-        description:
-          "Fale com a Niara para parcerias, emissão de ativos ou suporte.",
+        label: en.nav.contactLabel,
+        href: "/contact",
+        description: en.nav.contactDescription,
         icon: Mail,
       },
     ],

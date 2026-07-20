@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Trash2, User } from "lucide-react";
+import { en } from "@/lib/i18n/en";
 
 const MAX_SIZE_BYTES = 2 * 1024 * 1024;
 
@@ -24,11 +25,11 @@ export function AvatarUpload() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Selecione um arquivo de imagem.");
+      setError(en.profile.personalData.avatar.invalidType);
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
-      setError("A imagem deve ter no máximo 2MB.");
+      setError(en.profile.personalData.avatar.tooLarge);
       return;
     }
 
@@ -54,7 +55,7 @@ export function AvatarUpload() {
           // eslint-disable-next-line @next/next/no-img-element -- object URL local; não passa pelo otimizador do next/image
           <img
             src={previewUrl}
-            alt="Foto de perfil"
+            alt={en.profile.personalData.avatar.photoAlt}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -70,7 +71,7 @@ export function AvatarUpload() {
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-text-primary hover:border-accent-blue"
           >
             <Camera className="h-3.5 w-3.5" aria-hidden="true" />
-            Alterar
+            {en.profile.personalData.avatar.changeLabel}
           </button>
           {previewUrl && (
             <button
@@ -79,7 +80,7 @@ export function AvatarUpload() {
               className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:border-negative hover:text-negative"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-              Remover
+              {en.profile.personalData.avatar.removeLabel}
             </button>
           )}
         </div>
@@ -89,12 +90,9 @@ export function AvatarUpload() {
           accept="image/*"
           onChange={handleFileChange}
           className="hidden"
-          aria-label="Selecionar foto de perfil"
+          aria-label={en.profile.personalData.avatar.selectLabel}
         />
-        <p className="text-[11px] text-text-muted">
-          JPG ou PNG, até 2MB. A imagem não é enviada — fica só no seu
-          navegador.
-        </p>
+        <p className="text-[11px] text-text-muted">{en.profile.personalData.avatar.hint}</p>
         {error && (
           <p role="alert" className="text-xs text-negative">
             {error}

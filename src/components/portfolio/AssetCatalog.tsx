@@ -6,8 +6,9 @@ import { Coins, Search } from "lucide-react";
 import { MOCK_ASSETS, type Asset, type AssetClass, type Region } from "@/lib/mock-assets";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
+import { en } from "@/lib/i18n/en";
 
-const CLASS_FILTERS: AssetClass[] = ["Ações", "ETFs", "Commodities", "Cripto", "Stablecoins"];
+const CLASS_FILTERS: AssetClass[] = ["Stocks", "ETFs", "Commodities", "Crypto", "Stablecoins"];
 const REGION_FILTERS: Region[] = ["BR", "US", "EU", "Global"];
 
 function AssetFlag({ asset }: { asset: Asset }) {
@@ -20,16 +21,16 @@ function AssetFlag({ asset }: { asset: Asset }) {
 export function AssetCatalog() {
   const { format, formatPlain } = useCurrency();
   const [query, setQuery] = useState("");
-  const [classFilter, setClassFilter] = useState<AssetClass | "Todas">("Todas");
-  const [regionFilter, setRegionFilter] = useState<Region | "Todas">("Todas");
+  const [classFilter, setClassFilter] = useState<AssetClass | "All">("All");
+  const [regionFilter, setRegionFilter] = useState<Region | "All">("All");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return MOCK_ASSETS.filter((asset) => {
       const matchesQuery =
         !q || asset.symbol.toLowerCase().includes(q) || asset.name.toLowerCase().includes(q);
-      const matchesClass = classFilter === "Todas" || asset.assetClass === classFilter;
-      const matchesRegion = regionFilter === "Todas" || asset.region === regionFilter;
+      const matchesClass = classFilter === "All" || asset.assetClass === classFilter;
+      const matchesRegion = regionFilter === "All" || asset.region === regionFilter;
       return matchesQuery && matchesClass && matchesRegion;
     });
   }, [query, classFilter, regionFilter]);
@@ -43,29 +44,29 @@ export function AssetCatalog() {
             aria-hidden="true"
           />
           <label htmlFor="catalog-search" className="sr-only">
-            Buscar ativo
+            {en.assets.catalog.searchLabel}
           </label>
           <input
             id="catalog-search"
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nome ou símbolo"
+            placeholder={en.assets.catalog.searchPlaceholder}
             className="w-full rounded-md border border-border bg-bg-base py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent-blue"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor="catalog-class" className="sr-only">
-            Filtrar por classe
+            {en.assets.catalog.classFilterLabel}
           </label>
           <select
             id="catalog-class"
             value={classFilter}
-            onChange={(event) => setClassFilter(event.target.value as AssetClass | "Todas")}
+            onChange={(event) => setClassFilter(event.target.value as AssetClass | "All")}
             className="rounded-md border border-border bg-bg-base px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
           >
-            <option value="Todas">Todas as classes</option>
+            <option value="All">{en.assets.catalog.allClasses}</option>
             {CLASS_FILTERS.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -73,15 +74,15 @@ export function AssetCatalog() {
             ))}
           </select>
           <label htmlFor="catalog-region" className="sr-only">
-            Filtrar por região
+            {en.assets.catalog.regionFilterLabel}
           </label>
           <select
             id="catalog-region"
             value={regionFilter}
-            onChange={(event) => setRegionFilter(event.target.value as Region | "Todas")}
+            onChange={(event) => setRegionFilter(event.target.value as Region | "All")}
             className="rounded-md border border-border bg-bg-base px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
           >
-            <option value="Todas">Todas as regiões</option>
+            <option value="All">{en.assets.catalog.allRegions}</option>
             {REGION_FILTERS.map((r) => (
               <option key={r} value={r}>
                 {r}
@@ -94,7 +95,7 @@ export function AssetCatalog() {
       <div className="rounded-md border border-border bg-bg-surface">
         {filtered.length === 0 ? (
           <p className="p-6 text-center text-sm text-text-muted">
-            Nenhum ativo encontrado.
+            {en.assets.catalog.empty}
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -102,22 +103,22 @@ export function AssetCatalog() {
               <thead>
                 <tr className="border-b border-border text-left text-[10px] uppercase tracking-wide text-text-muted">
                   <th scope="col" className="px-4 py-2 font-normal">
-                    Ativo
+                    {en.assets.catalog.asset}
                   </th>
                   <th scope="col" className="px-4 py-2 font-normal">
-                    Classe
+                    {en.assets.catalog.assetClass}
                   </th>
                   <th scope="col" className="px-4 py-2 text-right font-normal">
-                    Preço
+                    {en.assets.catalog.price}
                   </th>
                   <th scope="col" className="px-4 py-2 text-right font-normal">
-                    Variação 24h
+                    {en.assets.catalog.change24h}
                   </th>
                   <th scope="col" className="px-4 py-2 text-right font-normal">
-                    Volume 24h
+                    {en.assets.catalog.volume24h}
                   </th>
                   <th scope="col" className="px-4 py-2 font-normal">
-                    <span className="sr-only">Ações</span>
+                    <span className="sr-only">{en.assets.catalog.actions}</span>
                   </th>
                 </tr>
               </thead>
@@ -156,7 +157,7 @@ export function AssetCatalog() {
                           href={`/trade?asset=${asset.symbol}`}
                           className="rounded border border-border px-2 py-1 font-sans text-[11px] text-text-secondary transition-colors hover:border-accent-blue/40 hover:text-text-primary"
                         >
-                          Negociar
+                          {en.assets.catalog.trade}
                         </Link>
                       </td>
                     </tr>

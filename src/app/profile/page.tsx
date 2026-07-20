@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { ProfilePage } from "@/components/profile/ProfilePage";
+import { en } from "@/lib/i18n/en";
 
 export const metadata: Metadata = {
-  title: "Perfil — Niara",
-  description: "Dados pessoais, perfil de investidor, carteira e preferências.",
+  title: en.profile.metaTitle,
+  description: en.profile.metaDescription,
 };
 
 export default function Page() {

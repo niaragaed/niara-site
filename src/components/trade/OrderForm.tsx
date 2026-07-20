@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import type { OrderSide } from "@/lib/trading";
+import { en } from "@/lib/i18n/en";
 
 const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
 const DEVIATION_WARNING_THRESHOLD = 0.2; // 20%
@@ -66,7 +67,7 @@ export function OrderForm() {
   function handleApprove() {
     setConfirmation(null);
     if (!isValid) {
-      setError("Informe quantidade e preço válidos (maiores que zero).");
+      setError(en.trade.orderForm.invalidError);
       return;
     }
     setError(null);
@@ -83,18 +84,18 @@ export function OrderForm() {
     setError(null);
     setConfirmation(
       result.status === "filled"
-        ? `Ordem simulada de ${side === "buy" ? "compra" : "venda"} executada a ${format(result.fillPrice, 6)} — nenhuma transação real foi feita.`
-        : `Ordem simulada de ${side === "buy" ? "compra" : "venda"} registrada como aberta no livro — nenhuma transação real foi feita.`,
+        ? en.trade.orderForm.filledConfirmation(side, format(result.fillPrice, 6))
+        : en.trade.orderForm.restingConfirmation(side),
     );
   }
 
   return (
     <div className="rounded-md border border-border bg-bg-surface p-4">
-      <h2 className="text-sm font-semibold text-text-primary">Nova ordem</h2>
+      <h2 className="text-sm font-semibold text-text-primary">{en.trade.orderForm.title}</h2>
 
       <div
         role="group"
-        aria-label="Lado da ordem"
+        aria-label={en.trade.orderForm.sideGroupLabel}
         className="mt-4 grid grid-cols-2 gap-2"
       >
         <button
@@ -107,7 +108,7 @@ export function OrderForm() {
               : "border-border text-text-muted hover:text-text-secondary"
           }`}
         >
-          Compra
+          {en.trade.orderForm.buy}
         </button>
         <button
           type="button"
@@ -119,7 +120,7 @@ export function OrderForm() {
               : "border-border text-text-muted hover:text-text-secondary"
           }`}
         >
-          Venda
+          {en.trade.orderForm.sell}
         </button>
       </div>
 
@@ -129,7 +130,7 @@ export function OrderForm() {
             htmlFor="order-qty"
             className="mb-1 block text-xs text-text-muted"
           >
-            Quantidade de tokens
+            {en.trade.orderForm.qtyLabel}
           </label>
           <input
             id="order-qty"
@@ -150,7 +151,7 @@ export function OrderForm() {
             htmlFor="order-price"
             className="mb-1 block text-xs text-text-muted"
           >
-            Preço ({currency})
+            {en.trade.orderForm.priceLabel} ({currency})
           </label>
           <input
             id="order-price"
@@ -167,20 +168,21 @@ export function OrderForm() {
 
       <div className="mt-4 space-y-1 border-t border-border pt-3 font-mono text-xs tabular-nums text-text-secondary">
         <div className="flex justify-between">
-          <span>Total</span>
+          <span>{en.trade.orderForm.total}</span>
           <span className="text-text-primary">{format(totalEth, 6)}</span>
         </div>
         <div className="flex justify-between text-text-muted">
-          <span>Taxa estimada da Niara (0,1%)</span>
+          <span>{en.trade.orderForm.estimatedFee}</span>
           <span>{format(feeEth, 6)}</span>
         </div>
       </div>
 
       {isFarFromMarket && (
         <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-          Esse preço está a {(deviation * 100).toFixed(1)}% do preço de
-          referência ({format(selectedAsset.priceEth)}). Confira antes de
-          continuar.
+          {en.trade.orderForm.deviationWarning(
+            (deviation * 100).toFixed(1),
+            format(selectedAsset.priceEth),
+          )}
         </p>
       )}
       {error && <p className="mt-3 text-xs text-negative">{error}</p>}
@@ -197,7 +199,7 @@ export function OrderForm() {
           disabled={approved}
           className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:border-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {approved ? "Aprovado ✓" : "1. Aprovar token"}
+          {approved ? en.trade.orderForm.approved : en.trade.orderForm.approve}
         </button>
         <button
           type="button"
@@ -205,12 +207,12 @@ export function OrderForm() {
           disabled={!approved || !isValid}
           className="rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
         >
-          2. Executar ordem
+          {en.trade.orderForm.execute}
         </button>
       </div>
 
       <p className="mt-3 text-[11px] text-text-muted">
-        Simulação — nenhuma ordem é enviada à blockchain.
+        {en.trade.orderForm.simDisclaimer}
       </p>
     </div>
   );

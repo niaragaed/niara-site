@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
+import { en } from "@/lib/i18n/en";
 
 function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString("pt-BR", {
+  return new Date(ts).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -22,7 +23,7 @@ export function OrdersPositionsPanel() {
   return (
     <div className="flex h-full flex-col rounded-md border border-border bg-bg-surface">
       <div className="flex items-center border-b border-border">
-        <div role="tablist" aria-label="Ordens e posições" className="flex">
+        <div role="tablist" aria-label={en.trade.ordersPositions.tabsAriaLabel} className="flex">
           <button
             type="button"
             role="tab"
@@ -34,7 +35,8 @@ export function OrdersPositionsPanel() {
                 : "border-transparent text-text-muted hover:text-text-secondary"
             }`}
           >
-            Ordens{openOrders.length > 0 ? ` (${openOrders.length})` : ""}
+            {en.trade.ordersPositions.ordersTab}
+            {openOrders.length > 0 ? ` (${openOrders.length})` : ""}
           </button>
           <button
             type="button"
@@ -47,11 +49,12 @@ export function OrdersPositionsPanel() {
                 : "border-transparent text-text-muted hover:text-text-secondary"
             }`}
           >
-            Posições{positions.length > 0 ? ` (${positions.length})` : ""}
+            {en.trade.ordersPositions.positionsTab}
+            {positions.length > 0 ? ` (${positions.length})` : ""}
           </button>
         </div>
         <span className="ml-auto px-3 text-[10px] text-text-muted">
-          Em memória — some ao recarregar a página
+          {en.trade.ordersPositions.memoryHint}
         </span>
       </div>
 
@@ -59,21 +62,25 @@ export function OrdersPositionsPanel() {
         {tab === "orders" ? (
           openOrders.length === 0 ? (
             <p className="p-6 text-center text-sm text-text-muted">
-              Nenhuma ordem em aberto.
+              {en.trade.ordersPositions.noOpenOrders}
             </p>
           ) : (
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border text-left text-[10px] uppercase tracking-wide text-text-muted">
-                  <th className="px-3 py-2 font-normal">Hora</th>
-                  <th className="px-3 py-2 font-normal">Ativo</th>
-                  <th className="px-3 py-2 font-normal">Lado</th>
-                  <th className="px-3 py-2 text-right font-normal">Qtd</th>
-                  <th className="px-3 py-2 text-right font-normal">Preço ({currency})</th>
-                  <th className="px-3 py-2 text-right font-normal">Total ({currency})</th>
-                  <th className="px-3 py-2 font-normal">Status</th>
+                  <th className="px-3 py-2 font-normal">{en.trade.ordersPositions.time}</th>
+                  <th className="px-3 py-2 font-normal">{en.trade.ordersPositions.asset}</th>
+                  <th className="px-3 py-2 font-normal">{en.trade.ordersPositions.side}</th>
+                  <th className="px-3 py-2 text-right font-normal">{en.trade.ordersPositions.qty}</th>
+                  <th className="px-3 py-2 text-right font-normal">
+                    {en.trade.ordersPositions.price} ({currency})
+                  </th>
+                  <th className="px-3 py-2 text-right font-normal">
+                    {en.trade.ordersPositions.total} ({currency})
+                  </th>
+                  <th className="px-3 py-2 font-normal">{en.trade.ordersPositions.status}</th>
                   <th className="px-3 py-2 font-normal">
-                    <span className="sr-only">Ações</span>
+                    <span className="sr-only">{en.trade.ordersPositions.actions}</span>
                   </th>
                 </tr>
               </thead>
@@ -87,7 +94,9 @@ export function OrdersPositionsPanel() {
                         order.side === "buy" ? "text-positive" : "text-negative"
                       }`}
                     >
-                      {order.side === "buy" ? "Compra" : "Venda"}
+                      {order.side === "buy"
+                        ? en.trade.ordersPositions.buy
+                        : en.trade.ordersPositions.sell}
                     </td>
                     <td className="px-3 py-2 text-right text-text-secondary">{order.qty}</td>
                     <td className="px-3 py-2 text-right text-text-secondary">
@@ -96,14 +105,14 @@ export function OrdersPositionsPanel() {
                     <td className="px-3 py-2 text-right text-text-secondary">
                       {formatPlain(order.qty * order.price, 6)}
                     </td>
-                    <td className="px-3 py-2 text-text-muted">Aberta</td>
+                    <td className="px-3 py-2 text-text-muted">{en.trade.ordersPositions.open}</td>
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
                         onClick={() => cancelOrder(order.id)}
                         className="rounded border border-border px-2 py-1 font-sans text-[11px] text-text-secondary transition-colors hover:border-negative/40 hover:text-negative"
                       >
-                        Cancelar
+                        {en.trade.ordersPositions.cancel}
                       </button>
                     </td>
                   </tr>
@@ -112,18 +121,26 @@ export function OrdersPositionsPanel() {
             </table>
           )
         ) : positions.length === 0 ? (
-          <p className="p-6 text-center text-sm text-text-muted">Nenhuma posição.</p>
+          <p className="p-6 text-center text-sm text-text-muted">
+            {en.trade.ordersPositions.noPositions}
+          </p>
         ) : (
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border text-left text-[10px] uppercase tracking-wide text-text-muted">
-                <th className="px-3 py-2 font-normal">Ativo</th>
-                <th className="px-3 py-2 text-right font-normal">Qtd</th>
-                <th className="px-3 py-2 text-right font-normal">Preço médio ({currency})</th>
-                <th className="px-3 py-2 text-right font-normal">Preço atual ({currency})</th>
-                <th className="px-3 py-2 text-right font-normal">P/L ({currency})</th>
+                <th className="px-3 py-2 font-normal">{en.trade.ordersPositions.asset}</th>
+                <th className="px-3 py-2 text-right font-normal">{en.trade.ordersPositions.qty}</th>
+                <th className="px-3 py-2 text-right font-normal">
+                  {en.trade.ordersPositions.avgPrice} ({currency})
+                </th>
+                <th className="px-3 py-2 text-right font-normal">
+                  {en.trade.ordersPositions.currentPrice} ({currency})
+                </th>
+                <th className="px-3 py-2 text-right font-normal">
+                  {en.trade.ordersPositions.pnl} ({currency})
+                </th>
                 <th className="px-3 py-2 font-normal">
-                  <span className="sr-only">Ações</span>
+                  <span className="sr-only">{en.trade.ordersPositions.actions}</span>
                 </th>
               </tr>
             </thead>
@@ -166,7 +183,7 @@ export function OrdersPositionsPanel() {
                         onClick={() => closePosition(position.symbol)}
                         className="rounded border border-border px-2 py-1 font-sans text-[11px] text-text-secondary transition-colors hover:border-accent-blue/40 hover:text-text-primary"
                       >
-                        Zerar
+                        {en.trade.ordersPositions.closePosition}
                       </button>
                     </td>
                   </tr>

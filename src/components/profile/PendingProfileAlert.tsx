@@ -2,6 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useInvestorProfile } from "@/context/InvestorProfileContext";
+import { en } from "@/lib/i18n/en";
 
 export function PendingProfileAlert() {
   const { result, hydrated } = useInvestorProfile();
@@ -13,15 +14,15 @@ export function PendingProfileAlert() {
         <div className="flex items-center gap-2 text-sm text-text-primary">
           <AlertTriangle className="h-4 w-4 shrink-0 text-negative" aria-hidden="true" />
           <span>
-            <span className="font-semibold">Avaliação de perfil pendente</span>{" "}
-            — obrigatória para operar.
+            <span className="font-semibold">{en.profile.pendingAlert.title}</span>{" "}
+            {en.profile.pendingAlert.suffix}
           </span>
         </div>
         <a
-          href="#perfil-investidor"
+          href="#investor-profile"
           className="shrink-0 rounded-md border border-negative/40 px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-negative/20"
         >
-          Responder agora
+          {en.profile.pendingAlert.cta}
         </a>
       </div>
     </div>

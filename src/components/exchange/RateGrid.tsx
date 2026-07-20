@@ -1,4 +1,5 @@
 import { convertCurrency, type ExchangeCurrency } from "@/lib/rates";
+import { en } from "@/lib/i18n/en";
 
 type Pair = { base: ExchangeCurrency; quote: ExchangeCurrency };
 
@@ -41,10 +42,10 @@ export function RateGrid() {
     <div className="rounded-lg border border-border bg-bg-surface">
       <div className="border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-text-primary">
-          Principais paridades
+          {en.exchange.rateGrid.title}
         </h2>
         <p className="mt-0.5 text-[11px] text-text-muted">
-          Cotações de referência — simulação, não são valores de mercado.
+          {en.exchange.rateGrid.subtitle}
         </p>
       </div>
 

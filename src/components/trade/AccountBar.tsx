@@ -4,6 +4,7 @@ import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { CurrencySelector } from "./CurrencySelector";
 import { ETH_USD, ETH_BRL } from "@/lib/rates";
+import { en } from "@/lib/i18n/en";
 
 export function AccountBar() {
   const { balance, buyingPower, marginUsed, pnlToday } = useExchange();
@@ -14,8 +15,8 @@ export function AccountBar() {
     currency === "ETH"
       ? null
       : currency === "BRL"
-        ? `1 ETH ≈ ${ETH_BRL.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })} (referência simulada)`
-        : `1 ETH ≈ ${ETH_USD.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} (referência simulada)`;
+        ? `1 ETH ≈ ${ETH_BRL.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })} ${en.trade.accountBar.referenceSuffix}`
+        : `1 ETH ≈ ${ETH_USD.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} ${en.trade.accountBar.referenceSuffix}`;
 
   return (
     <div className="w-full border-b border-border bg-bg-surface">
@@ -23,7 +24,7 @@ export function AccountBar() {
         <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              Saldo em carteira
+              {en.trade.accountBar.walletBalance}
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
               {format(balance)}
@@ -31,9 +32,9 @@ export function AccountBar() {
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              Poder de compra{" "}
+              {en.trade.accountBar.buyingPower}{" "}
               <span className="normal-case text-text-muted/80">
-                (limite simulado)
+                {en.trade.accountBar.buyingPowerHint}
               </span>
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
@@ -42,7 +43,7 @@ export function AccountBar() {
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              Margem utilizada
+              {en.trade.accountBar.marginUsed}
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
               {format(marginUsed)}
@@ -50,7 +51,7 @@ export function AccountBar() {
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              P/L do dia
+              {en.trade.accountBar.todayPnl}
             </p>
             <p
               className={`font-mono text-sm tabular-nums ${

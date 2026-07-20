@@ -1,3 +1,5 @@
+import { en } from "@/lib/i18n/en";
+
 type DocsSection = {
   id: string;
   label: string;
@@ -6,7 +8,7 @@ type DocsSection = {
 export function DocsNav({ sections }: { sections: DocsSection[] }) {
   return (
     <nav
-      aria-label="Navegação da documentação"
+      aria-label={en.docs.navAriaLabel}
       className="hidden shrink-0 lg:sticky lg:top-24 lg:block lg:w-56"
     >
       <ul className="flex flex-col gap-1">

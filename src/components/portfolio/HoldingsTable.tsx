@@ -6,6 +6,7 @@ import { MOCK_ASSETS } from "@/lib/mock-assets";
 import { MOCK_HOLDINGS } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
+import { en } from "@/lib/i18n/en";
 
 type Row = {
   symbol: string;
@@ -62,13 +63,13 @@ function buildRows(): Row[] {
 }
 
 const COLUMNS: { key: SortKey; label: string; align?: "right" }[] = [
-  { key: "symbol", label: "Ativo" },
-  { key: "qty", label: "Quantidade", align: "right" },
-  { key: "avgPrice", label: "Preço médio", align: "right" },
-  { key: "currentPrice", label: "Preço atual", align: "right" },
-  { key: "totalValue", label: "Valor total", align: "right" },
-  { key: "pctOfPortfolio", label: "% da carteira", align: "right" },
-  { key: "pl", label: "P/L", align: "right" },
+  { key: "symbol", label: en.assets.holdings.asset },
+  { key: "qty", label: en.assets.holdings.quantity, align: "right" },
+  { key: "avgPrice", label: en.assets.holdings.avgPrice, align: "right" },
+  { key: "currentPrice", label: en.assets.holdings.currentPrice, align: "right" },
+  { key: "totalValue", label: en.assets.holdings.totalValue, align: "right" },
+  { key: "pctOfPortfolio", label: en.assets.holdings.pctOfPortfolio, align: "right" },
+  { key: "pl", label: en.assets.holdings.pl, align: "right" },
 ];
 
 export function HoldingsTable() {
@@ -100,12 +101,12 @@ export function HoldingsTable() {
   return (
     <div className="rounded-md border border-border bg-bg-surface">
       <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-text-primary">Posições</h2>
+        <h2 className="text-sm font-semibold text-text-primary">{en.assets.holdings.title}</h2>
       </div>
 
       {sortedRows.length === 0 ? (
         <p className="p-6 text-center text-sm text-text-muted">
-          Nenhuma posição na carteira simulada.
+          {en.assets.holdings.empty}
         </p>
       ) : (
         <div className="overflow-x-auto">
