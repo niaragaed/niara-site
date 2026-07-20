@@ -4,6 +4,7 @@ import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getBestPrices } from "@/lib/trading";
 import type { BookOrder } from "@/lib/mock-orderbook";
+import { en } from "@/lib/i18n/en";
 
 function DepthBar({
   qty,
@@ -85,14 +86,16 @@ export function OrderBook() {
     <div className="flex h-full flex-col rounded-md border border-border bg-bg-surface">
       <div className="border-b border-border px-3 py-2">
         <h2 className="text-sm font-semibold text-text-primary">
-          Livro de ofertas
+          {en.trade.orderBook.title}
         </h2>
       </div>
 
       <div className="grid grid-cols-[1fr_1fr_auto] gap-2 px-3 py-1.5 text-[10px] uppercase tracking-wide text-text-muted">
-        <span>Qtd.</span>
-        <span>Ativo</span>
-        <span className="text-right">Preço ({currency})</span>
+        <span>{en.trade.orderBook.qty}</span>
+        <span>{en.trade.orderBook.asset}</span>
+        <span className="text-right">
+          {en.trade.orderBook.price} ({currency})
+        </span>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -109,7 +112,7 @@ export function OrderBook() {
         </div>
 
         <div className="flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-2 font-mono text-xs tabular-nums text-text-muted">
-          <span>Spread</span>
+          <span>{en.trade.orderBook.spread}</span>
           <span>
             {format(spread, 6)} ({spreadPct.toFixed(2)}%)
           </span>

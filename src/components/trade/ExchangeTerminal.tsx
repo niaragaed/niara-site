@@ -8,6 +8,7 @@ import { PriceChart } from "./PriceChart";
 import { OrderBook } from "./OrderBook";
 import { OrderForm } from "./OrderForm";
 import { OrdersPositionsPanel } from "./OrdersPositionsPanel";
+import { en } from "@/lib/i18n/en";
 
 // Ordem no DOM = ordem no mobile (empilhado, uma coluna). No desktop, cada
 // item é reposicionado por linha/coluna explícitas (col-start/row-start),
@@ -49,9 +50,8 @@ export function ExchangeTerminal({ initialSymbol }: { initialSymbol?: string }) 
     <ExchangeProvider initialSymbol={initialSymbol}>
       <div className="flex min-h-[70vh] flex-col bg-bg-base">
         <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-text-secondary sm:text-sm">
-          <span className="font-semibold text-warning">Demonstração</span> —
-          dados simulados. Nenhuma ordem é executada e nenhum ativo real é
-          negociado.
+          <span className="font-semibold text-warning">{en.common.demoLabel}</span> —{" "}
+          {en.trade.demoBanner}
         </div>
 
         <TerminalHeader />

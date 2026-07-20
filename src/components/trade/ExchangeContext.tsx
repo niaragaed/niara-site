@@ -70,7 +70,7 @@ export function ExchangeProvider({
   initialSymbol?: string;
 }) {
   // só usado na primeira renderização (useState ignora mudanças depois) —
-  // é assim que /trade?asset=XXXX pré-seleciona o ativo vindo de /ativos
+  // é assim que /trade?asset=XXXX pré-seleciona o ativo vindo de /assets
   const [selectedAsset, setSelectedAsset] = useState<Asset>(
     () => MOCK_ASSETS.find((asset) => asset.symbol === initialSymbol) ?? MOCK_ASSETS[0],
   );

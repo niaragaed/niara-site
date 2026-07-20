@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { ExchangeTerminal } from "@/components/trade/ExchangeTerminal";
+import { en } from "@/lib/i18n/en";
 
 export const metadata: Metadata = {
-  title: "Trade — Niara",
-  description:
-    "Terminal de negociação simulado da Niara: gráfico, livro de ofertas, ordens e posições.",
+  title: en.trade.metaTitle,
+  description: en.trade.metaDescription,
 };
 
 type TradePageProps = {

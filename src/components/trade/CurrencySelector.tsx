@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { ChevronDown, Coins } from "lucide-react";
 import { useCurrency, type Currency } from "@/context/CurrencyContext";
+import { en } from "@/lib/i18n/en";
 
 const CURRENCY_OPTIONS: { value: Currency; label: string; hint: string }[] = [
-  { value: "ETH", label: "ETH", hint: "Ether" },
-  { value: "USD", label: "US$", hint: "Dólar (referência)" },
-  { value: "BRL", label: "R$", hint: "Real (referência)" },
-  { value: "USDC", label: "USDC", hint: "Stablecoin (paridade ~US$)" },
+  { value: "ETH", label: "ETH", hint: en.trade.currencySelector.eth },
+  { value: "USD", label: "US$", hint: en.trade.currencySelector.usd },
+  { value: "BRL", label: "R$", hint: en.trade.currencySelector.brl },
+  { value: "USDC", label: "USDC", hint: en.trade.currencySelector.usdc },
 ];
 
 export function CurrencySelector() {
@@ -23,7 +24,7 @@ export function CurrencySelector() {
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Moeda de exibição"
+        aria-label={en.trade.currencySelector.ariaLabel}
         className="flex items-center gap-1.5 rounded-md border border-border bg-bg-base px-2.5 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
       >
         <Coins className="h-3.5 w-3.5" aria-hidden="true" />
@@ -42,7 +43,7 @@ export function CurrencySelector() {
           />
           <ul
             role="listbox"
-            aria-label="Escolher moeda de exibição"
+            aria-label={en.trade.currencySelector.chooseLabel}
             className="absolute right-0 z-20 mt-1 w-44 rounded-md border border-border bg-bg-elevated py-1 shadow-lg"
           >
             {CURRENCY_OPTIONS.map((option) => (

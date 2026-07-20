@@ -26,6 +26,7 @@ import {
   calcOBV,
   type IndicatorPoint,
 } from "@/lib/indicators";
+import { en } from "@/lib/i18n/en";
 
 type IndicatorId =
   | "sma9"
@@ -43,23 +44,23 @@ type IndicatorId =
   | "atr"
   | "obv";
 
-type IndicatorMeta = { id: IndicatorId; label: string; group: "Sobre o preço" | "Painel separado" };
+type IndicatorMeta = { id: IndicatorId; label: string; group: "overlay" | "pane" };
 
 const INDICATOR_CATALOG: IndicatorMeta[] = [
-  { id: "sma9", label: "SMA 9", group: "Sobre o preço" },
-  { id: "sma21", label: "SMA 21", group: "Sobre o preço" },
-  { id: "sma50", label: "SMA 50", group: "Sobre o preço" },
-  { id: "ema9", label: "EMA 9", group: "Sobre o preço" },
-  { id: "ema21", label: "EMA 21", group: "Sobre o preço" },
-  { id: "ema50", label: "EMA 50", group: "Sobre o preço" },
-  { id: "bollinger", label: "Bandas de Bollinger", group: "Sobre o preço" },
-  { id: "vwap", label: "VWAP", group: "Sobre o preço" },
-  { id: "donchian", label: "Canal de Donchian", group: "Sobre o preço" },
-  { id: "rsi", label: "RSI (14)", group: "Painel separado" },
-  { id: "macd", label: "MACD (12/26/9)", group: "Painel separado" },
-  { id: "stochastic", label: "Estocástico (14/3/3)", group: "Painel separado" },
-  { id: "atr", label: "ATR (14)", group: "Painel separado" },
-  { id: "obv", label: "OBV", group: "Painel separado" },
+  { id: "sma9", label: "SMA 9", group: "overlay" },
+  { id: "sma21", label: "SMA 21", group: "overlay" },
+  { id: "sma50", label: "SMA 50", group: "overlay" },
+  { id: "ema9", label: "EMA 9", group: "overlay" },
+  { id: "ema21", label: "EMA 21", group: "overlay" },
+  { id: "ema50", label: "EMA 50", group: "overlay" },
+  { id: "bollinger", label: en.trade.priceChart.bollinger, group: "overlay" },
+  { id: "vwap", label: "VWAP", group: "overlay" },
+  { id: "donchian", label: en.trade.priceChart.donchian, group: "overlay" },
+  { id: "rsi", label: "RSI (14)", group: "pane" },
+  { id: "macd", label: "MACD (12/26/9)", group: "pane" },
+  { id: "stochastic", label: en.trade.priceChart.stochastic, group: "pane" },
+  { id: "atr", label: "ATR (14)", group: "pane" },
+  { id: "obv", label: "OBV", group: "pane" },
 ];
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -356,7 +357,7 @@ export function PriceChart() {
   return (
     <div className="flex h-full flex-col rounded-md border border-border bg-bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div role="group" aria-label="Timeframe" className="flex items-center gap-1">
+        <div role="group" aria-label={en.trade.priceChart.timeframeAriaLabel} className="flex items-center gap-1">
           {TIMEFRAMES.map((tf) => (
             <button
               key={tf}
@@ -383,7 +384,7 @@ export function PriceChart() {
             className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-            Indicadores
+            {en.trade.priceChart.indicators}
           </button>
 
           {menuOpen && (
@@ -397,24 +398,26 @@ export function PriceChart() {
               />
               <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-border bg-bg-elevated p-3 shadow-lg">
                 <label htmlFor="indicator-search" className="sr-only">
-                  Buscar indicador
+                  {en.trade.priceChart.searchIndicatorLabel}
                 </label>
                 <input
                   id="indicator-search"
                   type="text"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Buscar indicador..."
+                  placeholder={en.trade.priceChart.searchIndicatorPlaceholder}
                   className="mb-2 w-full rounded border border-border bg-bg-base px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent-blue"
                 />
                 <div className="max-h-64 overflow-auto">
-                  {(["Sobre o preço", "Painel separado"] as const).map((group) => {
+                  {(["overlay", "pane"] as const).map((group) => {
                     const items = filteredCatalog.filter((meta) => meta.group === group);
                     if (items.length === 0) return null;
                     return (
                       <div key={group} className="mb-2">
                         <p className="px-1 pb-1 text-[10px] uppercase tracking-wide text-text-muted">
-                          {group}
+                          {group === "overlay"
+                            ? en.trade.priceChart.overlayGroup
+                            : en.trade.priceChart.paneGroup}
                         </p>
                         {items.map((meta) => (
                           <label
@@ -453,7 +456,7 @@ export function PriceChart() {
                 {meta.label}
                 <button
                   type="button"
-                  aria-label={`Remover indicador ${meta.label}`}
+                  aria-label={en.trade.priceChart.removeIndicator(meta.label)}
                   onClick={() => toggleIndicator(id)}
                   className="text-text-muted transition-colors hover:text-negative"
                 >

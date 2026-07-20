@@ -3,6 +3,7 @@
 import { MOCK_ASSETS } from "@/lib/mock-assets";
 import { MOCK_HOLDINGS, MOCK_EVOLUTION } from "@/lib/mock-portfolio";
 import { useCurrency } from "@/context/CurrencyContext";
+import { en } from "@/lib/i18n/en";
 
 function computeTotals() {
   const priceBySymbol = new Map(MOCK_ASSETS.map((asset) => [asset.symbol, asset.priceEth]));
@@ -40,27 +41,27 @@ export function PortfolioSummary() {
     positive: boolean | null;
   }[] = [
     {
-      label: "Patrimônio total",
+      label: en.assets.summary.totalEquity,
       value: format(totalValue),
       sub: `${plPositive ? "+" : ""}${plPct.toFixed(2)}%`,
       positive: plPositive,
     },
     {
-      label: "Valor investido",
+      label: en.assets.summary.investedValue,
       value: format(investedValue),
       sub: null,
       positive: null,
     },
     {
-      label: "Lucro/Prejuízo total",
+      label: en.assets.summary.totalPl,
       value: `${plPositive ? "+" : ""}${format(pl)}`,
       sub: `${plPositive ? "+" : ""}${plPct.toFixed(2)}%`,
       positive: plPositive,
     },
     {
-      label: "Rentabilidade no período",
+      label: en.assets.summary.periodReturn,
       value: `${periodPositive ? "+" : ""}${periodReturnPct.toFixed(2)}%`,
-      sub: "últimos 12 meses",
+      sub: en.assets.summary.last12Months,
       positive: periodPositive,
     },
   ];

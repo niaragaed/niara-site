@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useInvestorProfile } from "@/context/InvestorProfileContext";
 import { QUIZ_QUESTIONS, categorizeScore } from "@/lib/investor-profile";
+import { en } from "@/lib/i18n/en";
 
 export function InvestorProfileQuiz() {
   const { saveResult } = useInvestorProfile();
@@ -46,9 +47,7 @@ export function InvestorProfileQuiz() {
   return (
     <div className="rounded-lg border border-border bg-bg-surface p-6">
       <div className="flex items-center justify-between text-xs text-text-muted">
-        <span>
-          Pergunta {step + 1} de {QUIZ_QUESTIONS.length}
-        </span>
+        <span>{en.profile.investorProfile.questionCounter(step + 1, QUIZ_QUESTIONS.length)}</span>
         <span>{Math.round(progress)}%</span>
       </div>
       <div
@@ -105,7 +104,7 @@ export function InvestorProfileQuiz() {
           className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-text-secondary disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          Voltar
+          {en.profile.investorProfile.back}
         </button>
         <button
           type="button"
@@ -113,7 +112,7 @@ export function InvestorProfileQuiz() {
           disabled={selected === null}
           className="inline-flex items-center gap-1.5 rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {isLast ? "Ver resultado" : "Avançar"}
+          {isLast ? en.profile.investorProfile.seeResult : en.profile.investorProfile.next}
           {!isLast && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
         </button>
       </div>

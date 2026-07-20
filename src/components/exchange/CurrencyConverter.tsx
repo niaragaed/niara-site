@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowUpDown, Bitcoin, CircleDollarSign, Coins, Gem } from "lucide-react";
 import { convertCurrency, type ExchangeCurrency } from "@/lib/rates";
 import { useCurrency } from "@/context/CurrencyContext";
+import { en } from "@/lib/i18n/en";
 
 const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
 
@@ -14,13 +15,13 @@ type CurrencyMeta = {
 };
 
 const CURRENCIES: CurrencyMeta[] = [
-  { value: "BRL", label: "Real (BRL)", flagCode: "br" },
-  { value: "USD", label: "Dólar (USD)", flagCode: "us" },
-  { value: "EUR", label: "Euro (EUR)", flagCode: "eu" },
-  { value: "ETH", label: "Ether (ETH)" },
-  { value: "BTC", label: "Bitcoin (BTC)" },
-  { value: "USDC", label: "USD Coin (USDC)" },
-  { value: "USDT", label: "Tether (USDT)" },
+  { value: "BRL", label: en.exchange.converter.currencies.BRL, flagCode: "br" },
+  { value: "USD", label: en.exchange.converter.currencies.USD, flagCode: "us" },
+  { value: "EUR", label: en.exchange.converter.currencies.EUR, flagCode: "eu" },
+  { value: "ETH", label: en.exchange.converter.currencies.ETH },
+  { value: "BTC", label: en.exchange.converter.currencies.BTC },
+  { value: "USDC", label: en.exchange.converter.currencies.USDC },
+  { value: "USDT", label: en.exchange.converter.currencies.USDT },
 ];
 
 const QUICK_AMOUNTS = [100, 500, 1000, 10000];
@@ -99,7 +100,7 @@ export function CurrencyConverter() {
             htmlFor="converter-from-amount"
             className="mb-1 block text-xs text-text-muted"
           >
-            De
+            {en.exchange.converter.from}
           </label>
           <div className="flex items-center gap-2 rounded-md border border-border bg-bg-base px-3 py-2 focus-within:ring-1 focus-within:ring-accent-blue">
             <CurrencyIcon currency={from} />
@@ -114,7 +115,7 @@ export function CurrencyConverter() {
               className="w-full bg-transparent font-mono text-base tabular-nums text-text-primary focus:outline-none"
             />
             <label htmlFor="converter-from-currency" className="sr-only">
-              Moeda de origem
+              {en.exchange.converter.fromCurrencyLabel}
             </label>
             <select
               id="converter-from-currency"
@@ -134,7 +135,7 @@ export function CurrencyConverter() {
         <button
           type="button"
           onClick={handleInvert}
-          aria-label="Inverter moedas de origem e destino"
+          aria-label={en.exchange.converter.invert}
           className="mx-auto flex h-9 w-9 shrink-0 rotate-0 items-center justify-center rounded-full border border-border bg-bg-base text-text-secondary transition-colors hover:text-text-primary sm:rotate-90"
         >
           <ArrowUpDown className="h-4 w-4" aria-hidden="true" />
@@ -145,7 +146,7 @@ export function CurrencyConverter() {
             htmlFor="converter-to-amount"
             className="mb-1 block text-xs text-text-muted"
           >
-            Para
+            {en.exchange.converter.to}
           </label>
           <div className="flex items-center gap-2 rounded-md border border-border bg-bg-elevated px-3 py-2">
             <CurrencyIcon currency={to} />
@@ -156,7 +157,7 @@ export function CurrencyConverter() {
               {hasAmount ? formatAmount(convertedGross, to) : "0"}
             </output>
             <label htmlFor="converter-to-currency" className="sr-only">
-              Moeda de destino
+              {en.exchange.converter.toCurrencyLabel}
             </label>
             <select
               id="converter-to-currency"
@@ -182,7 +183,7 @@ export function CurrencyConverter() {
             onClick={() => setAmountInput(String(value))}
             className="rounded-full border border-border px-3 py-1 text-xs text-text-secondary transition-colors hover:border-accent-blue/40 hover:text-text-primary"
           >
-            {value.toLocaleString("pt-BR")}
+            {value.toLocaleString("en-US")}
           </button>
         ))}
       </div>
@@ -193,17 +194,17 @@ export function CurrencyConverter() {
             1 {from} ≈
           </span>
           <span className="text-text-primary">
-            {formatAmount(unitRate, to)} {to} (referência simulada)
+            {formatAmount(unitRate, to)} {to} {en.exchange.converter.unitRateSuffix}
           </span>
         </div>
         <div className="flex justify-between text-text-muted">
-          <span className="font-sans">Taxa estimada da Niara (0,1%)</span>
+          <span className="font-sans">{en.exchange.converter.estimatedFee}</span>
           <span>
             -{formatAmount(fee, to)} {to}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="font-sans">Valor líquido estimado</span>
+          <span className="font-sans">{en.exchange.converter.estimatedNet}</span>
           <span className="text-text-primary">
             {formatAmount(convertedNet, to)} {to}
           </span>
@@ -215,10 +216,10 @@ export function CurrencyConverter() {
         disabled
         className="mt-5 w-full cursor-not-allowed rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary opacity-50"
       >
-        Converter
+        {en.exchange.converter.convert}
       </button>
       <p className="mt-2 text-center text-[11px] text-text-muted">
-        Demonstração — nenhuma conversão real é realizada.
+        {en.exchange.converter.disclaimer}
       </p>
     </div>
   );

@@ -1,4 +1,5 @@
 import { Bitcoin, Coins } from "lucide-react";
+import { en } from "@/lib/i18n/en";
 
 type TickerItem = {
   ticker: string;
@@ -70,7 +71,7 @@ export function IndexTicker() {
   return (
     <div
       role="group"
-      aria-label="Índices e ativos — valores ilustrativos"
+      aria-label={en.ticker.ariaLabel}
       className="group w-full overflow-hidden border-y border-border/60 bg-bg-surface/20 py-6 backdrop-blur-sm sm:py-8"
     >
       <div className="flex w-max animate-ticker gap-3 group-hover:[animation-play-state:paused] sm:gap-4">

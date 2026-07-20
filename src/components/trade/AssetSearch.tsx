@@ -6,6 +6,7 @@ import type { Asset } from "@/lib/mock-assets";
 import { useExchange } from "./ExchangeContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
+import { en } from "@/lib/i18n/en";
 
 // mesma largura da <Flag> em cada tamanho (1.333em de 16px/20px), pra coluna
 // do símbolo começar sempre na mesma posição, com ou sem bandeira
@@ -55,7 +56,7 @@ export function AssetSearch() {
           aria-hidden="true"
         />
         <label htmlFor="asset-search" className="sr-only">
-          Buscar ativo
+          {en.trade.assetSearch.searchLabel}
         </label>
         <input
           id="asset-search"
@@ -67,13 +68,13 @@ export function AssetSearch() {
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Buscar ativo (ex.: PETR4)"
+          placeholder={en.trade.assetSearch.placeholder}
           className="w-full rounded-md border border-border bg-bg-base py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent-blue"
         />
         {open && filtered.length > 0 && (
           <ul
             role="listbox"
-            aria-label="Resultados da busca de ativos"
+            aria-label={en.trade.assetSearch.resultsAriaLabel}
             className="absolute right-0 z-30 mt-1 max-h-80 w-max min-w-[280px] overflow-y-auto overflow-x-hidden rounded-md border border-border bg-bg-elevated py-1 shadow-lg [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]"
           >
             {filtered.map((asset) => (

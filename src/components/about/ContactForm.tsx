@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { en } from "@/lib/i18n/en";
 
-const INTEREST_OPTIONS = ["Empresa emissora", "Investidor", "Imprensa", "Suporte", "Outro"];
+const INTEREST_OPTIONS = en.contact.form.interestOptions;
 
 const CONTACT_EMAIL = "niaragaed@gmail.com";
 
@@ -19,7 +20,7 @@ type FormErrors = {
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [interest, setInterest] = useState(INTEREST_OPTIONS[0]);
+  const [interest, setInterest] = useState<string>(INTEREST_OPTIONS[0]);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -27,10 +28,10 @@ export function ContactForm() {
     event.preventDefault();
 
     const nextErrors: FormErrors = {};
-    if (!name.trim()) nextErrors.name = "Informe seu nome.";
-    if (!email.trim()) nextErrors.email = "Informe um e-mail.";
-    else if (!isValidEmail(email)) nextErrors.email = "E-mail em formato inválido.";
-    if (!message.trim()) nextErrors.message = "Escreva uma mensagem.";
+    if (!name.trim()) nextErrors.name = en.contact.form.nameError;
+    if (!email.trim()) nextErrors.email = en.contact.form.emailError;
+    else if (!isValidEmail(email)) nextErrors.email = en.contact.form.emailInvalid;
+    if (!message.trim()) nextErrors.message = en.contact.form.messageError;
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -39,9 +40,9 @@ export function ContactForm() {
     // por enquanto não há envio real: abrimos o cliente de e-mail do
     // visitante já preenchido, para não fingir que o formulário envia
     // a mensagem sozinho.
-    const subject = encodeURIComponent(`[Niara] Contato — ${interest} — ${name}`);
+    const subject = encodeURIComponent(en.contact.form.subjectPrefix(interest, name));
     const body = encodeURIComponent(
-      `Nome: ${name}\nE-mail: ${email}\nTipo de interesse: ${interest}\n\nMensagem:\n${message}`,
+      `Name: ${name}\nEmail: ${email}\nType of inquiry: ${interest}\n\nMessage:\n${message}`,
     );
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
   }
@@ -54,7 +55,7 @@ export function ContactForm() {
     >
       <div>
         <label htmlFor="contact-name" className="mb-1 block text-xs text-text-muted">
-          Nome
+          {en.contact.form.nameLabel}
         </label>
         <input
           id="contact-name"
@@ -68,7 +69,7 @@ export function ContactForm() {
 
       <div>
         <label htmlFor="contact-email" className="mb-1 block text-xs text-text-muted">
-          E-mail
+          {en.contact.form.emailLabel}
         </label>
         <input
           id="contact-email"
@@ -82,7 +83,7 @@ export function ContactForm() {
 
       <div>
         <label htmlFor="contact-interest" className="mb-1 block text-xs text-text-muted">
-          Tipo de interesse
+          {en.contact.form.interestLabel}
         </label>
         <select
           id="contact-interest"
@@ -100,7 +101,7 @@ export function ContactForm() {
 
       <div>
         <label htmlFor="contact-message" className="mb-1 block text-xs text-text-muted">
-          Mensagem
+          {en.contact.form.messageLabel}
         </label>
         <textarea
           id="contact-message"
@@ -113,15 +114,14 @@ export function ContactForm() {
       </div>
 
       <p className="text-[11px] text-text-muted">
-        Ainda não há envio automático — ao enviar, seu cliente de e-mail
-        padrão vai abrir com a mensagem já preenchida para {CONTACT_EMAIL}.
+        {en.contact.form.disclaimer(CONTACT_EMAIL)}
       </p>
 
       <button
         type="submit"
         className="rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary"
       >
-        Abrir e-mail
+        {en.contact.form.submit}
       </button>
     </form>
   );

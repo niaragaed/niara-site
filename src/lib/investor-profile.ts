@@ -7,9 +7,9 @@ export type InvestorCategory = "conservador" | "moderado" | "arrojado";
 // nomenclatura de mercado (CVM). Para usar a nomenclatura própria da Niara
 // (Comedido/Moderado/Sofisticado), alterar apenas aqui.
 export const INVESTOR_CATEGORY_LABELS: Record<InvestorCategory, string> = {
-  conservador: "Conservador",
-  moderado: "Moderado",
-  arrojado: "Arrojado",
+  conservador: "Conservative",
+  moderado: "Moderate",
+  arrojado: "Aggressive",
 };
 
 export type QuizOption = {
@@ -26,82 +26,82 @@ export type QuizQuestion = {
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "objetivo",
-    prompt: "Qual é o principal objetivo do seu investimento?",
+    prompt: "What is the main goal of your investment?",
     options: [
-      { label: "Preservar o capital que já tenho", weight: 1 },
-      { label: "Complementar a renda com previsibilidade", weight: 2 },
-      { label: "Crescimento equilibrado no médio prazo", weight: 3 },
-      { label: "Maximizar retorno, aceitando oscilações", weight: 4 },
+      { label: "Preserve the capital I already have", weight: 1 },
+      { label: "Supplement income with predictability", weight: 2 },
+      { label: "Balanced growth over the medium term", weight: 3 },
+      { label: "Maximize return, accepting fluctuations", weight: 4 },
     ],
   },
   {
     id: "horizonte",
-    prompt: "Por quanto tempo pretende manter esse investimento?",
+    prompt: "How long do you plan to hold this investment?",
     options: [
-      { label: "Menos de 1 ano", weight: 1 },
-      { label: "De 1 a 3 anos", weight: 2 },
-      { label: "De 3 a 5 anos", weight: 3 },
-      { label: "Mais de 5 anos", weight: 4 },
+      { label: "Less than 1 year", weight: 1 },
+      { label: "1 to 3 years", weight: 2 },
+      { label: "3 to 5 years", weight: 3 },
+      { label: "More than 5 years", weight: 4 },
     ],
   },
   {
     id: "experiencia",
-    prompt: "Qual sua experiência com renda variável e criptoativos?",
+    prompt: "What is your experience with stocks and crypto assets?",
     options: [
-      { label: "Nunca investi em ações ou cripto", weight: 1 },
-      { label: "Já investi em ações, mas não em cripto", weight: 2 },
-      { label: "Já investi em ações e cripto, ocasionalmente", weight: 3 },
-      { label: "Invisto ativamente em ações e cripto há anos", weight: 4 },
+      { label: "Never invested in stocks or crypto", weight: 1 },
+      { label: "Invested in stocks, but not crypto", weight: 2 },
+      { label: "Invested in stocks and crypto occasionally", weight: 3 },
+      { label: "Actively invest in stocks and crypto for years", weight: 4 },
     ],
   },
   {
     id: "percentual-patrimonio",
-    prompt: "Que percentual do seu patrimônio pretende investir?",
+    prompt: "What percentage of your wealth do you plan to invest?",
     options: [
-      { label: "Até 10%", weight: 1 },
-      { label: "De 10% a 30%", weight: 2 },
-      { label: "De 30% a 60%", weight: 3 },
-      { label: "Mais de 60%", weight: 4 },
+      { label: "Up to 10%", weight: 1 },
+      { label: "10% to 30%", weight: 2 },
+      { label: "30% to 60%", weight: 3 },
+      { label: "More than 60%", weight: 4 },
     ],
   },
   {
     id: "renda-mensal",
-    prompt: "Qual sua renda mensal aproximada?",
+    prompt: "What is your approximate monthly income?",
     options: [
-      { label: "Até 2 salários mínimos", weight: 1 },
-      { label: "De 2 a 5 salários mínimos", weight: 2 },
-      { label: "De 5 a 15 salários mínimos", weight: 3 },
-      { label: "Mais de 15 salários mínimos", weight: 4 },
+      { label: "Up to 2 minimum wages", weight: 1 },
+      { label: "2 to 5 minimum wages", weight: 2 },
+      { label: "5 to 15 minimum wages", weight: 3 },
+      { label: "More than 15 minimum wages", weight: 4 },
     ],
   },
   {
     id: "reserva-emergencia",
-    prompt: "Como está sua reserva de emergência?",
+    prompt: "What does your emergency fund look like?",
     options: [
-      { label: "Não tenho reserva formada", weight: 1 },
-      { label: "Cobre menos de 3 meses de gastos", weight: 2 },
-      { label: "Cobre de 3 a 6 meses de gastos", weight: 3 },
-      { label: "Cobre mais de 6 meses de gastos", weight: 4 },
+      { label: "I don't have an emergency fund", weight: 1 },
+      { label: "Covers less than 3 months of expenses", weight: 2 },
+      { label: "Covers 3 to 6 months of expenses", weight: 3 },
+      { label: "Covers more than 6 months of expenses", weight: 4 },
     ],
   },
   {
     id: "reacao-queda",
-    prompt: "Se sua carteira caísse 20% em um mês, o que faria?",
+    prompt: "If your portfolio dropped 20% in a month, what would you do?",
     options: [
-      { label: "Venderia tudo para evitar mais perdas", weight: 1 },
-      { label: "Venderia parte para reduzir o risco", weight: 2 },
-      { label: "Manteria a posição e esperaria recuperar", weight: 3 },
-      { label: "Aproveitaria para comprar mais", weight: 4 },
+      { label: "Sell everything to avoid further losses", weight: 1 },
+      { label: "Sell part of it to reduce risk", weight: 2 },
+      { label: "Hold the position and wait for a recovery", weight: 3 },
+      { label: "Take the opportunity to buy more", weight: 4 },
     ],
   },
   {
     id: "tolerancia-risco",
-    prompt: "Como você descreveria sua tolerância a risco?",
+    prompt: "How would you describe your risk tolerance?",
     options: [
-      { label: "Nenhuma — não aceito perder dinheiro investido", weight: 1 },
-      { label: "Baixa — aceito pequenas oscilações", weight: 2 },
-      { label: "Moderada — aceito perdas temporárias por retorno maior", weight: 3 },
-      { label: "Alta — busco retorno mesmo com risco de perdas relevantes", weight: 4 },
+      { label: "None — I don't accept losing invested money", weight: 1 },
+      { label: "Low — I accept small fluctuations", weight: 2 },
+      { label: "Moderate — I accept temporary losses for higher returns", weight: 3 },
+      { label: "High — I seek returns even with risk of significant losses", weight: 4 },
     ],
   },
 ];
@@ -133,27 +133,27 @@ export type InvestorCategoryDetails = {
 export const INVESTOR_CATEGORY_DETAILS: Record<InvestorCategory, InvestorCategoryDetails> = {
   conservador: {
     summary:
-      "Prioriza a preservação do capital e a previsibilidade, com baixa tolerância a perdas.",
+      "Prioritizes capital preservation and predictability, with low tolerance for losses.",
     riskReaction:
-      "Tende a reagir a quedas fortes reduzindo a exposição rapidamente, mesmo que isso signifique realizar prejuízo.",
+      "Tends to react to sharp drops by quickly reducing exposure, even if it means taking a loss.",
     assetClasses:
-      "Mais aderente a stablecoins, renda fixa tokenizada e ativos de baixa volatilidade.",
+      "Best suited to stablecoins, tokenized fixed income, and low-volatility assets.",
   },
   moderado: {
     summary:
-      "Busca equilíbrio entre crescimento e segurança, aceitando oscilações moderadas em troca de retorno melhor que a renda fixa.",
+      "Seeks a balance between growth and safety, accepting moderate fluctuations for better returns than fixed income.",
     riskReaction:
-      "Costuma tolerar quedas temporárias sem entrar em pânico, mas reavalia a estratégia se a volatilidade persistir.",
+      "Usually tolerates temporary drops without panicking, but reassesses the strategy if volatility persists.",
     assetClasses:
-      "Mais aderente a um mix diversificado, combinando ETFs tokenizados, ações e uma parcela menor em cripto.",
+      "Best suited to a diversified mix combining tokenized ETFs, stocks, and a smaller allocation to crypto.",
   },
   arrojado: {
     summary:
-      "Prioriza maximizar retorno no longo prazo e aceita alta volatilidade como parte do processo.",
+      "Prioritizes maximizing long-term returns and accepts high volatility as part of the process.",
     riskReaction:
-      "Tende a manter ou até ampliar posições durante quedas, confiando na recuperação dentro do seu horizonte de investimento.",
+      "Tends to hold or even increase positions during drops, trusting a recovery within the investment horizon.",
     assetClasses:
-      "Mais aderente a maior exposição a ações de crescimento e criptoativos, com posições mais concentradas.",
+      "Best suited to greater exposure to growth stocks and crypto assets, with more concentrated positions.",
   },
 };
 

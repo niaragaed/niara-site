@@ -10,14 +10,14 @@ export type LinkedWallet = {
 export const MOCK_LINKED_WALLETS: LinkedWallet[] = [
   {
     id: "w1",
-    label: "Carteira principal",
+    label: "Primary wallet",
     address: "0x1a2b3c4d5e6f78901234567890abcdefc3d4",
     network: "Ethereum Sepolia — testnet",
     isPrimary: true,
   },
   {
     id: "w2",
-    label: "Carteira secundária",
+    label: "Secondary wallet",
     address: "0x9f8e7d6c5b4a30201f2e3d4c5b6a7988f1e2",
     network: "Ethereum Sepolia — testnet",
     isPrimary: false,

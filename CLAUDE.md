@@ -103,6 +103,28 @@ nem o texto delas.
 
 ---
 
+## Idioma
+
+O idioma padrão (e, por enquanto, único) do site é **inglês** —
+`<html lang="en">` no layout raiz. Todo texto de interface fica centralizado em
+`src/lib/i18n/en.ts` (dicionário tipado por área: `nav`, `home`, `trade`,
+`exchange`, `assets`, `profile`, `docs`, `contact`, `common` etc.). Componentes
+importam `{ en }` desse arquivo — não hardcodar strings de interface direto no
+JSX. Dados mock estruturados (ex.: `mock-assets.ts`, `investor-profile.ts`)
+seguem traduzidos em inglês, mas vivem nos próprios arquivos de `lib/`, não no
+dicionário.
+
+Formatação (locale) é independente de idioma: BRL continua em pt-BR
+(R$ 1.234,56) e USD em en-US ($1,234.56) via `CurrencyContext` — trocar o
+idioma da interface não muda isso. Datas usam formato en-US.
+
+Comentários de código continuam em português (convenção do projeto).
+
+TODO: adicionar `src/lib/i18n/pt.ts` e um seletor de idioma quando houver
+demanda bilíngue.
+
+---
+
 ## Rotas
 
 | Rota | O que é |
@@ -110,14 +132,14 @@ nem o texto delas.
 | `/` | Home: hero com globo 3D (cobe) + ticker de índices |
 | `/trade` | Terminal: gráfico candlestick, indicadores, livro, ordens/posições, boleta |
 | `/exchange` | Câmbio: conversor de moedas + tabela de paridades |
-| `/ativos` | Carteira simulada (Recharts) + catálogo de ativos |
-| `/profile` | Perfil do usuário (dados, suitability, carteira, preferências) |
+| `/assets` | Carteira simulada (Recharts) + catálogo de ativos |
+| `/profile` | Perfil do usuário (dados pessoais, perfil de investidor, carteira) |
 | `/docs` | Documentação institucional + FAQ |
-| `/contato` | Formulário de contato |
+| `/contact` | Formulário de contato |
 | `/styleguide` | Referência interna do design system |
 
-Nav (`src/lib/nav-items.ts`, compartilhado por Header e Footer):
-Trade · Exchange · Ativos · Profile · About (submenu: Docs & FAQs, Contato)
+Nav (`src/components/nav-items.ts`, compartilhado por Header e Footer):
+Trade · Exchange · Assets · Profile · About (submenu: Docs & FAQs, Contact)
 
 "Cashback" foi removido do nav — é argumento para empresas emissoras e terá
 página própria voltada a emissores.
@@ -132,11 +154,13 @@ src/
   components/
     trade/             terminal
     exchange/          câmbio
-    portfolio/         /ativos
+    portfolio/         /assets
     profile/           perfil
-    about/             docs e contato
+    about/             docs e contact
     ui/                compartilhados (ex.: Flag.tsx)
-  lib/                 mocks, validators, nav-items, rates, indicators
+  lib/
+    i18n/              dicionário de textos (en.ts)
+    mocks, validators, nav-items, rates, indicators
   context/             CurrencyContext
 ```
 
@@ -179,6 +203,8 @@ Identidade Git deste repositório: `Niara <niaragaed@gmail.com>` (local, sem `--
 
 ## Pendências conhecidas
 
+- Internacionalização: site em inglês (idioma padrão). `pt.ts` + seletor de
+  idioma ficam para quando houver demanda bilíngue (ver seção "Idioma").
 - `/profile`: concluído — dados pessoais, perfil de investidor (suitability) e
   carteira. Não terá seções de segurança nem preferências.
 - Home: faltam as seções de conteúdo abaixo do hero (problema, solução, cashback,

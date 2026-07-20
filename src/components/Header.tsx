@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
 import { NavDropdown } from "./NavDropdown";
+import { en } from "@/lib/i18n/en";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -49,7 +50,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav aria-label="Navegação principal" className="hidden md:block">
+        <nav aria-label={en.nav.mainAriaLabel} className="hidden md:block">
           <ul className="flex items-center gap-8">
             {NAV_ITEMS.map((item) =>
               item.children ? (
@@ -74,12 +75,12 @@ export function Header() {
           href="/trade"
           className="hidden rounded-md bg-gradient-primary px-4 py-2 text-sm font-medium text-text-primary md:inline-block"
         >
-          Acessar Terminal
+          {en.common.accessTerminal}
         </Link>
 
         <button
           type="button"
-          aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+          aria-label={mobileOpen ? en.nav.closeMenu : en.nav.openMenu}
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((open) => !open)}
           className="text-text-primary md:hidden"
@@ -94,7 +95,7 @@ export function Header() {
 
       {mobileOpen && (
         <nav
-          aria-label="Navegação mobile"
+          aria-label={en.nav.mobileAriaLabel}
           className="border-t border-border bg-bg-surface px-6 py-4 md:hidden"
         >
           <ul className="flex flex-col gap-4">
@@ -169,7 +170,7 @@ export function Header() {
                 onClick={closeMobileMenu}
                 className="inline-block rounded-md bg-gradient-primary px-4 py-2 text-sm font-medium text-text-primary"
               >
-                Acessar Terminal
+                {en.common.accessTerminal}
               </Link>
             </li>
           </ul>

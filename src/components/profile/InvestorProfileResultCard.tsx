@@ -8,6 +8,7 @@ import {
   SCORE_MAX,
   SCORE_MIN,
 } from "@/lib/investor-profile";
+import { en } from "@/lib/i18n/en";
 
 export function InvestorProfileResultCard() {
   const { result, clearResult } = useInvestorProfile();
@@ -15,7 +16,7 @@ export function InvestorProfileResultCard() {
 
   const details = INVESTOR_CATEGORY_DETAILS[result.category];
   const percent = ((result.score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100;
-  const date = new Date(result.completedAt).toLocaleDateString("pt-BR", {
+  const date = new Date(result.completedAt).toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -30,14 +31,16 @@ export function InvestorProfileResultCard() {
             {INVESTOR_CATEGORY_LABELS[result.category]}
           </span>
         </div>
-        <span className="text-xs text-text-muted">Avaliado em {date}</span>
+        <span className="text-xs text-text-muted">
+          {en.profile.investorProfile.assessedOn(date)}
+        </span>
       </div>
 
       <div className="mt-6">
         <div className="flex justify-between text-[10px] uppercase tracking-wide text-text-muted">
-          <span>Conservador</span>
-          <span>Moderado</span>
-          <span>Arrojado</span>
+          <span>{INVESTOR_CATEGORY_LABELS.conservador}</span>
+          <span>{INVESTOR_CATEGORY_LABELS.moderado}</span>
+          <span>{INVESTOR_CATEGORY_LABELS.arrojado}</span>
         </div>
         <div className="relative mt-2">
           <div className="flex h-2 w-full overflow-hidden rounded-full bg-bg-elevated">
@@ -56,27 +59,26 @@ export function InvestorProfileResultCard() {
       <dl className="mt-6 flex flex-col gap-4 border-t border-border pt-5 text-sm">
         <div>
           <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
-            O que esse perfil significa
+            {en.profile.investorProfile.whatItMeans}
           </dt>
           <dd className="mt-1 text-text-secondary">{details.summary}</dd>
         </div>
         <div>
           <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
-            Reação a risco e volatilidade
+            {en.profile.investorProfile.riskReaction}
           </dt>
           <dd className="mt-1 text-text-secondary">{details.riskReaction}</dd>
         </div>
         <div>
           <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
-            Classes de ativo mais aderentes
+            {en.profile.investorProfile.assetClasses}
           </dt>
           <dd className="mt-1 text-text-secondary">{details.assetClasses}</dd>
         </div>
       </dl>
 
       <p className="mt-6 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-text-secondary">
-        Resultado ilustrativo. Não constitui recomendação de investimento nem
-        substitui a análise de perfil exigida por regulação.
+        {en.profile.investorProfile.disclaimer}
       </p>
 
       <button
@@ -85,7 +87,7 @@ export function InvestorProfileResultCard() {
         className="mt-6 inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-text-primary hover:border-accent-blue"
       >
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-        Refazer avaliação
+        {en.profile.investorProfile.retake}
       </button>
     </div>
   );

@@ -1,5 +1,7 @@
+import { en } from "@/lib/i18n/en";
+
 // placeholder — trocar por SVGs oficiais das redes
-const NETWORKS = ["Ethereum", "Solana", "Bitcoin", "USDC", "+ em breve"];
+const NETWORKS = ["Ethereum", "Solana", "Bitcoin", "USDC", en.home.comingSoon];
 
 export function SupportedNetworks() {
   const track = [...NETWORKS, ...NETWORKS];
@@ -8,7 +10,7 @@ export function SupportedNetworks() {
     <section className="border-t border-border bg-bg-base py-12">
       <div className="mx-auto max-w-6xl px-6">
         <p className="text-center text-xs uppercase tracking-widest text-text-muted">
-          Ativos e redes suportadas
+          {en.home.networksLabel}
         </p>
 
         <div className="mt-6 overflow-hidden">
