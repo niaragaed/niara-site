@@ -9,7 +9,7 @@ import { en } from "@/lib/i18n/en";
 // local, sem conexão on-chain de verdade.
 const CONNECTED_ADDRESS = "0x1a2b3c4d5e6f78901234567890abcdefc3d4"; // dados ilustrativos
 const CONNECTED_NETWORK = "Ethereum Sepolia — testnet";
-const CONNECTED_BALANCE_ETH = 2.4531; // dados ilustrativos
+const CONNECTED_BALANCE_USDT = 7359.3; // dados ilustrativos — USDT é a unidade interna do site
 
 export function WalletSection() {
   const [connected, setConnected] = useState(false);
@@ -49,7 +49,11 @@ export function WalletSection() {
                 {en.profile.wallet.simulatedBalance}
               </p>
               <p className="font-mono text-sm tabular-nums text-text-primary">
-                {CONNECTED_BALANCE_ETH.toFixed(4)} ETH
+                {CONNECTED_BALANCE_USDT.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                USDT
               </p>
             </div>
             <button

@@ -1,3 +1,5 @@
+import { BTC_USDT, ETH_USD } from "./rates";
+
 export type AssetClass = "Stocks" | "ETFs" | "Commodities" | "Crypto" | "Stablecoins";
 export type Region = "BR" | "US" | "EU" | "Global";
 
@@ -9,12 +11,13 @@ export type Asset = {
   country?: string;
   region: Region;
   assetClass: AssetClass;
-  priceEth: number;
+  priceUsdt: number;
   change24h: number;
-  volume24hEth: number;
+  volume24hUsdt: number;
 };
 
-// dados ilustrativos — substituir por feed/on-chain real
+// dados ilustrativos — substituir por feed/on-chain real. Preços em USDT
+// (unidade interna do site — ver CLAUDE.md).
 export const MOCK_ASSETS: Asset[] = [
   {
     symbol: "PETR4",
@@ -22,9 +25,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "br",
     region: "BR",
     assetClass: "Stocks",
-    priceEth: 0.0048,
+    priceUsdt: 14.4,
     change24h: -0.62,
-    volume24hEth: 1850,
+    volume24hUsdt: 5_550_000,
   },
   {
     symbol: "VALE3",
@@ -32,9 +35,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "br",
     region: "BR",
     assetClass: "Stocks",
-    priceEth: 0.0061,
+    priceUsdt: 18.3,
     change24h: 1.14,
-    volume24hEth: 2210,
+    volume24hUsdt: 6_630_000,
   },
   {
     symbol: "ITUB4",
@@ -42,9 +45,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "br",
     region: "BR",
     assetClass: "Stocks",
-    priceEth: 0.0031,
+    priceUsdt: 9.3,
     change24h: 0.45,
-    volume24hEth: 980,
+    volume24hUsdt: 2_940_000,
   },
   {
     symbol: "AAPL",
@@ -52,9 +55,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "Stocks",
-    priceEth: 0.0725,
+    priceUsdt: 217.5,
     change24h: 0.38,
-    volume24hEth: 3120,
+    volume24hUsdt: 9_360_000,
   },
   {
     symbol: "TSLA",
@@ -62,9 +65,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "Stocks",
-    priceEth: 0.0958,
+    priceUsdt: 287.4,
     change24h: -2.41,
-    volume24hEth: 4200,
+    volume24hUsdt: 12_600_000,
   },
   {
     symbol: "MSFT",
@@ -72,9 +75,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "Stocks",
-    priceEth: 0.1583,
+    priceUsdt: 474.9,
     change24h: 0.72,
-    volume24hEth: 2760,
+    volume24hUsdt: 8_280_000,
   },
   {
     symbol: "NVDA",
@@ -82,9 +85,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "Stocks",
-    priceEth: 0.0473,
+    priceUsdt: 141.9,
     change24h: 3.05,
-    volume24hEth: 5100,
+    volume24hUsdt: 15_300_000,
   },
   {
     symbol: "SPY",
@@ -92,9 +95,9 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "ETFs",
-    priceEth: 0.2231,
+    priceUsdt: 669.3,
     change24h: 0.19,
-    volume24hEth: 6200,
+    volume24hUsdt: 18_600_000,
   },
   {
     symbol: "QQQ",
@@ -102,62 +105,62 @@ export const MOCK_ASSETS: Asset[] = [
     country: "us",
     region: "US",
     assetClass: "ETFs",
-    priceEth: 0.165,
+    priceUsdt: 495,
     change24h: 0.55,
-    volume24hEth: 3900,
+    volume24hUsdt: 11_700_000,
   },
   {
     symbol: "GOLD",
     name: "Tokenized gold",
     region: "Global",
     assetClass: "Commodities",
-    priceEth: 0.00104,
+    priceUsdt: 3.12,
     change24h: 0.05,
-    volume24hEth: 1500,
+    volume24hUsdt: 4_500_000,
   },
   {
     symbol: "SILVER",
     name: "Tokenized silver",
     region: "Global",
     assetClass: "Commodities",
-    priceEth: 0.0000821,
+    priceUsdt: 0.2463,
     change24h: -0.31,
-    volume24hEth: 640,
+    volume24hUsdt: 1_920_000,
   },
   {
     symbol: "BTC",
     name: "Bitcoin",
     region: "Global",
     assetClass: "Crypto",
-    priceEth: 21.667,
+    priceUsdt: BTC_USDT,
     change24h: 1.85,
-    volume24hEth: 8200,
+    volume24hUsdt: 24_600_000,
   },
   {
     symbol: "ETH",
     name: "Ether",
     region: "Global",
     assetClass: "Crypto",
-    priceEth: 1,
+    priceUsdt: ETH_USD,
     change24h: 0.92,
-    volume24hEth: 12500,
+    volume24hUsdt: 37_500_000,
   },
   {
     symbol: "USDC",
     name: "USD Coin",
     region: "Global",
     assetClass: "Stablecoins",
-    priceEth: 1 / 3000,
+    priceUsdt: 1,
     change24h: 0,
-    volume24hEth: 9800,
+    volume24hUsdt: 29_400_000,
   },
   {
     symbol: "USDT",
     name: "Tether",
     region: "Global",
     assetClass: "Stablecoins",
-    priceEth: 1 / 3000,
+    priceUsdt: 1,
     change24h: -0.01,
-    volume24hEth: 15200,
+    volume24hUsdt: 45_600_000,
   },
 ];

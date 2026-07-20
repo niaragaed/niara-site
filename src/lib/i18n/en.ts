@@ -71,10 +71,11 @@ export const en = {
     currencySelector: {
       ariaLabel: "Display currency",
       chooseLabel: "Choose display currency",
-      eth: "Ether",
+      usdt: "Base unit — stable",
+      btc: "Main crypto pair",
       usd: "Dollar (reference)",
       brl: "Real (reference)",
-      usdc: "Stablecoin (~US$ parity)",
+      eur: "Euro (reference)",
     },
 
     assetSearch: {

@@ -6,13 +6,13 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { en } from "@/lib/i18n/en";
 
 function computeTotals() {
-  const priceBySymbol = new Map(MOCK_ASSETS.map((asset) => [asset.symbol, asset.priceEth]));
+  const priceBySymbol = new Map(MOCK_ASSETS.map((asset) => [asset.symbol, asset.priceUsdt]));
   let totalValue = 0;
   let investedValue = 0;
   for (const holding of MOCK_HOLDINGS) {
-    const currentPrice = priceBySymbol.get(holding.symbol) ?? holding.avgPriceEth;
+    const currentPrice = priceBySymbol.get(holding.symbol) ?? holding.avgPriceUsdt;
     totalValue += holding.qty * currentPrice;
-    investedValue += holding.qty * holding.avgPriceEth;
+    investedValue += holding.qty * holding.avgPriceUsdt;
   }
   return { totalValue, investedValue };
 }
@@ -20,8 +20,8 @@ function computeTotals() {
 function computePeriodReturnPct() {
   const first = MOCK_EVOLUTION[0];
   const last = MOCK_EVOLUTION[MOCK_EVOLUTION.length - 1];
-  const startTotal = first.investedEth + first.gainEth;
-  const endTotal = last.investedEth + last.gainEth;
+  const startTotal = first.investedUsdt + first.gainUsdt;
+  const endTotal = last.investedUsdt + last.gainUsdt;
   return startTotal > 0 ? ((endTotal - startTotal) / startTotal) * 100 : 0;
 }
 

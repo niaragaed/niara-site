@@ -168,9 +168,14 @@ src/
 
 ## Convenções
 
-- **Moeda:** a fonte da verdade interna é sempre **ETH**. A conversão acontece só
-  na exibição, via `CurrencyContext` (`format()`/`convert()`). Cotações fixas em
-  `src/lib/rates.ts`, marcadas como referência simulada.
+- **Moeda:** a fonte da verdade interna é sempre **USDT** (stablecoin — preço
+  legível para os ativos tokenizados, sem a oscilação de ETH/BTC). **BTC** é a
+  segunda moeda principal do site. USD, BRL e EUR ficam disponíveis só como
+  exibição de referência; ETH segue disponível apenas no conversor de câmbio
+  (`/exchange`), não é mais unidade interna. A conversão acontece só na
+  exibição, via `CurrencyContext` (`format()`/`convert()`). Cotações fixas em
+  `src/lib/rates.ts`, marcadas como referência simulada. Formatação fixa por
+  moeda: USDT com 2 casas, BTC com 8 (satoshis).
   Exceção: o ticker da home mostra **pontos de índice**, não moeda — não converter.
 - **Números:** JetBrains Mono + `tabular-nums`, alinhados à direita em tabelas.
 - **Bandeiras:** componente `src/components/ui/Flag.tsx` (flag-icons), ~16–18px em

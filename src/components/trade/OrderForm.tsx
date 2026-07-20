@@ -14,19 +14,19 @@ const DEVIATION_WARNING_THRESHOLD = 0.2; // 20%
 // aprovação sem precisar sincronizar estado via useEffect.
 export function OrderForm() {
   const { selectedAsset, submitOrder } = useExchange();
-  const { currency, convert, toEth, format, formatPlain } = useCurrency();
+  const { currency, convert, toUsdt, format, formatPlain } = useCurrency();
 
   const [side, setSide] = useState<OrderSide>("buy");
   const [qty, setQty] = useState("");
-  // `priceEth` é a fonte da verdade (sempre em ETH); `priceInput` é só o
+  // `priceUsdt` é a fonte da verdade (sempre em USDT); `priceInput` é só o
   // texto exibido/editado, na moeda selecionada no momento.
-  const [priceEth, setPriceEth] = useState<number | null>(null);
+  const [priceUsdt, setPriceUsdt] = useState<number | null>(null);
   const [priceInput, setPriceInput] = useState("");
   const [approved, setApproved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  // Troca de moeda: reexibe o mesmo valor (o `priceEth` armazenado nunca
+  // Troca de moeda: reexibe o mesmo valor (o `priceUsdt` armazenado nunca
   // muda) convertido pra nova moeda — evita arredondamento acumulado, já
   // que nunca reconverte em cima de um número já arredondado na tela.
   // Ajuste feito durante o render (padrão recomendado pelo React para
@@ -34,27 +34,27 @@ export function OrderForm() {
   const [prevCurrency, setPrevCurrency] = useState(currency);
   if (currency !== prevCurrency) {
     setPrevCurrency(currency);
-    if (priceEth !== null) {
-      setPriceInput(String(convert(priceEth)));
+    if (priceUsdt !== null) {
+      setPriceInput(String(convert(priceUsdt)));
     }
   }
 
   function handlePriceChange(raw: string) {
     setPriceInput(raw);
     const num = Number(raw);
-    setPriceEth(raw.trim() !== "" && Number.isFinite(num) ? toEth(num) : null);
+    setPriceUsdt(raw.trim() !== "" && Number.isFinite(num) ? toUsdt(num) : null);
     setApproved(false);
   }
 
   const qtyNum = Number(qty);
   const isValid =
-    qty.trim() !== "" && qtyNum > 0 && priceEth !== null && priceEth > 0;
-  const totalEth = isValid ? qtyNum * (priceEth as number) : 0;
-  const feeEth = totalEth * FEE_RATE;
+    qty.trim() !== "" && qtyNum > 0 && priceUsdt !== null && priceUsdt > 0;
+  const totalUsdt = isValid ? qtyNum * (priceUsdt as number) : 0;
+  const feeUsdt = totalUsdt * FEE_RATE;
 
   const deviation =
-    isValid && priceEth !== null
-      ? Math.abs(priceEth - selectedAsset.priceEth) / selectedAsset.priceEth
+    isValid && priceUsdt !== null
+      ? Math.abs(priceUsdt - selectedAsset.priceUsdt) / selectedAsset.priceUsdt
       : 0;
   const isFarFromMarket = isValid && deviation > DEVIATION_WARNING_THRESHOLD;
 
@@ -75,16 +75,16 @@ export function OrderForm() {
   }
 
   function handleExecute() {
-    if (!approved || priceEth === null || priceEth <= 0 || qtyNum <= 0) return;
-    const result = submitOrder(side, qtyNum, priceEth);
+    if (!approved || priceUsdt === null || priceUsdt <= 0 || qtyNum <= 0) return;
+    const result = submitOrder(side, qtyNum, priceUsdt);
     setQty("");
-    setPriceEth(null);
+    setPriceUsdt(null);
     setPriceInput("");
     setApproved(false);
     setError(null);
     setConfirmation(
       result.status === "filled"
-        ? en.trade.orderForm.filledConfirmation(side, format(result.fillPrice, 6))
+        ? en.trade.orderForm.filledConfirmation(side, format(result.fillPrice))
         : en.trade.orderForm.restingConfirmation(side),
     );
   }
@@ -160,7 +160,7 @@ export function OrderForm() {
             step="any"
             value={priceInput}
             onChange={(event) => handlePriceChange(event.target.value)}
-            placeholder={formatPlain(selectedAsset.priceEth)}
+            placeholder={formatPlain(selectedAsset.priceUsdt)}
             className="w-full rounded-md border border-border bg-bg-base px-3 py-2 font-mono text-sm tabular-nums text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
           />
         </div>
@@ -169,11 +169,11 @@ export function OrderForm() {
       <div className="mt-4 space-y-1 border-t border-border pt-3 font-mono text-xs tabular-nums text-text-secondary">
         <div className="flex justify-between">
           <span>{en.trade.orderForm.total}</span>
-          <span className="text-text-primary">{format(totalEth, 6)}</span>
+          <span className="text-text-primary">{format(totalUsdt)}</span>
         </div>
         <div className="flex justify-between text-text-muted">
           <span>{en.trade.orderForm.estimatedFee}</span>
-          <span>{format(feeEth, 6)}</span>
+          <span>{format(feeUsdt)}</span>
         </div>
       </div>
 
@@ -181,7 +181,7 @@ export function OrderForm() {
         <p className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
           {en.trade.orderForm.deviationWarning(
             (deviation * 100).toFixed(1),
-            format(selectedAsset.priceEth),
+            format(selectedAsset.priceUsdt),
           )}
         </p>
       )}

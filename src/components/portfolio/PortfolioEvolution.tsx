@@ -120,13 +120,13 @@ export function PortfolioEvolution() {
               wrapperStyle={{ fontSize: 12, color: "var(--color-text-secondary)" }}
             />
             <Bar
-              dataKey="investedEth"
+              dataKey="investedUsdt"
               name={en.assets.evolution.investedValue}
               stackId="a"
               fill="var(--color-accent-blue)"
             />
             <Bar
-              dataKey="gainEth"
+              dataKey="gainUsdt"
               name={en.assets.evolution.capitalGain}
               stackId="a"
               fill="var(--color-positive)"

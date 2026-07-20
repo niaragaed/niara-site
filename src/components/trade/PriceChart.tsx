@@ -124,7 +124,7 @@ export function PriceChart() {
 
     const candles = generateMockCandles(
       selectedAsset.symbol,
-      selectedAsset.priceEth,
+      selectedAsset.priceUsdt,
       timeframe,
     );
 
@@ -348,7 +348,7 @@ export function PriceChart() {
       resizeObserver.disconnect();
       chart.remove();
     };
-  }, [selectedAsset.symbol, selectedAsset.priceEth, timeframe, enabled]);
+  }, [selectedAsset.symbol, selectedAsset.priceUsdt, timeframe, enabled]);
 
   const filteredCatalog = INDICATOR_CATALOG.filter((meta) =>
     meta.label.toLowerCase().includes(search.trim().toLowerCase()),

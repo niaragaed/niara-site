@@ -37,8 +37,8 @@ function buildRows(): Row[] {
   for (const holding of MOCK_HOLDINGS) {
     const asset = assetBySymbol.get(holding.symbol);
     if (!asset) continue;
-    const totalValue = holding.qty * asset.priceEth;
-    const investedValue = holding.qty * holding.avgPriceEth;
+    const totalValue = holding.qty * asset.priceUsdt;
+    const investedValue = holding.qty * holding.avgPriceUsdt;
     const pl = totalValue - investedValue;
     const plPct = investedValue > 0 ? (pl / investedValue) * 100 : 0;
     rows.push({
@@ -46,8 +46,8 @@ function buildRows(): Row[] {
       name: asset.name,
       country: asset.country,
       qty: holding.qty,
-      avgPrice: holding.avgPriceEth,
-      currentPrice: asset.priceEth,
+      avgPrice: holding.avgPriceUsdt,
+      currentPrice: asset.priceUsdt,
       totalValue,
       pctOfPortfolio: 0,
       pl,
@@ -159,10 +159,10 @@ export function HoldingsTable() {
                     </td>
                     <td className="px-4 py-2 text-right text-text-secondary">{row.qty}</td>
                     <td className="px-4 py-2 text-right text-text-secondary">
-                      {formatPlain(row.avgPrice, 6)}
+                      {formatPlain(row.avgPrice)}
                     </td>
                     <td className="px-4 py-2 text-right text-text-secondary">
-                      {formatPlain(row.currentPrice, 6)}
+                      {formatPlain(row.currentPrice)}
                     </td>
                     <td className="px-4 py-2 text-right text-text-primary">
                       {format(row.totalValue)}

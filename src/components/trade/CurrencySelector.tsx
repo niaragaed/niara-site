@@ -5,17 +5,49 @@ import { ChevronDown, Coins } from "lucide-react";
 import { useCurrency, type Currency } from "@/context/CurrencyContext";
 import { en } from "@/lib/i18n/en";
 
-const CURRENCY_OPTIONS: { value: Currency; label: string; hint: string }[] = [
-  { value: "ETH", label: "ETH", hint: en.trade.currencySelector.eth },
+type CurrencyOption = { value: Currency; label: string; hint: string };
+
+// USDT (unidade base) e BTC (segunda moeda principal) vêm primeiro; USD/BRL/
+// EUR são só referência de exibição — o divisor visual marca essa diferença.
+const PRIMARY_CURRENCIES: CurrencyOption[] = [
+  { value: "USDT", label: "USDT", hint: en.trade.currencySelector.usdt },
+  { value: "BTC", label: "BTC", hint: en.trade.currencySelector.btc },
+];
+
+const REFERENCE_CURRENCIES: CurrencyOption[] = [
   { value: "USD", label: "US$", hint: en.trade.currencySelector.usd },
   { value: "BRL", label: "R$", hint: en.trade.currencySelector.brl },
-  { value: "USDC", label: "USDC", hint: en.trade.currencySelector.usdc },
+  { value: "EUR", label: "€", hint: en.trade.currencySelector.eur },
 ];
+
+const ALL_CURRENCIES = [...PRIMARY_CURRENCIES, ...REFERENCE_CURRENCIES];
 
 export function CurrencySelector() {
   const { currency, setCurrency } = useCurrency();
   const [open, setOpen] = useState(false);
-  const current = CURRENCY_OPTIONS.find((option) => option.value === currency);
+  const current = ALL_CURRENCIES.find((option) => option.value === currency);
+
+  function renderOption(option: CurrencyOption) {
+    return (
+      <li key={option.value}>
+        <button
+          type="button"
+          role="option"
+          aria-selected={option.value === currency}
+          onClick={() => {
+            setCurrency(option.value);
+            setOpen(false);
+          }}
+          className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-bg-surface ${
+            option.value === currency ? "text-text-primary" : "text-text-secondary"
+          }`}
+        >
+          <span className="font-mono">{option.label}</span>
+          <span className="text-[10px] text-text-muted">{option.hint}</span>
+        </button>
+      </li>
+    );
+  }
 
   return (
     <div className="relative">
@@ -44,29 +76,11 @@ export function CurrencySelector() {
           <ul
             role="listbox"
             aria-label={en.trade.currencySelector.chooseLabel}
-            className="absolute right-0 z-20 mt-1 w-44 rounded-md border border-border bg-bg-elevated py-1 shadow-lg"
+            className="absolute right-0 z-20 mt-1 w-48 rounded-md border border-border bg-bg-elevated py-1 shadow-lg"
           >
-            {CURRENCY_OPTIONS.map((option) => (
-              <li key={option.value}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={option.value === currency}
-                  onClick={() => {
-                    setCurrency(option.value);
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-bg-surface ${
-                    option.value === currency
-                      ? "text-text-primary"
-                      : "text-text-secondary"
-                  }`}
-                >
-                  <span className="font-mono">{option.label}</span>
-                  <span className="text-[10px] text-text-muted">{option.hint}</span>
-                </button>
-              </li>
-            ))}
+            {PRIMARY_CURRENCIES.map(renderOption)}
+            <li role="separator" aria-hidden="true" className="my-1 border-t border-border" />
+            {REFERENCE_CURRENCIES.map(renderOption)}
           </ul>
         </>
       )}

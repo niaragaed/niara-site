@@ -44,7 +44,7 @@ function computeAllocation(mode: ViewMode): AllocationItem[] {
   for (const holding of MOCK_HOLDINGS) {
     const asset = assetBySymbol.get(holding.symbol);
     if (!asset) continue;
-    const value = holding.qty * asset.priceEth;
+    const value = holding.qty * asset.priceUsdt;
     const key =
       mode === "classe" ? asset.assetClass : mode === "regiao" ? asset.region : asset.symbol;
     totals.set(key, (totals.get(key) ?? 0) + value);
