@@ -295,37 +295,76 @@ export const en = {
       personalSection: "Personal",
       addressSection: "Address",
       fullName: "Full name",
-      cpf: "CPF (Brazilian tax ID)",
       dob: "Date of birth",
       email: "Email",
       phone: "Phone",
-      postalCode: "Postal code (CEP)",
       street: "Street",
       number: "Number",
       complement: "Complement",
       neighborhood: "Neighborhood",
       city: "City",
-      state: "State",
       cityState: "City / State",
-      selectState: "Select",
       notInformed: "Not informed",
       edit: "Edit",
       save: "Save (simulation)",
       cancel: "Cancel",
       saveHint:
         "When you save, the data stays only on this page (browser state) — this is a simulation, nothing is sent to a server.",
+
+      // país — primeiro campo da seção, determina documento/data/telefone/
+      // endereço a seguir
+      country: "Country",
+      selectCountry: "Select a country",
+      searchCountryPlaceholder: "Search country...",
+      noCountriesFound: "No country found.",
+      detectedHint: "Detected from your location — change it if it's wrong.",
+
+      // rótulo + placeholder do documento de identificação por país (ISO
+      // alpha-2). Países fora do mapa caem no genericDocument.
+      // expandir conforme os mercados atendidos
+      documents: {
+        BR: { label: "CPF", placeholder: "000.000.000-00" },
+        US: { label: "SSN / ITIN", placeholder: "000-00-0000" },
+        GB: { label: "National Insurance Number", placeholder: "QQ 12 34 56 C" },
+        PT: { label: "NIF", placeholder: "123456789" },
+        DE: { label: "Steuer-ID", placeholder: "00 000 000 000" },
+        FR: { label: "Numéro fiscal", placeholder: "00 00 000 000 000" },
+        ES: { label: "DNI / NIE", placeholder: "00000000-X" },
+        IT: { label: "Codice Fiscale", placeholder: "XXXXXX00X00X000X" },
+        CA: { label: "SIN", placeholder: "000-000-000" },
+        AU: { label: "Tax File Number (TFN)", placeholder: "000 000 000" },
+        MX: { label: "RFC", placeholder: "XXXX000000XXX" },
+        AR: { label: "CUIT", placeholder: "00-00000000-0" },
+        CL: { label: "RUT", placeholder: "00.000.000-0" },
+        JP: { label: "My Number", placeholder: "0000 0000 0000" },
+        SG: { label: "NRIC / FIN", placeholder: "S0000000A" },
+        AE: { label: "Emirates ID", placeholder: "000-0000-0000000-0" },
+        CH: { label: "AHV / AVS Number", placeholder: "756.0000.0000.00" },
+        NL: { label: "BSN", placeholder: "123456789" },
+      } as Record<string, { label: string; placeholder: string }>,
+      genericDocument: { label: "Tax ID / National ID", placeholder: "" },
+
+      // rótulos regionais que variam por país (código postal e estado/
+      // província) — BR e US têm rótulo próprio, os demais caem no default
+      postalLabels: { BR: "CEP", US: "ZIP code" } as Record<string, string>,
+      postalLabelDefault: "Postal code",
+      regionLabelBR: "State",
+      regionLabelDefault: "State / Province / Region",
+      selectState: "Select",
+
       errors: {
         fullName: "Enter your full name.",
-        cpf: "Invalid CPF.",
         dob: "Invalid date, or you must be 18 or older.",
         email: "Invalid email.",
         phone: "Invalid phone number.",
-        postalCode: "Invalid postal code.",
         street: "Enter the street.",
         number: "Enter the number.",
         neighborhood: "Enter the neighborhood.",
         city: "Enter the city.",
-        state: "Select a state.",
+        country: "Select a country.",
+        document: (label: string) => `Invalid ${label}.`,
+        postalCode: (label: string) => `Invalid ${label}.`,
+        region: (label: string) => `Enter the ${label}.`,
       },
     },
 

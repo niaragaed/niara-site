@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { NAV_ITEMS } from "./nav-items";
+import { NAV_ITEMS, type NavChild, type NavItem } from "./nav-items";
 import { en } from "@/lib/i18n/en";
 
 export function Footer() {
@@ -24,7 +24,7 @@ export function Footer() {
           <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">
             {/* itens com submenu (About) viram links planos aqui — sem
                 dropdown no rodapé, só os filhos direto */}
-            {NAV_ITEMS.flatMap((item) => item.children ?? [item]).map((link) => (
+            {NAV_ITEMS.flatMap((item): (NavChild | NavItem)[] => item.children ?? [item]).map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
