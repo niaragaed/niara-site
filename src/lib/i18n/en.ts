@@ -528,6 +528,34 @@ export const en = {
     },
   },
 
+  pilot: {
+    metaTitle: "Wallet Pilot — Niara",
+    metaDescription: "Technical pilot for real wallet connection on the Sepolia testnet.",
+    heading: "Wallet connection pilot",
+    subheading:
+      "Step 1 of the real-independence pilot: connect a real wallet via MetaMask on Sepolia. No transactions, no balances — connection only.",
+    bannerLabel: "Sepolia Testnet",
+    bannerText:
+      "Test network only. Tokens have no economic value. This is a technical demonstration environment, not a financial product.",
+    connect: "Connect wallet",
+    connecting: "Connecting…",
+    disconnect: "Disconnect",
+    switchNetwork: "Switch to Sepolia",
+    switching: "Switching…",
+    wrongNetwork: "Wrong network",
+    noWallet: "No wallet extension detected.",
+    installMetaMask: "Install MetaMask",
+    rejected: "Connection request rejected.",
+    panelTitle: "Connection details",
+    addressLabel: "Address",
+    chainIdLabel: "Chain ID",
+    networkLabel: "Network",
+    statusLabel: "Status",
+    statusConnected: "Connected",
+    statusDisconnected: "Not connected",
+    notConnectedHint: "Connect your wallet to see the details here.",
+  },
+
   styleguide: {
     title: "Niara — Style Guide",
     subtitle: "Internal reference for design tokens. Not marketing content.",
