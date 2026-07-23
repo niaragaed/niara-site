@@ -389,11 +389,6 @@ export const en = {
       title: "Wallet",
       subtitle:
         "Connect a real wallet (MetaMask, Sepolia testnet) to link it to your profile. Read-only — no on-chain transaction happens here.",
-      linkedWallets: "Linked wallets",
-      primary: "Primary",
-      setPrimary: "Set as primary",
-      remove: "Remove",
-      none: "No linked wallets.",
     },
   },
 
