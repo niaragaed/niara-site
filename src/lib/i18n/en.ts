@@ -60,9 +60,9 @@ export const en = {
     accountBar: {
       walletBalance: "Wallet balance",
       buyingPower: "Buying power",
-      buyingPowerHint: "(simulated limit)",
       marginUsed: "Margin used",
       todayPnl: "Today's P/L",
+      simulatedHint: "(simulated — not from your connected wallet)",
       referenceSuffix: "(simulated reference)",
     },
 
@@ -204,6 +204,7 @@ export const en = {
       totalPl: "Total profit/loss",
       periodReturn: "Return for period",
       last12Months: "last 12 months",
+      simulatedHint: "Simulated — not from your connected wallet",
     },
 
     evolution: {

@@ -50,7 +50,10 @@ export function AccountBar() {
         <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              {en.trade.accountBar.walletBalance}
+              {en.trade.accountBar.walletBalance}{" "}
+              <span className="normal-case text-text-muted/80">
+                {en.trade.accountBar.simulatedHint}
+              </span>
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
               {format(balance)}
@@ -60,7 +63,7 @@ export function AccountBar() {
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
               {en.trade.accountBar.buyingPower}{" "}
               <span className="normal-case text-text-muted/80">
-                {en.trade.accountBar.buyingPowerHint}
+                {en.trade.accountBar.simulatedHint}
               </span>
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
@@ -69,7 +72,10 @@ export function AccountBar() {
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              {en.trade.accountBar.marginUsed}
+              {en.trade.accountBar.marginUsed}{" "}
+              <span className="normal-case text-text-muted/80">
+                {en.trade.accountBar.simulatedHint}
+              </span>
             </p>
             <p className="font-mono text-sm tabular-nums text-text-primary">
               {format(marginUsed)}
@@ -77,7 +83,10 @@ export function AccountBar() {
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wide text-text-muted">
-              {en.trade.accountBar.todayPnl}
+              {en.trade.accountBar.todayPnl}{" "}
+              <span className="normal-case text-text-muted/80">
+                {en.trade.accountBar.simulatedHint}
+              </span>
             </p>
             <p
               className={`font-mono text-sm tabular-nums ${

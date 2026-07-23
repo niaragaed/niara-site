@@ -76,6 +76,7 @@ export function PortfolioSummary() {
           <p className="text-[10px] uppercase tracking-wide text-text-muted">
             {card.label}
           </p>
+          <p className="text-[9px] text-text-muted/70">{en.assets.summary.simulatedHint}</p>
           <p className="mt-1 font-mono text-lg tabular-nums text-text-primary">
             {card.value}
           </p>
