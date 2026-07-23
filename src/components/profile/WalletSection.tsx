@@ -1,18 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Star, Trash2, Wallet } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { MOCK_LINKED_WALLETS, truncateAddress, type LinkedWallet } from "@/lib/mock-wallets";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
 import { en } from "@/lib/i18n/en";
 
-// TODO: integrar wagmi/ethers + WalletConnect — hoje é só uma simulação
-// local, sem conexão on-chain de verdade.
-const CONNECTED_ADDRESS = "0x1a2b3c4d5e6f78901234567890abcdefc3d4"; // dados ilustrativos
-const CONNECTED_NETWORK = "Ethereum Sepolia — testnet";
-const CONNECTED_BALANCE_USDT = 7359.3; // dados ilustrativos — USDT é a unidade interna do site
-
 export function WalletSection() {
-  const [connected, setConnected] = useState(false);
   const [wallets, setWallets] = useState<LinkedWallet[]>(MOCK_LINKED_WALLETS);
 
   function setPrimary(id: string) {
@@ -31,54 +25,7 @@ export function WalletSection() {
       <p className="mt-1 text-xs text-text-secondary">{en.profile.wallet.subtitle}</p>
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
-        {connected ? (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-elevated">
-                <Wallet className="h-5 w-5 text-accent-blue" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="font-mono text-sm text-text-primary">
-                  {truncateAddress(CONNECTED_ADDRESS)}
-                </p>
-                <p className="text-xs text-text-muted">{CONNECTED_NETWORK}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wide text-text-muted">
-                {en.profile.wallet.simulatedBalance}
-              </p>
-              <p className="font-mono text-sm tabular-nums text-text-primary">
-                {CONNECTED_BALANCE_USDT.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                USDT
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setConnected(false)}
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
-            >
-              {en.profile.wallet.disconnect}
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-sm text-text-secondary">
-              <Wallet className="h-5 w-5 text-text-muted" aria-hidden="true" />
-              {en.profile.wallet.noWalletConnected}
-            </div>
-            <button
-              type="button"
-              onClick={() => setConnected(true)}
-              className="rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary"
-            >
-              {en.profile.wallet.connect}
-            </button>
-          </div>
-        )}
+        <ConnectWallet />
       </div>
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">

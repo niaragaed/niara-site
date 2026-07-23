@@ -1,14 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Wallet } from "lucide-react";
+import { ConnectWallet } from "@/components/web3/ConnectWallet";
 import { en } from "@/lib/i18n/en";
 
-const FAKE_ADDRESS = "0x1a2b...c3d4";
-
 export function TerminalHeader() {
-  const [connected, setConnected] = useState(false);
-
   return (
     <div className="border-b border-border">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
@@ -16,25 +11,7 @@ export function TerminalHeader() {
           {en.trade.terminalLabel}
         </span>
 
-        <button
-          type="button"
-          onClick={() => setConnected((current) => !current)}
-          title={en.trade.walletSimTitle}
-          className="flex items-center gap-2 rounded-md border border-border bg-bg-surface px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
-        >
-          <Wallet className="h-4 w-4" aria-hidden="true" />
-          {connected ? (
-            <>
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 rounded-full bg-positive"
-              />
-              <span className="font-mono tabular-nums">{FAKE_ADDRESS}</span>
-            </>
-          ) : (
-            <span>{en.trade.connectWallet}</span>
-          )}
-        </button>
+        <ConnectWallet />
       </div>
     </div>
   );

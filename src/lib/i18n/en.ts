@@ -56,8 +56,6 @@ export const en = {
       "Niara's simulated trading terminal: chart, order book, orders, and positions.",
     demoBanner: "simulated data. No orders are executed and no real assets are traded.",
     terminalLabel: "Terminal",
-    connectWallet: "Connect wallet",
-    walletSimTitle: "Simulation — no real wallet is connected",
 
     accountBar: {
       walletBalance: "Wallet balance",
@@ -389,11 +387,8 @@ export const en = {
 
     wallet: {
       title: "Wallet",
-      subtitle: "Simulated wallet connection — no on-chain transaction happens here.",
-      noWalletConnected: "No wallet connected in this session.",
-      connect: "Connect wallet (simulation)",
-      disconnect: "Disconnect",
-      simulatedBalance: "Simulated balance",
+      subtitle:
+        "Connect a real wallet (MetaMask, Sepolia testnet) to link it to your profile. Read-only — no on-chain transaction happens here.",
       linkedWallets: "Linked wallets",
       primary: "Primary",
       setPrimary: "Set as primary",
