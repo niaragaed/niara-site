@@ -6,6 +6,7 @@ import { PortfolioEvolution } from "./PortfolioEvolution";
 import { AllocationDonut } from "./AllocationDonut";
 import { HoldingsTable } from "./HoldingsTable";
 import { AssetCatalog } from "./AssetCatalog";
+import { TokenBalances } from "@/components/web3/TokenBalances";
 import { en } from "@/lib/i18n/en";
 
 type Tab = "portfolio" | "available";
@@ -71,6 +72,10 @@ export function PortfolioPage() {
                 </div>
               </div>
               <HoldingsTable />
+
+              <div className="mt-2 border-t border-border pt-6">
+                <TokenBalances />
+              </div>
             </div>
           ) : (
             <AssetCatalog />
