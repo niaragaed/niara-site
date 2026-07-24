@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ConnectWallet } from "@/components/web3/ConnectWallet";
 import { ConnectionPanel } from "@/components/web3/ConnectionPanel";
+import { ApproveUsdt } from "@/components/web3/ApproveUsdt";
 import { en } from "@/lib/i18n/en";
 
 export const metadata: Metadata = {
@@ -28,6 +29,10 @@ export default function PilotPage() {
 
         <div className="mt-6">
           <ConnectionPanel />
+        </div>
+
+        <div className="mt-6">
+          <ApproveUsdt />
         </div>
       </div>
     </div>

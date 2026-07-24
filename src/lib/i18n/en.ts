@@ -524,7 +524,7 @@ export const en = {
     metaDescription: "Technical pilot for real wallet connection on the Sepolia testnet.",
     heading: "Wallet connection pilot",
     subheading:
-      "Step 1 of the real-independence pilot: connect a real wallet via MetaMask on Sepolia. No transactions, no balances — connection only.",
+      "Real-independence pilot: connect a real wallet via MetaMask on Sepolia and sign real test transactions. Isolated environment — the rest of the site still uses simulated data.",
     bannerLabel: "Sepolia Testnet",
     bannerText:
       "Test network only. Tokens have no economic value. This is a technical demonstration environment, not a financial product.",
@@ -557,6 +557,48 @@ export const en = {
       wrongNetworkText:
         "These balances are read from the Sepolia testnet. Switch networks to see them.",
       retry: "Retry",
+    },
+
+    approve: {
+      title: "Approve USDT spending",
+      badge: "Real signed transaction — Sepolia",
+      description:
+        "This authorizes the NiaraSettlement contract to spend up to the amount you enter, from your mUSDT balance. This prepares settlement, which is a later step — no settlement happens here.",
+      warning:
+        "This is a REAL transaction on the Sepolia testnet: you will sign it with your wallet, it costs test gas, and it cannot be undone. The token has no economic value.",
+      notConnected: "Connect your wallet to approve USDT spending.",
+      wrongNetworkText:
+        "Approving requires the Sepolia testnet. Switch networks before continuing.",
+      spenderLabel: "Spender (NiaraSettlement)",
+      tokenLabel: "Token (mUSDT)",
+      amountLabel: "Amount to approve",
+      amountPlaceholder: "0.00",
+      balanceLabel: "Available balance",
+      loadingTokenData: "Loading token data from Sepolia…",
+      submit: "Approve USDT",
+
+      errorEmpty: "Enter an amount.",
+      errorInvalid: "Enter a valid positive number.",
+      errorZero: "Amount must be greater than zero.",
+      errorExceedsBalance: "Amount exceeds your available mUSDT balance.",
+      errorTooManyDecimals: "Too many decimal places for this token.",
+
+      statusAwaitingSignature: "Waiting for your signature in MetaMask…",
+      statusAwaitingConfirmation: "Transaction sent. Waiting for on-chain confirmation…",
+      statusConfirmed: "Approval confirmed on-chain.",
+      statusReverted: "The transaction was reverted on-chain — the approval did not take effect.",
+      statusRejected: "You rejected the signature request in your wallet. No transaction was sent.",
+      statusInsufficientFunds:
+        "Insufficient Sepolia ETH to pay for gas. Get test ETH from a faucet and try again.",
+      statusReceiptError:
+        "Could not confirm the transaction status. Check the hash on Etherscan.",
+      statusGenericError: "The transaction failed. Check the details on Etherscan.",
+
+      hashLabel: "Transaction hash",
+      viewOnEtherscan: "View on Etherscan",
+      currentAllowanceLabel: "Current on-chain allowance",
+      tryAgain: "Try again",
+      newApproval: "New approval",
     },
   },
 
