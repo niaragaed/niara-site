@@ -1,4 +1,5 @@
-// ABI ERC-20 mínimo — só as funções de leitura usadas pelo TokenBalances.
+// ABI ERC-20 mínimo — funções usadas pelo TokenBalances (leitura) e pelo
+// ApproveUsdt (approve/allowance, escrita e leitura).
 export const erc20Abi = [
   {
     type: "function",
@@ -20,5 +21,25 @@ export const erc20Abi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "string" }],
+  },
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
