@@ -1,4 +1,5 @@
 import { ConnectWallet } from "@/components/web3/ConnectWallet";
+import { TokenBalances } from "@/components/web3/TokenBalances";
 import { en } from "@/lib/i18n/en";
 
 export function WalletSection() {
@@ -11,6 +12,10 @@ export function WalletSection() {
 
       <div className="mt-6 rounded-lg border border-border bg-bg-surface p-6">
         <ConnectWallet />
+      </div>
+
+      <div className="mt-6">
+        <TokenBalances />
       </div>
     </section>
   );

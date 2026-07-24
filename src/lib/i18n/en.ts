@@ -547,6 +547,19 @@ export const en = {
     notConnectedHint: "Connect your wallet to see the details here.",
   },
 
+  web3: {
+    balances: {
+      title: "On-chain balances",
+      badge: "Sepolia testnet — real",
+      testnetNote:
+        "Real balances read directly from the Sepolia testnet. These are test tokens with no economic value — not a price or market feed.",
+      notConnected: "Connect your wallet to see on-chain balances.",
+      wrongNetworkText:
+        "These balances are read from the Sepolia testnet. Switch networks to see them.",
+      retry: "Retry",
+    },
+  },
+
   styleguide: {
     title: "Niara — Style Guide",
     subtitle: "Internal reference for design tokens. Not marketing content.",
