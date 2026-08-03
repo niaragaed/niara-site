@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeftRight, ChevronDown } from "lucide-react";
 import { HeroGlobe } from "@/components/HeroGlobe";
-import { IndexTicker } from "@/components/IndexTicker";
 import { en } from "@/lib/i18n/en";
 
 export function Hero() {
@@ -54,10 +53,6 @@ export function Hero() {
             "radial-gradient(ellipse 55% 45% at 50% 50%, color-mix(in srgb, var(--color-bg-base) 55%, transparent) 0%, transparent 70%)",
         }}
       />
-
-      <div className="absolute inset-x-0 top-16 sm:top-20">
-        <IndexTicker />
-      </div>
 
       <div className="relative flex max-w-3xl flex-col items-center">
         <span className="inline-flex items-center rounded-full border border-border px-4 py-1.5 text-xs font-medium text-text-secondary">
