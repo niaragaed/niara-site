@@ -1,11 +1,11 @@
-// Lógica pura do questionário de perfil de investidor (suitability) — sem
-// React, sem storage. Equivalente à API (Análise do Perfil do Investidor)
-// exigida pela CVM antes de recomendar ou permitir certas operações.
+// Pure logic for the investor profile (suitability) questionnaire: no React,
+// no storage. Equivalent to the API (Análise do Perfil do Investidor) that
+// Brazil's CVM requires before recommending or allowing certain operations.
 
 export type InvestorCategory = "conservador" | "moderado" | "arrojado";
 
-// nomenclatura de mercado (CVM). Para usar a nomenclatura própria da Niara
-// (Comedido/Moderado/Sofisticado), alterar apenas aqui.
+// market (CVM) naming. To use Niara's own naming (Comedido/Moderado/
+// Sofisticado), change it only here.
 export const INVESTOR_CATEGORY_LABELS: Record<InvestorCategory, string> = {
   conservador: "Conservative",
   moderado: "Moderate",
@@ -158,8 +158,8 @@ export const INVESTOR_CATEGORY_DETAILS: Record<InvestorCategory, InvestorCategor
 };
 
 // ---------------------------------------------------------------------------
-// Persistência (ver InvestorProfileContext) — só o resultado agregado é
-// salvo, nunca as respostas individuais.
+// Persistence (see InvestorProfileContext): only the aggregate result is
+// saved, never the individual answers.
 // ---------------------------------------------------------------------------
 
 export type InvestorProfileResult = {

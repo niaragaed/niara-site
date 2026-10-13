@@ -6,7 +6,7 @@ import { convertCurrency, type ExchangeCurrency } from "@/lib/rates";
 import { useCurrency } from "@/context/CurrencyContext";
 import { en } from "@/lib/i18n/en";
 
-const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
+const FEE_RATE = 0.001; // 0.1%: estimated Niara fee
 
 type CurrencyMeta = {
   value: ExchangeCurrency;

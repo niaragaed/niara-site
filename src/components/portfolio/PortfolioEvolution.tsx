@@ -24,9 +24,9 @@ const PERIODS = [
 
 type PeriodLabel = (typeof PERIODS)[number]["label"];
 
-// tipo local (em vez do genérico do Recharts) — evita conflito de
-// variância entre o `content` inferido pelo <Tooltip> e um genérico
-// explícito <number, string>; só precisamos destes campos mesmo.
+// local type (instead of Recharts' generic): avoids a variance conflict
+// between the `content` inferred by <Tooltip> and an explicit
+// <number, string> generic; these are the only fields we need.
 type TooltipEntryValue = number | string | readonly (number | string)[] | undefined;
 
 type ChartTooltipProps = {

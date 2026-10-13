@@ -38,11 +38,11 @@ export default function ContactPage() {
               </a>
             </div>
 
-            {/* Redes sociais — adicionar aqui quando os perfis oficiais da
-                Niara existirem (ex.: X/Twitter, LinkedIn, Discord). Não
-                inventar links de perfis que ainda não existem.
+            {/* Social media: add here once Niara's official profiles exist
+                (e.g. X/Twitter, LinkedIn, Discord). Do not make up links to
+                profiles that don't exist yet.
             <div className="rounded-lg border border-border bg-bg-surface p-6">
-              <h2 className="text-sm font-semibold text-text-primary">Redes sociais</h2>
+              <h2 className="text-sm font-semibold text-text-primary">Social media</h2>
               ...
             </div>
             */}

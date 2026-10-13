@@ -34,7 +34,7 @@ export function Hero() {
         }}
       />
 
-      {/* globo completo, centralizado atrás do conteúdo */}
+      {/* full globe, centered behind the content */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
@@ -43,8 +43,8 @@ export function Hero() {
           <HeroGlobe />
         </div>
       </div>
-      {/* overlay atrás do bloco de texto (centro) para garantir contraste,
-          esmaecendo para transparente na borda do globo */}
+      {/* overlay behind the text block (center) to guarantee contrast,
+          fading to transparent at the edge of the globe */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

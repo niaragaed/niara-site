@@ -29,11 +29,11 @@ export function getBestPrices(
   return { bestAsk, bestBid };
 }
 
-// Decide se uma nova ordem cruza o livro (deveria executar na hora contra a
-// melhor oferta do outro lado) ou se deve descansar como ordem aberta. Uma
-// ordem de compra que cruza preenche ao melhor ask; uma venda que cruza
-// preenche ao melhor bid — nunca vira um nível de livro com preço absurdo
-// (é isso que causava o spread negativo antes desta correção).
+// Decides whether a new order crosses the book (and should execute
+// immediately against the best order on the other side) or rest as an open
+// order. A crossing buy fills at the best ask; a crossing sell fills at the
+// best bid. It never becomes a book level with an absurd price (that is what
+// caused the negative spread before this fix).
 export function resolveOrder(
   side: OrderSide,
   price: number,
@@ -49,10 +49,11 @@ export function resolveOrder(
   return { crossed: false, fillPrice: price };
 }
 
-// Atualiza qty/preço médio de uma posição a partir de um fill. Preço médio
-// só muda quando a posição é aberta ou reforçada na mesma direção; ao
-// reduzir, o preço médio da parte remanescente não muda; ao inverter de
-// lado (cruzar o zero), o excedente abre uma posição nova no preço do fill.
+// Updates a position's qty/average price from a fill. The average price only
+// changes when the position is opened or increased in the same direction;
+// when reducing, the remaining part's average price doesn't change; when
+// flipping sides (crossing zero), the excess opens a new position at the
+// fill price.
 export function applyFillToPosition(
   position: { qty: number; avgPrice: number } | undefined,
   side: OrderSide,

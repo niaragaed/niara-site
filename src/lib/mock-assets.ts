@@ -6,8 +6,8 @@ export type Region = "BR" | "US" | "EU" | "Global";
 export type Asset = {
   symbol: string;
   name: string;
-  // código ISO 3166-1 alpha-2 em minúsculas, para flag-icons — ausente para
-  // ativos sem país (ex.: commodities, cripto), que caem no ícone de fallback
+  // lowercase ISO 3166-1 alpha-2 code for flag-icons; absent for assets
+  // without a country (e.g. commodities, crypto), which use the fallback icon
   country?: string;
   region: Region;
   assetClass: AssetClass;
@@ -16,8 +16,8 @@ export type Asset = {
   volume24hUsdt: number;
 };
 
-// dados ilustrativos — substituir por feed/on-chain real. Preços em USDT
-// (unidade interna do site — ver CLAUDE.md).
+// illustrative data: replace with a real feed/on-chain data. Prices in USDT
+// (the site's internal unit; see CLAUDE.md).
 export const MOCK_ASSETS: Asset[] = [
   {
     symbol: "PETR4",
