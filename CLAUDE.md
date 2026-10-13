@@ -1,223 +1,230 @@
 # CLAUDE.md — niara-site
 
-Instruções permanentes para o Claude Code neste repositório.
-Leia este arquivo antes de escrever qualquer código.
+Standing instructions for Claude Code in this repository.
+Read this file before writing any code.
 
 ---
 
-## ⚠️ Next.js 16 (preservar)
+## ⚠️ Next.js 16 (keep this)
 
-Este projeto usa **Next.js 16**, que tem breaking changes em relação a versões
-anteriores. Antes de escrever código novo, consulte a documentação da versão
-instalada em `node_modules/next/dist/docs/`.
+This project uses **Next.js 16**, which has breaking changes compared to earlier
+versions. Before writing new code, check the docs for the installed version in
+`node_modules/next/dist/docs/`.
 
-Pontos que já nos afetaram:
-- `params`, `searchParams`, `cookies` e `headers` são **assíncronos** — sempre com `await`.
-- Defaults do `next/image` mudaram.
-- React 19 em dev roda efeitos duas vezes (StrictMode) — todo `useEffect` com
-  canvas, WebGL, chart ou listener precisa de cleanup correto.
-
----
-
-## O projeto
-
-**Niara** — infraestrutura de exchange global descentralizada. Tokeniza ativos
-reais (ações, ETFs, commodities, cripto) com lastro 1:1 sob custódia regulada e
-os negocia 24/7 em uma exchange descentralizada, sem bolsas tradicionais nem SWIFT.
-
-Diferencial e motor de adoção: **cashback programático ao emissor** — parcela da
-taxa de transação devolvida automaticamente, via smart contract, à carteira da
-empresa emissora, proporcional ao volume negociado do próprio ativo.
-
-Receita: taxa de transação (0,1%–0,15%), taxa de listagem/tokenização e taxa de
-custódia (modelo AUM).
-
-**Estágio atual: site institucional + protótipo de interface. Não há backend,
-autenticação, carteira real nem blockchain conectada.**
+Things that have already bitten us:
+- `params`, `searchParams`, `cookies` and `headers` are **async**: always `await` them.
+- `next/image` defaults changed.
+- React 19 runs effects twice in dev (StrictMode), so every `useEffect` with a
+  canvas, WebGL, chart or listener needs a correct cleanup.
 
 ---
 
-## 🔴 Regra principal: nada simulado pode parecer real
+## The project
 
-Esta é a regra mais importante do projeto. É um produto financeiro; uma interface
-que parece operar mas não opera causa dano ao usuário e risco regulatório.
+**Niara**: a decentralized global exchange infrastructure. It tokenizes real
+assets (stocks, ETFs, commodities, crypto) backed 1:1 under regulated custody
+and trades them 24/7 on a decentralized exchange, without traditional stock
+exchanges or SWIFT.
 
-- Todo dado mock recebe comentário `// dados ilustrativos — substituir por [fonte real]`.
-- Toda tela com dados simulados exibe aviso visível de demonstração.
-- **Nunca** rotular nada como "ao vivo", "tempo real" ou "cotação de mercado".
-- Ações que não existem (executar ordem, converter, enviar formulário, conectar
-  carteira) ficam desabilitadas ou explicitamente rotuladas como simulação.
-  Nunca fingir sucesso de transação.
-- Não inventar auditorias, parcerias, licenças regulatórias, número de usuários,
-  endereços de contrato ou logos de instituições financeiras.
-- Não exibir logos de terceiros (Goldman Sachs, gestoras etc.) — sugeriria
-  parcerias inexistentes.
+Differentiator and adoption driver: **programmatic cashback to the issuer**: a
+share of the transaction fee is returned automatically, through a smart
+contract, to the issuing company's wallet, in proportion to the traded volume
+of its own asset.
 
-## 🔴 Dados sensíveis (LGPD)
+Revenue: transaction fee (0.1%–0.15%), listing/tokenization fee and custody fee
+(AUM model).
 
-- **Nunca** persistir CPF, data de nascimento ou endereço em `localStorage`.
-  Esses dados vivem só em estado React.
-- Pode persistir: preferência de moeda, tema, resultado (categoria) do perfil de
-  investidor.
-- Nunca commitar `.env`, chaves de API ou private key. O repositório é **público**.
+**Current stage: institutional site + interface prototype. There is no backend
+or authentication. Everything is simulated except the isolated `/pilot` page
+and the on-chain balances in `/profile` and `/assets`, which read a real wallet
+on the Sepolia testnet.**
+
+---
+
+## 🔴 Main rule: nothing simulated may look real
+
+This is the project's most important rule. It is a financial product; an
+interface that looks like it operates but doesn't harms the user and creates
+regulatory risk.
+
+- All mock data gets a comment: `// illustrative data: replace with [real source]`.
+- Every screen with simulated data shows a visible demo notice.
+- **Never** label anything as "live", "real time" or "market quote".
+- Actions that don't exist (executing an order, converting, sending a form,
+  connecting a wallet) stay disabled or are explicitly labeled as a simulation.
+  Never fake a successful transaction.
+- Don't make up audits, partnerships, regulatory licenses, user counts,
+  contract addresses or financial institutions' logos.
+- Don't show third-party logos (Goldman Sachs, asset managers, etc.); they
+  would suggest partnerships that don't exist.
+
+## 🔴 Sensitive data (LGPD)
+
+- **Never** persist CPF, date of birth or address in `localStorage`. That data
+  lives only in React state.
+- Allowed to persist: currency preference, theme, investor profile result
+  (category).
+- Never commit `.env`, API keys or private keys. The repository is **public**.
 
 ---
 
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind **v4**
-- Tailwind v4 é **CSS-first**: não há `tailwind.config.js`; tokens ficam em
-  `@theme` dentro de `src/app/globals.css`
-- `next/font/google` (não CDN) para as fontes
-- Bibliotecas: `cobe` (globo WebGL), `lightweight-charts` (candlestick),
-  `recharts` (donut/barras), `lucide-react` (ícones), `flag-icons` (bandeiras)
-- Estado: React (`useState`, Context). Sem libs de estado externas.
+- Tailwind v4 is **CSS-first**: there is no `tailwind.config.js`; tokens live in
+  `@theme` inside `src/app/globals.css`
+- `next/font/google` (not a CDN) for fonts
+- Libraries: `cobe` (WebGL globe), `lightweight-charts` (candlesticks),
+  `recharts` (donut/bars), `lucide-react` (icons), `flag-icons` (flags),
+  `wagmi` + `viem` (wallet pilot)
+- State: React (`useState`, Context). No external state libraries.
 
 ---
 
 ## Design system
 
-Use **somente** tokens do `@theme`. Nunca cores hardcoded.
-Se precisar passar hex para uma lib (Recharts, lightweight-charts, cobe), leia as
-CSS vars com `getComputedStyle`.
+Use **only** `@theme` tokens. Never hardcoded colors.
+If a library needs a hex value (Recharts, lightweight-charts, cobe), read the
+CSS vars with `getComputedStyle`.
 
-**Superfícies:** `bg-base` #05070E · `bg-surface` #0A0E1A · `bg-elevated` #111728 · `border` #1C2438
-**Texto:** `text-primary` #F4F6FB · `text-secondary` #A6B0C3 · `text-muted` #6B7688
-**Acento:** `accent-blue` #2E6BFF · `accent-violet` #7B3FE4 · `accent-cyan` #38BDF8
-**Gradiente primário:** `bg-gradient-primary` (135deg, blue → violet)
-**Semânticos:** `positive` #16C784 (compra) · `negative` #F6465D (venda) · `warning` #F0B90B
+**Surfaces:** `bg-base` #05070E · `bg-surface` #0A0E1A · `bg-elevated` #111728 · `border` #1C2438
+**Text:** `text-primary` #F4F6FB · `text-secondary` #A6B0C3 · `text-muted` #6B7688
+**Accent:** `accent-blue` #2E6BFF · `accent-violet` #7B3FE4 · `accent-cyan` #38BDF8
+**Primary gradient:** `bg-gradient-primary` (135deg, blue → violet)
+**Semantic:** `positive` #16C784 (buy) · `negative` #F6465D (sell) · `warning` #F0B90B
 
-**Tipografia:** Space Grotesk (`--font-display`, títulos) · Inter (`--font-sans`,
-corpo) · JetBrains Mono (`--font-mono`, números e preços, sempre com `tabular-nums`)
+**Typography:** Space Grotesk (`--font-display`, headings) · Inter (`--font-sans`,
+body) · JetBrains Mono (`--font-mono`, numbers and prices, always with `tabular-nums`)
 
-**Raio:** sm 6px · md 10px · lg 16px · full
+**Radius:** sm 6px · md 10px · lg 16px · full
 
-Nota: os tokens de texto geram classes como `text-text-primary` — é intencional,
-evita colisão com utilities nativas do Tailwind.
+Note: the text tokens generate classes like `text-text-primary`. That's
+intentional; it avoids clashing with Tailwind's native utilities.
 
-Referência visual viva: `/styleguide`.
+Living visual reference: `/styleguide`.
 
-Estética: escura, espacial, densa (referência de densidade: terminais tipo
-Hyperliquid). Adaptamos **estrutura** de referências externas, nunca a estética
-nem o texto delas.
-
----
-
-## Idioma
-
-O idioma padrão (e, por enquanto, único) do site é **inglês** —
-`<html lang="en">` no layout raiz. Todo texto de interface fica centralizado em
-`src/lib/i18n/en.ts` (dicionário tipado por área: `nav`, `home`, `trade`,
-`exchange`, `assets`, `profile`, `docs`, `contact`, `common` etc.). Componentes
-importam `{ en }` desse arquivo — não hardcodar strings de interface direto no
-JSX. Dados mock estruturados (ex.: `mock-assets.ts`, `investor-profile.ts`)
-seguem traduzidos em inglês, mas vivem nos próprios arquivos de `lib/`, não no
-dicionário.
-
-Formatação (locale) é independente de idioma: BRL continua em pt-BR
-(R$ 1.234,56) e USD em en-US ($1,234.56) via `CurrencyContext` — trocar o
-idioma da interface não muda isso. Datas usam formato en-US.
-
-Comentários de código continuam em português (convenção do projeto).
-
-TODO: adicionar `src/lib/i18n/pt.ts` e um seletor de idioma quando houver
-demanda bilíngue.
+Aesthetic: dark, spacey, dense (density reference: terminals like Hyperliquid).
+We adapt the **structure** of external references, never their look or copy.
 
 ---
 
-## Rotas
+## Language
 
-| Rota | O que é |
+- **English is the standard for everything in this repo:** identifiers,
+  comments, docs, commit messages and PR descriptions. This applies to all
+  Niara repositories.
+- The site's interface language is **English** (`<html lang="en">` in the root
+  layout). All interface copy is centralized in `src/lib/i18n/en.ts` (a typed
+  dictionary by area: `nav`, `home`, `trade`, `exchange`, `assets`, `profile`,
+  `docs`, `contact`, `pilot`, `common`, etc.). Components import `{ en }` from
+  that file; don't hardcode interface strings in JSX. Structured mock data (e.g.
+  `mock-assets.ts`, `investor-profile.ts`) is also in English but lives in its
+  own `lib/` files, not in the dictionary.
+- Formatting (locale) is independent of language: BRL stays in pt-BR
+  (R$ 1.234,56) and USD in en-US ($1,234.56) through `CurrencyContext`;
+  changing the interface language doesn't change that. Dates use the en-US format.
+- TODO: add `src/lib/i18n/pt.ts` and a language switcher when there is demand
+  for a bilingual site.
+
+---
+
+## Routes
+
+| Route | What it is |
 |---|---|
-| `/` | Home: hero com globo 3D (cobe) + ticker de índices |
-| `/trade` | Terminal: gráfico candlestick, indicadores, livro, ordens/posições, boleta |
-| `/exchange` | Câmbio: conversor de moedas + tabela de paridades |
-| `/assets` | Carteira simulada (Recharts) + catálogo de ativos |
-| `/profile` | Perfil do usuário (dados pessoais, perfil de investidor, carteira) |
-| `/docs` | Documentação institucional + FAQ |
-| `/contact` | Formulário de contato |
-| `/styleguide` | Referência interna do design system |
+| `/` | Home: hero with a 3D globe (cobe) + index ticker |
+| `/trade` | Terminal: candlestick chart, indicators, order book, orders/positions, order form |
+| `/exchange` | Currency exchange: converter + pairs table |
+| `/assets` | Simulated portfolio (Recharts) + asset catalog |
+| `/profile` | User profile (personal data, investor profile, wallet) |
+| `/pilot` | Real wallet pilot on Sepolia (connect, read balances, sign a real USDT approve) |
+| `/docs` | Institutional docs + FAQ |
+| `/contact` | Contact form |
+| `/styleguide` | Internal design system reference |
 
-Nav (`src/components/nav-items.ts`, compartilhado por Header e Footer):
+Nav (`src/components/nav-items.ts`, shared by Header and Footer):
 Trade · Exchange · Assets · Profile · About (submenu: Docs & FAQs, Contact)
 
-"Cashback" foi removido do nav — é argumento para empresas emissoras e terá
-página própria voltada a emissores.
+"Cashback" was removed from the nav: it's a selling point for issuing companies
+and will get its own issuer-facing page.
 
 ---
 
-## Organização
+## Layout
 
 ```
 src/
-  app/                 rotas (App Router)
+  app/                 routes (App Router)
   components/
     trade/             terminal
-    exchange/          câmbio
+    exchange/          currency exchange
     portfolio/         /assets
-    profile/           perfil
-    about/             docs e contact
-    ui/                compartilhados (ex.: Flag.tsx)
+    profile/           profile
+    about/             docs and contact
+    web3/              wallet pilot (wagmi)
+    ui/                shared (e.g. Flag.tsx)
   lib/
-    i18n/              dicionário de textos (en.ts)
+    i18n/              copy dictionary (en.ts)
+    web3/              wagmi config, ABIs, token list
     mocks, validators, nav-items, rates, indicators
-  context/             CurrencyContext
+  context/             CurrencyContext, InvestorProfileContext
 ```
 
 ---
 
-## Convenções
+## Conventions
 
-- **Moeda:** a fonte da verdade interna é sempre **USDT** (stablecoin — preço
-  legível para os ativos tokenizados, sem a oscilação de ETH/BTC). **BTC** é a
-  segunda moeda principal do site. USD, BRL e EUR ficam disponíveis só como
-  exibição de referência; ETH segue disponível apenas no conversor de câmbio
-  (`/exchange`), não é mais unidade interna. A conversão acontece só na
-  exibição, via `CurrencyContext` (`format()`/`convert()`). Cotações fixas em
-  `src/lib/rates.ts`, marcadas como referência simulada. Formatação fixa por
-  moeda: USDT com 2 casas, BTC com 8 (satoshis).
-  Exceção: o ticker da home mostra **pontos de índice**, não moeda — não converter.
-- **Números:** JetBrains Mono + `tabular-nums`, alinhados à direita em tabelas.
-- **Bandeiras:** componente `src/components/ui/Flag.tsx` (flag-icons), ~16–18px em
-  listas, ~20px em destaque. Cripto não tem país → ícone lucide do mesmo tamanho,
-  para não quebrar o alinhamento.
-- **Client components:** tudo que usa canvas, WebGL, chart, listener ou
-  `localStorage` precisa de `"use client"` e cleanup no `useEffect`.
-- **Hidratação:** ao reidratar de `localStorage`, renderizar o padrão no servidor
-  e ajustar no efeito — nunca causar mismatch.
-- **Acessibilidade:** labels associados aos inputs, `aria-label` em botões de
-  ícone, foco visível, gráficos decorativos com `aria-hidden` (os dados também
-  aparecem em tabela/legenda).
-- **Responsivo** sempre: testar desktop e mobile.
+- **Currency:** the internal source of truth is always **USDT** (a stablecoin:
+  readable prices for tokenized assets, without ETH/BTC volatility). **BTC** is
+  the site's second main currency. USD, BRL and EUR are available only as
+  reference display currencies; ETH is still available only in the currency
+  converter (`/exchange`) and is no longer an internal unit. Conversion happens
+  only at display time, through `CurrencyContext` (`format()`/`convert()`).
+  Fixed rates live in `src/lib/rates.ts`, marked as simulated references. Fixed
+  formatting per currency: USDT with 2 decimals, BTC with 8 (satoshis).
+  Exception: the home ticker shows **index points**, not currency; don't convert.
+- **Numbers:** JetBrains Mono + `tabular-nums`, right-aligned in tables.
+- **Flags:** `src/components/ui/Flag.tsx` (flag-icons), ~16–18px in lists, ~20px
+  when highlighted. Crypto has no country → a lucide icon of the same size, so
+  alignment doesn't break.
+- **Client components:** anything that uses a canvas, WebGL, chart, listener or
+  `localStorage` needs `"use client"` and a cleanup in `useEffect`.
+- **Hydration:** when rehydrating from `localStorage`, render the default on the
+  server and adjust in an effect; never cause a mismatch.
+- **Accessibility:** labels tied to inputs, `aria-label` on icon buttons,
+  visible focus, decorative charts with `aria-hidden` (the data also appears in
+  a table/legend).
+- **Responsive**, always: test desktop and mobile.
 
 ---
 
-## Fluxo de trabalho
+## Workflow
 
-1. Antes de codar, ler os arquivos envolvidos — não presumir.
-2. Rodar `tsc --noEmit` e `eslint` ao final; corrigir o que aparecer.
-3. Testar que as rotas respondem 200 no dev server.
-4. **Commit local ao final de cada tarefa**, mensagem em português no padrão
+1. Before coding, read the files involved; don't assume.
+2. Run `tsc --noEmit` and `eslint` at the end; fix whatever comes up.
+3. Check that the routes return 200 on the dev server.
+4. **Local commit at the end of each task**, message in English using
    `feat:` / `fix:` / `refactor:` / `chore:`.
-5. Nunca `--force`, nunca reescrever histórico, nunca push sem ser pedido.
-6. Se algo quebrar ou ficar ambíguo: **parar e explicar**, não improvisar.
+5. Never `--force`, never rewrite history, never push unless asked.
+6. If something breaks or is ambiguous: **stop and explain**, don't improvise.
 
-Identidade Git deste repositório: `Niara <niaragaed@gmail.com>` (local, sem `--global`).
+Git identity for this repository: `Niara <niaragaed@gmail.com>` (local, not `--global`).
 
 ---
 
-## Pendências conhecidas
+## Known open items
 
-- Internacionalização: site em inglês (idioma padrão). `pt.ts` + seletor de
-  idioma ficam para quando houver demanda bilíngue (ver seção "Idioma").
-- `/profile`: concluído — dados pessoais, perfil de investidor (suitability) e
-  carteira. Não terá seções de segurança nem preferências.
-- Home: faltam as seções de conteúdo abaixo do hero (problema, solução, cashback,
-  como funciona, roadmap, captura de contato)
-- Página para empresas emissoras (cashback como centro do discurso)
-- Substituir mocks por feeds reais (mercado, on-chain)
-- Integração de carteira (wagmi/ethers) → depois disso, perfil e KYC reais
-- Contratos Solidity (`AssetToken`, exchange, cashback) — testnet Sepolia
-- `README.md` ainda é o padrão do create-next-app
-- Deploy na Vercel
-- 2 vulnerabilidades moderadas do template (não rodar `npm audit fix --force`)
+- Internationalization: the site is in English (default language). `pt.ts` and
+  a language switcher wait for bilingual demand (see "Language").
+- `/profile`: done (personal data, investor profile/suitability and wallet). It
+  won't get security or preferences sections.
+- Home: the content sections below the hero are missing (problem, solution,
+  cashback, how it works, roadmap, contact capture)
+- Page for issuing companies (cashback at the center of the pitch)
+- Replace mocks with real feeds (market, on-chain)
+- Wallet integration beyond the `/pilot` page → then a real profile and KYC
+- Solidity contracts (`AssetToken`, exchange, cashback) live in
+  `niaragaed/niara-contracts`
+- `README.md` is still the create-next-app default
+- Deploy on Vercel
+- 2 moderate vulnerabilities from the template (don't run `npm audit fix --force`)

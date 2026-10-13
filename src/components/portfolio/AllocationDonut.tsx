@@ -17,8 +17,8 @@ const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
   { value: "regiao", label: en.assets.allocation.byRegion },
 ];
 
-// paleta derivada dos tokens de acento (variação de luminosidade via
-// color-mix, não cores arbitrárias) — mantém a identidade da Niara
+// palette derived from the accent tokens (lightness variations via
+// color-mix, not arbitrary colors) to keep Niara's identity
 const PALETTE = [
   "var(--color-accent-blue)",
   "var(--color-accent-violet)",
@@ -70,9 +70,9 @@ function RegionFlag({ region }: { region: string }) {
   return <Globe className="h-4 w-4 text-text-muted" aria-hidden="true" />;
 }
 
-// tipo local (em vez do genérico do Recharts) — evita conflito de
-// variância entre o `content` inferido pelo <Tooltip> e um genérico
-// explícito <number, string>; só precisamos destes campos mesmo.
+// local type (instead of Recharts' generic): avoids a variance conflict
+// between the `content` inferred by <Tooltip> and an explicit
+// <number, string> generic; these are the only fields we need.
 type DonutTooltipProps = {
   active?: boolean;
   payload?: ReadonlyArray<{ payload?: AllocationItem }>;
@@ -122,8 +122,8 @@ export function AllocationDonut() {
         </div>
       </div>
 
-      {/* flex-col por padrão (empilha quando o CARD fica estreito, não só o
-          viewport — daí @container/@md em vez de sm:) */}
+      {/* flex-col by default (stacks when the CARD gets narrow, not just the
+          viewport; hence @container/@md instead of sm:) */}
       <div className="mt-4 flex flex-col gap-6 @md:flex-row @md:items-center">
         <div aria-hidden="true" className="mx-auto h-44 w-44 shrink-0 @md:h-48 @md:w-48">
           <ResponsiveContainer width="100%" height="100%">

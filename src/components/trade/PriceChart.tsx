@@ -90,12 +90,12 @@ export function PriceChart() {
     );
   }
 
-  // Um único efeito reconstrói o gráfico inteiro (candles + volume +
-  // indicadores) sempre que ativo, timeframe ou indicadores mudam. Mais
-  // simples e robusto do que atualizar séries/panes individualmente, e o
-  // custo é irrelevante para ~200 candles mock. `chart.remove()` já limpa
-  // todas as séries/panes de uma vez — cuidado com StrictMode (o cleanup
-  // roda antes de cada nova execução do efeito, não só no unmount real).
+  // A single effect rebuilds the whole chart (candles + volume + indicators)
+  // whenever the asset, timeframe or indicators change. Simpler and more
+  // robust than updating series/panes one by one, and the cost is negligible
+  // for ~200 mock candles. `chart.remove()` clears every series/pane at once.
+  // Watch out for StrictMode: the cleanup runs before every new run of the
+  // effect, not only on the real unmount.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;

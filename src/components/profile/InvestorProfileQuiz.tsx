@@ -9,8 +9,8 @@ import { en } from "@/lib/i18n/en";
 export function InvestorProfileQuiz() {
   const { saveResult } = useInvestorProfile();
   const [step, setStep] = useState(0);
-  // respostas ficam só neste estado em memória — nunca são persistidas
-  // individualmente; só o escore final vai para o contexto/localStorage.
+  // answers live only in this in-memory state and are never persisted
+  // individually; only the final score goes to the context/localStorage.
   const [answers, setAnswers] = useState<Array<number | null>>(() =>
     QUIZ_QUESTIONS.map(() => null),
   );

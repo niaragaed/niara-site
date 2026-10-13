@@ -35,7 +35,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Next 16: headers() é assíncrono — precisa de await.
+  // Next 16: headers() is async, so it must be awaited.
   const initialState = cookieToInitialState(config, (await headers()).get("cookie"));
 
   return (

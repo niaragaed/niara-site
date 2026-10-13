@@ -8,8 +8,8 @@ import { sepolia } from "wagmi/chains";
 import { en } from "@/lib/i18n/en";
 
 function subscribeToProvider() {
-  // Presença de window.ethereum não muda de forma observável — não há
-  // evento para assinar, só a leitura pós-hidratação via getSnapshot.
+  // The presence of window.ethereum doesn't change observably: there is no
+  // event to subscribe to, only the post-hydration read via getSnapshot.
   return () => {};
 }
 
@@ -18,8 +18,8 @@ function getProviderSnapshot() {
 }
 
 function getProviderServerSnapshot() {
-  // Assume presente no servidor/primeira pintura para não penalizar o
-  // caminho feliz (carteira instalada) com um flash negativo.
+  // Assume it's present on the server/first paint so the happy path (wallet
+  // installed) isn't penalized with a negative flash.
   return true;
 }
 
