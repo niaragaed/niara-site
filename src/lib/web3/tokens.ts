@@ -1,8 +1,8 @@
 import type { Address } from "viem";
 
-// Lista fixa dos tokens ERC-20 mock na Sepolia lidos pelo TokenBalances.
-// fallbackSymbol só é usado se a leitura on-chain de symbol() falhar — o
-// símbolo real sempre vem do contrato.
+// Fixed list of the Sepolia mock ERC-20 tokens read by TokenBalances.
+// fallbackSymbol is only used if the on-chain symbol() read fails; the real
+// symbol always comes from the contract.
 export type Erc20TokenConfig = {
   address: Address;
   fallbackSymbol: string;

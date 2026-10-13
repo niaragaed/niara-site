@@ -1,6 +1,6 @@
 import { en } from "@/lib/i18n/en";
 
-// placeholder — trocar por SVGs oficiais das redes
+// placeholder: replace with the networks' official SVGs
 const NETWORKS = ["Ethereum", "Solana", "Bitcoin", "USDC", en.home.comingSoon];
 
 export function SupportedNetworks() {

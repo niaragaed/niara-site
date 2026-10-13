@@ -8,8 +8,8 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { Flag } from "@/components/ui/Flag";
 import { en } from "@/lib/i18n/en";
 
-// mesma largura da <Flag> em cada tamanho (1.333em de 16px/20px), pra coluna
-// do símbolo começar sempre na mesma posição, com ou sem bandeira
+// same width as <Flag> at each size (1.333em of 16px/20px), so the symbol
+// column always starts at the same position, with or without a flag
 const ICON_BOX_WIDTH: Record<"sm" | "lg", string> = {
   sm: "w-[21px]",
   lg: "w-[27px]",

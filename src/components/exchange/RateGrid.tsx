@@ -18,8 +18,8 @@ function hashString(value: string): number {
   return hash;
 }
 
-// TODO: substituir por feed real — variação 24h meramente ilustrativa,
-// gerada de forma determinística (sem Math.random) a partir do par.
+// TODO: replace with a real feed. The 24h change is illustrative only,
+// generated deterministically (no Math.random) from the pair.
 function mockChange(pairKey: string): number {
   const seed = hashString(pairKey);
   return ((seed % 400) - 200) / 100; // entre -2.00% e +2.00%

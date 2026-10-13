@@ -33,7 +33,7 @@ export function ProfileNav() {
         </ul>
       </nav>
 
-      {/* Mobile: abas horizontais roláveis */}
+      {/* Mobile: horizontally scrollable tabs */}
       <div
         role="tablist"
         aria-label={en.profile.sectionsAriaLabel}

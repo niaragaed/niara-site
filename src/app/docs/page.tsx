@@ -99,8 +99,8 @@ export default function DocsPage() {
               </span>{" "}
               {en.docs.technologyNote}
             </p>
-            {/* TODO: detalhar rede/testnet específica e endereços de
-                contrato assim que existirem publicamente */}
+            {/* TODO: name the specific network/testnet and the contract
+                addresses once they are public */}
           </section>
 
           <section id="faq" className="scroll-mt-24">

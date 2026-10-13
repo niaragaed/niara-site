@@ -6,31 +6,31 @@ import { useCurrency } from "@/context/CurrencyContext";
 import type { OrderSide } from "@/lib/trading";
 import { en } from "@/lib/i18n/en";
 
-const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
+const FEE_RATE = 0.001; // 0.1%: estimated Niara fee
 const DEVIATION_WARNING_THRESHOLD = 0.2; // 20%
 
-// O componente pai monta este formulário com `key={selectedAsset.symbol}` —
-// trocar de ativo remonta o form do zero, resetando quantidade/preço/
-// aprovação sem precisar sincronizar estado via useEffect.
+// The parent mounts this form with `key={selectedAsset.symbol}`, so
+// switching assets remounts the form from scratch, resetting quantity/price/
+// approval without syncing state through useEffect.
 export function OrderForm() {
   const { selectedAsset, submitOrder } = useExchange();
   const { currency, convert, toUsdt, format, formatPlain } = useCurrency();
 
   const [side, setSide] = useState<OrderSide>("buy");
   const [qty, setQty] = useState("");
-  // `priceUsdt` é a fonte da verdade (sempre em USDT); `priceInput` é só o
-  // texto exibido/editado, na moeda selecionada no momento.
+  // `priceUsdt` is the source of truth (always in USDT); `priceInput` is just
+  // the displayed/edited text, in the currently selected currency.
   const [priceUsdt, setPriceUsdt] = useState<number | null>(null);
   const [priceInput, setPriceInput] = useState("");
   const [approved, setApproved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  // Troca de moeda: reexibe o mesmo valor (o `priceUsdt` armazenado nunca
-  // muda) convertido pra nova moeda — evita arredondamento acumulado, já
-  // que nunca reconverte em cima de um número já arredondado na tela.
-  // Ajuste feito durante o render (padrão recomendado pelo React para
-  // "reagir a uma prop/dependência mudando"), não em useEffect.
+  // Currency change: redisplay the same value (the stored `priceUsdt` never
+  // changes) converted to the new currency. This avoids accumulated rounding,
+  // since we never reconvert from a number already rounded on screen.
+  // Adjusted during render (React's recommended pattern for "reacting to a
+  // changing prop/dependency"), not in useEffect.
   const [prevCurrency, setPrevCurrency] = useState(currency);
   if (currency !== prevCurrency) {
     setPrevCurrency(currency);
