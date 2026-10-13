@@ -1,10 +1,9 @@
 type FlagSize = "sm" | "md" | "lg";
 
-// flag-icons dimensiona pelo font-size (width: 1.333em, proporção 4:3) —
-// por isso o tamanho é controlado via text-*, não h-*/w-*. Esses três
-// tamanhos cobrem os usos do site: sm (~16px) em tabelas/listas densas,
-// md (~18px) em linhas um pouco mais destacadas, lg (~20px) no cabeçalho
-// do ativo selecionado.
+// flag-icons sizes by font-size (width: 1.333em, 4:3 ratio), which is why
+// the size is controlled with text-*, not h-*/w-*. These three sizes cover
+// the site's uses: sm (~16px) in dense tables/lists, md (~18px) in slightly
+// more prominent rows, lg (~20px) in the selected asset's header.
 const SIZE_CLASSES: Record<FlagSize, string> = {
   sm: "text-base",
   md: "text-lg",

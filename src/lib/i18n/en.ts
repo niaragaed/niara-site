@@ -1,7 +1,7 @@
 // Central dictionary for all interface copy. English is the default (and,
 // for now, only) language — components import `en` directly, no routing or
 // locale switching involved.
-// TODO: adicionar pt.ts e um seletor de idioma quando houver demanda bilíngue.
+// TODO: add pt.ts and a language switcher when there is demand for bilingual support.
 
 export const en = {
   common: {
@@ -311,17 +311,17 @@ export const en = {
       saveHint:
         "When you save, the data stays only on this page (browser state) — this is a simulation, nothing is sent to a server.",
 
-      // país — primeiro campo da seção, determina documento/data/telefone/
-      // endereço a seguir
+      // country: the section's first field; it determines the document/date/
+      // phone/address fields that follow
       country: "Country",
       selectCountry: "Select a country",
       searchCountryPlaceholder: "Search country...",
       noCountriesFound: "No country found.",
       detectedHint: "Detected from your location — change it if it's wrong.",
 
-      // rótulo + placeholder do documento de identificação por país (ISO
-      // alpha-2). Países fora do mapa caem no genericDocument.
-      // expandir conforme os mercados atendidos
+      // identity document label + placeholder per country (ISO alpha-2).
+      // Countries not in the map fall back to genericDocument.
+      // Extend as new markets are served.
       documents: {
         BR: { label: "CPF", placeholder: "000.000.000-00" },
         US: { label: "SSN / ITIN", placeholder: "000-00-0000" },
@@ -344,8 +344,8 @@ export const en = {
       } as Record<string, { label: string; placeholder: string }>,
       genericDocument: { label: "Tax ID / National ID", placeholder: "" },
 
-      // rótulos regionais que variam por país (código postal e estado/
-      // província) — BR e US têm rótulo próprio, os demais caem no default
+      // regional labels that vary by country (postal code and state/
+      // province); BR and US have their own, the rest use the default
       postalLabels: { BR: "CEP", US: "ZIP code" } as Record<string, string>,
       postalLabelDefault: "Postal code",
       regionLabelBR: "State",
