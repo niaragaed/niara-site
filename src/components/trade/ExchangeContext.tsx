@@ -1,10 +1,10 @@
 "use client";
 
-// Estado compartilhado via Context (em vez de elevar tudo em ExchangeTerminal
-// e prop-drillar) porque o terminal tem ~6 painéis irmãos (conta, gráfico,
-// livro, boleta, ordens, posições) que leem e escrevem o mesmo estado —
-// passar 8+ props por vários níveis ficaria mais confuso do que um Provider
-// único no topo com um hook `useExchange()`.
+// Shared state through Context (instead of lifting everything into
+// ExchangeTerminal and prop-drilling) because the terminal has ~6 sibling
+// panels (account, chart, order book, order form, orders, positions) that read
+// and write the same state. Passing 8+ props through several levels would be
+// more confusing than a single top-level Provider with a `useExchange()` hook.
 
 import {
   createContext,
@@ -26,7 +26,7 @@ import {
   type Position,
 } from "@/lib/trading";
 
-const FEE_RATE = 0.001; // 0,1% — taxa estimada da Niara
+const FEE_RATE = 0.001; // 0.1%: estimated Niara fee
 
 export type SubmitResult =
   | { status: "filled"; fillPrice: number }
@@ -37,7 +37,7 @@ type ExchangeState = {
   selectedAsset: Asset;
   selectAsset: (asset: Asset) => void;
 
-  // simulado — nenhum valor aqui reflete saldo ou posição reais
+  // simulated: no value here reflects a real balance or position
   balance: number;
   buyingPower: number;
   marginUsed: number;
@@ -57,7 +57,7 @@ const ExchangeContext = createContext<ExchangeState | null>(null);
 export function useExchange(): ExchangeState {
   const ctx = useContext(ExchangeContext);
   if (!ctx) {
-    throw new Error("useExchange precisa estar dentro de <ExchangeProvider>");
+    throw new Error("useExchange must be used inside <ExchangeProvider>");
   }
   return ctx;
 }
@@ -69,8 +69,8 @@ export function ExchangeProvider({
   children: ReactNode;
   initialSymbol?: string;
 }) {
-  // só usado na primeira renderização (useState ignora mudanças depois) —
-  // é assim que /trade?asset=XXXX pré-seleciona o ativo vindo de /assets
+  // only used on the first render (useState ignores later changes); this is
+  // how /trade?asset=XXXX preselects the asset coming from /assets
   const [selectedAsset, setSelectedAsset] = useState<Asset>(
     () => MOCK_ASSETS.find((asset) => asset.symbol === initialSymbol) ?? MOCK_ASSETS[0],
   );
@@ -89,8 +89,8 @@ export function ExchangeProvider({
     [positions],
   );
 
-  // P/L "do dia" ilustrativo: compara o preço médio de cada posição com o
-  // preço de referência mock do ativo (não há série intradiária real aqui).
+  // Illustrative "day" P/L: compares each position's average price with the
+  // asset's mock reference price (there is no real intraday series here).
   const pnlToday = useMemo(
     () =>
       positions.reduce((sum, p) => {
@@ -100,7 +100,7 @@ export function ExchangeProvider({
     [positions, priceBySymbol],
   );
 
-  const buyingPower = balance * 2; // limite operacional simulado (2x o saldo)
+  const buyingPower = balance * 2; // simulated trading limit (2x the balance)
 
   const bookForSelected = useMemo(() => {
     const base = generateMockOrderBook(
@@ -115,8 +115,8 @@ export function ExchangeProvider({
       .filter((o) => o.side === "buy")
       .map((o) => ({ id: o.id, side: "buy", qty: o.qty, price: o.price, isUser: true }));
 
-    // sempre reordenado após inserção: asks do maior pro menor, bids do
-    // maior pro menor — é essa reordenação que evita o spread quebrado.
+    // always re-sorted after insertion: asks from highest to lowest, bids
+    // from highest to lowest. This re-sort is what prevents a broken spread.
     const asks = [...base.asks, ...restingAsks].sort((a, b) => b.price - a.price);
     const bids = [...base.bids, ...restingBids].sort((a, b) => b.price - a.price);
     return { asks, bids };

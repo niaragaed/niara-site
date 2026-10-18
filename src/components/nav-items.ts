@@ -10,8 +10,8 @@ export type NavChild = {
 
 export type NavItem = {
   label: string;
-  // não usado quando `children` está presente (o item vira um botão de
-  // mega-menu, não um link) — mantido obrigatório só para simplificar o tipo.
+  // unused when `children` is present (the item becomes a mega-menu button,
+  // not a link); kept required only to keep the type simple.
   href: string;
   children?: NavChild[];
 };
@@ -21,8 +21,8 @@ export const NAV_ITEMS: NavItem[] = [
   { label: en.nav.exchange, href: "/exchange" },
   { label: en.nav.assets, href: "/assets" },
   { label: en.nav.profile, href: "/profile" },
-  // Cashback é argumento para empresas emissoras — terá página própria
-  // voltada a emissores, fora do nav principal.
+  // Cashback is a selling point for issuing companies; it will get its own
+  // issuer-facing page, outside the main nav.
   {
     label: en.nav.about,
     href: "#",

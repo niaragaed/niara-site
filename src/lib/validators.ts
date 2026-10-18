@@ -1,11 +1,11 @@
-// Validadores e máscaras puros (sem libs externas) para o formulário de
-// dados pessoais do /profile. Nenhuma função aqui persiste dado nenhum —
-// são só transformações de string. Nenhum texto de interface mora aqui —
-// isso fica em src/lib/i18n/en.ts (ver DOCUMENT_RULES para o mapeamento
-// país → mask/valida, sem rótulos).
+// Pure validators and masks (no external libraries) for the personal data
+// form on /profile. No function here persists any data; they are only string
+// transformations. No interface text lives here; that belongs in
+// src/lib/i18n/en.ts (see DOCUMENT_RULES for the country → mask/validate
+// mapping, without labels).
 
 // ---------------------------------------------------------------------------
-// Máscaras genéricas (CPF, telefone BR, CEP) — mantidas como estavam
+// Generic masks (CPF, BR phone, CEP), kept as they were
 // ---------------------------------------------------------------------------
 
 export function maskCPF(value: string): string {
@@ -37,14 +37,14 @@ export function maskCEP(value: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Validações genéricas — mantidas como estavam
+// Generic validations, kept as they were
 // ---------------------------------------------------------------------------
 
 export function validaCPF(value: string): boolean {
   const cpf = value.replace(/\D/g, "");
   if (cpf.length !== 11) return false;
-  // rejeita sequências repetidas (111.111.111-11 etc.), que passariam no
-  // cálculo dos dígitos verificadores mas não são CPFs válidos
+  // rejects repeated sequences (111.111.111-11 etc.), which would pass the
+  // check-digit calculation but are not valid CPFs
   if (/^(\d)\1{10}$/.test(cpf)) return false;
 
   const digits = cpf.split("").map(Number);
@@ -74,9 +74,10 @@ export function validaCEP(value: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Data de nascimento — agora parametrizada por formato regional (o campo
-// era fixo em DD/MM/YYYY; cada país tem o seu). "DMY"/"MDY" usam separador
-// "/", "YMD" (padrão ISO, fallback dos países sem regra específica) usa "-".
+// Date of birth, now parameterized by regional format (the field used to be
+// fixed to DD/MM/YYYY; each country has its own). "DMY"/"MDY" use the "/"
+// separator, "YMD" (ISO standard, the fallback for countries without a
+// specific rule) uses "-".
 // ---------------------------------------------------------------------------
 
 export type DateFormat = "DMY" | "MDY" | "YMD";
@@ -151,10 +152,10 @@ export function validaData(value: string, format: DateFormat): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Telefone — máscara com DDI, parametrizada por país. BR e US/CA usam o
-// padrão local com parênteses no DDD/area code; os demais usam blocos
-// separados por espaço, que é o suficiente para não travar a digitação
-// sem fingir conhecer a formatação oficial de cada operadora.
+// Phone: mask with the country calling code, parameterized by country. BR
+// and US/CA use the local pattern with parentheses around the area code; the
+// rest use space-separated blocks, which is enough to not block typing
+// without pretending to know each carrier's official format.
 // ---------------------------------------------------------------------------
 
 export function maskPhoneBR(value: string): string {
@@ -192,19 +193,19 @@ export function validaTelefonePais(value: string, maxDigits: number): boolean {
   return digits.length === maxDigits;
 }
 
-// generic fallback para países sem regra de telefone específica — não força
-// um comprimento exato, só uma faixa plausível (formato E.164)
+// generic fallback for countries without a specific phone rule: it doesn't
+// enforce an exact length, only a plausible range (E.164 format)
 export function validaTelefoneGenerico(value: string): boolean {
   const digits = value.replace(/\D/g, "");
   return digits.length >= 6 && digits.length <= 15;
 }
 
 // ---------------------------------------------------------------------------
-// Documentos de identificação por país — cada país mapeia para uma regra
-// { mascara?, valida }. Usado via DOCUMENT_RULES/getDocumentRule, para não
-// acumular `if (país === "BR") ... else if (país === "US") ...` nos
-// componentes. Rótulos e placeholders NÃO ficam aqui — isso é texto de
-// interface e mora em src/lib/i18n/en.ts.
+// Identity documents per country: each country maps to a rule
+// { mask?, validate }. Used through DOCUMENT_RULES/getDocumentRule, so the
+// components don't pile up `if (country === "BR") ... else if (country ===
+// "US") ...`. Labels and placeholders do NOT live here; that is interface
+// text and belongs in src/lib/i18n/en.ts.
 // ---------------------------------------------------------------------------
 
 export type DocumentRule = {
@@ -216,8 +217,8 @@ function soDigitos(value: string): string {
   return value.replace(/\D/g, "");
 }
 
-// US — SSN/ITIN: sem dígito verificador público, só formato (9 dígitos, DDD
-// inicial não pode ser 000/666/9xx, regra real da SSA)
+// US: SSN/ITIN. No public check digit, format only (9 digits; the first
+// group can't be 000/666/9xx, a real SSA rule)
 function maskSSN(value: string): string {
   const digits = soDigitos(value).slice(0, 9);
   return digits
@@ -231,8 +232,8 @@ function validaSSN(value: string): boolean {
   return area !== "000" && area !== "666" && Number(area) < 900;
 }
 
-// GB — National Insurance Number: 2 letras (excluindo D,F,I,Q,U,V) + 6
-// dígitos + sufixo opcional A-D. Sem checksum público, só formato.
+// GB: National Insurance Number. 2 letters (excluding D,F,I,Q,U,V) + 6
+// digits + optional A-D suffix. No public checksum, format only.
 function maskNINO(value: string): string {
   const clean = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 9);
   const letters = clean.slice(0, 2);
@@ -246,11 +247,11 @@ function validaNINO(value: string): boolean {
   return /^[A-CEGHJ-PR-TW-Z]{1}[A-CEGHJ-NPR-TW-Z]{1}\d{6}[A-D]?$/.test(clean);
 }
 
-// PT — NIF: 9 dígitos, sem separadores no uso comum
+// PT: NIF. 9 digits, no separators in common use
 function maskNIF(value: string): string {
   return soDigitos(value).slice(0, 9);
 }
-// PT — NIF: 9 dígitos, dígito verificador real (mod 11), mesmo espírito do CPF
+// PT: NIF. 9 digits, real check digit (mod 11), same idea as the CPF
 function validaNIF(value: string): boolean {
   const digits = soDigitos(value);
   if (digits.length !== 9) return false;
@@ -261,43 +262,43 @@ function validaNIF(value: string): boolean {
   return check === nums[8];
 }
 
-// DE — Steuerliche Identifikationsnummer: 11 dígitos, agrupados para leitura
+// DE: Steuerliche Identifikationsnummer. 11 digits, grouped for readability
 function maskSteuerID(value: string): string {
   const digits = soDigitos(value).slice(0, 11);
   return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9), digits.slice(9, 11)]
     .filter(Boolean)
     .join(" ");
 }
-// DE — Steuerliche Identifikationsnummer: 11 dígitos, só formato (o
-// checksum oficial usa um algoritmo de frequência de dígitos que não
-// replicamos aqui — evita fingir uma validação mais forte do que é)
+// DE: Steuerliche Identifikationsnummer. 11 digits, format only (the
+// official checksum uses a digit-frequency algorithm we don't replicate
+// here, to avoid pretending the validation is stronger than it is)
 function validaSteuerID(value: string): boolean {
   return /^\d{11}$/.test(soDigitos(value)) && soDigitos(value)[0] !== "0";
 }
 
-// FR — numéro fiscal de référence: 13 dígitos, agrupados de 2 em 2
+// FR: numéro fiscal de référence. 13 digits, grouped in pairs
 function maskNumeroFiscalFR(value: string): string {
   const digits = soDigitos(value).slice(0, 13);
   const groups: string[] = [];
   for (let i = 0; i < digits.length; i += 2) groups.push(digits.slice(i, i + 2));
   return groups.join(" ");
 }
-// FR — numéro fiscal de référence: 13 dígitos, só formato
+// FR: numéro fiscal de référence. 13 digits, format only
 function validaNumeroFiscalFR(value: string): boolean {
   return /^\d{13}$/.test(soDigitos(value));
 }
 
-// IT — Codice Fiscale: 16 caracteres alfanuméricos, só normaliza caixa/comprimento
+// IT: Codice Fiscale. 16 alphanumeric characters; only normalizes case/length
 function maskCodiceFiscale(value: string): string {
   return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 16);
 }
-// IT — Codice Fiscale: 16 caracteres alfanuméricos no padrão oficial, só formato
+// IT: Codice Fiscale. 16 alphanumeric characters in the official pattern, format only
 function validaCodiceFiscale(value: string): boolean {
   const clean = value.replace(/\s/g, "").toUpperCase();
   return /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/.test(clean);
 }
 
-// CA — Social Insurance Number: 9 dígitos com checksum Luhn (mod 10) real
+// CA: Social Insurance Number. 9 digits with a real Luhn (mod 10) checksum
 function validaSIN(value: string): boolean {
   const digits = soDigitos(value);
   if (digits.length !== 9) return false;
@@ -319,7 +320,7 @@ function maskSIN(value: string): string {
     .replace(/(\d{3})(\d{1,3})$/, "$1-$2");
 }
 
-// AU — Tax File Number (9 dígitos): checksum ponderado real (mod 11)
+// AU: Tax File Number (9 digits). Real weighted checksum (mod 11)
 function validaTFN(value: string): boolean {
   const digits = soDigitos(value);
   if (digits.length !== 9) return false;
@@ -334,17 +335,17 @@ function maskTFN(value: string): string {
     .replace(/(\d{3})(\d{1,3})$/, "$1 $2");
 }
 
-// MX — RFC: só normaliza caixa/comprimento (13 caracteres no máximo)
+// MX: RFC. Only normalizes case/length (13 characters at most)
 function maskRFC(value: string): string {
   return value.replace(/[^a-zA-Z0-9ÑñX]/g, "").toUpperCase().slice(0, 13);
 }
-// MX — RFC: 12 (pessoa jurídica) ou 13 (pessoa física) caracteres alfanuméricos
+// MX: RFC. 12 (company) or 13 (individual) alphanumeric characters
 function validaRFC(value: string): boolean {
   const clean = value.replace(/[^A-Za-z0-9ÑñX]/g, "").toUpperCase();
   return /^[A-ZÑX&]{3,4}\d{6}[A-Z0-9]{3}$/.test(clean);
 }
 
-// AR — CUIT: 11 dígitos, checksum ponderado real (mod 11)
+// AR: CUIT. 11 digits, real weighted checksum (mod 11)
 function validaCUIT(value: string): boolean {
   const digits = soDigitos(value);
   if (digits.length !== 11) return false;
@@ -365,7 +366,7 @@ function maskCUIT(value: string): string {
     .replace(/(\d{2})-(\d{8})(\d{1})$/, "$1-$2-$3");
 }
 
-// CL — RUT: dígito verificador real (mod 11, com "K" possível)
+// CL: RUT. Real check digit (mod 11, "K" possible)
 function validaRUT(value: string): boolean {
   const clean = value.replace(/[^0-9kK]/g, "").toUpperCase();
   if (clean.length < 2) return false;
@@ -392,7 +393,7 @@ function maskRUT(value: string): string {
   return dv ? `${grouped}-${dv}` : grouped;
 }
 
-// JP — My Number (Kojin Bangō): 12 dígitos, só formato
+// JP: My Number (Kojin Bangō). 12 digits, format only
 function validaMyNumber(value: string): boolean {
   return /^\d{12}$/.test(soDigitos(value));
 }
@@ -403,18 +404,18 @@ function maskMyNumber(value: string): string {
     .replace(/(\d{4}) (\d{4})(\d{1,4})$/, "$1 $2 $3");
 }
 
-// SG — NRIC/FIN: só normaliza caixa/comprimento (9 caracteres)
+// SG: NRIC/FIN. Only normalizes case/length (9 characters)
 function maskNRIC(value: string): string {
   return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 9);
 }
-// SG — NRIC/FIN: letra + 7 dígitos + letra, só formato (checksum oficial
-// usa uma tabela de pesos não pública para todos os prefixos)
+// SG: NRIC/FIN. Letter + 7 digits + letter, format only (the official
+// checksum uses a weight table that isn't public for every prefix)
 function validaNRIC(value: string): boolean {
   const clean = value.replace(/\s/g, "").toUpperCase();
   return /^[STFGM]\d{7}[A-Z]$/.test(clean);
 }
 
-// AE — Emirates ID: 15 dígitos, só formato
+// AE: Emirates ID. 15 digits, format only
 function validaEmiratesID(value: string): boolean {
   return /^\d{15}$/.test(soDigitos(value));
 }
@@ -426,7 +427,7 @@ function maskEmiratesID(value: string): string {
     .replace(/(\d{3})-(\d{4})-(\d{7})(\d{1,4})$/, "$1-$2-$3-$4");
 }
 
-// CH — AHV/AVS: 13 dígitos (começa com 756), só formato
+// CH: AHV/AVS. 13 digits (starts with 756), format only
 function validaAHV(value: string): boolean {
   return /^\d{13}$/.test(soDigitos(value));
 }
@@ -438,8 +439,8 @@ function maskAHV(value: string): string {
     .replace(/(\d{3})\.(\d{4})\.(\d{4})(\d{1,2})$/, "$1.$2.$3.$4");
 }
 
-// ES — DNI/NIE: 8 dígitos (ou X/Y/Z + 7 para NIE) + letra de controle real
-// (mod 23, tabela oficial)
+// ES: DNI/NIE. 8 digits (or X/Y/Z + 7 for an NIE) + a real control letter
+// (mod 23, official table)
 const ES_LETTERS = "TRWAGMYFPDXBNJZSQVHLCKE";
 function validaDNI(value: string): boolean {
   const clean = value.replace(/[^0-9XYZxyz]/gi, "").toUpperCase();
@@ -458,7 +459,7 @@ function maskDNI(value: string): string {
   return letter ? `${digits}-${letter}` : digits;
 }
 
-// NL — BSN: checksum "11-proef" real (soma ponderada, último peso -1)
+// NL: BSN. Real "11-proef" checksum (weighted sum, last weight -1)
 function validaBSN(value: string): boolean {
   const digits = soDigitos(value);
   if (digits.length !== 9) return false;
@@ -468,16 +469,16 @@ function validaBSN(value: string): boolean {
   return soma % 11 === 0;
 }
 
-// generic fallback — países sem regra específica; só exige um comprimento
-// mínimo plausível, sem inventar formato ou checksum
+// generic fallback for countries without a specific rule: only requires a
+// plausible minimum length, without making up a format or checksum
 export const GENERIC_DOCUMENT_RULE: DocumentRule = {
   valida: (value) => value.trim().replace(/\s/g, "").length >= 4,
 };
 
-// mapa país (ISO alpha-2) → regra de validação do documento — evita
-// acumular `if (país === "BR")` pelos componentes. Países fora do mapa
-// caem no GENERIC_DOCUMENT_RULE.
-// expandir conforme os mercados atendidos
+// country (ISO alpha-2) → document validation rule map, so the components
+// don't pile up `if (country === "BR")`. Countries not in the map fall back
+// to GENERIC_DOCUMENT_RULE.
+// Extend as new markets are served.
 export const DOCUMENT_RULES: Record<string, DocumentRule> = {
   BR: { mask: maskCPF, valida: validaCPF },
   US: { mask: maskSSN, valida: validaSSN },

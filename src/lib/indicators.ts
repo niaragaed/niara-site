@@ -45,7 +45,7 @@ function zip(candles: Candle[], values: (number | null)[]): IndicatorPoint[] {
   return out;
 }
 
-// --- overlays (sobre o preço) ---
+// --- overlays (on top of the price) ---
 
 export function calcSMA(candles: Candle[], period: number): IndicatorPoint[] {
   return zip(candles, sma(candles.map((c) => c.close), period));
@@ -118,7 +118,7 @@ export function calcDonchianChannel(
   return { upper, middle, lower };
 }
 
-// --- painéis separados ---
+// --- separate panes ---
 
 export function calcRSI(candles: Candle[], period = 14): IndicatorPoint[] {
   const closes = candles.map((c) => c.close);

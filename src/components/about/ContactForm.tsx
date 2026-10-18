@@ -36,10 +36,9 @@ export function ContactForm() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    // TODO: integrar com backend/serviço de e-mail (ex.: Resend, Formspied) —
-    // por enquanto não há envio real: abrimos o cliente de e-mail do
-    // visitante já preenchido, para não fingir que o formulário envia
-    // a mensagem sozinho.
+    // TODO: integrate with a backend/email service (e.g. Resend, Formspree).
+    // For now nothing is actually sent: we open the visitor's email client
+    // pre-filled, so the form doesn't pretend to send the message itself.
     const subject = encodeURIComponent(en.contact.form.subjectPrefix(interest, name));
     const body = encodeURIComponent(
       `Name: ${name}\nEmail: ${email}\nType of inquiry: ${interest}\n\nMessage:\n${message}`,

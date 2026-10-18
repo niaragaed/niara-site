@@ -2,7 +2,7 @@
 @import "flag-icons/css/flag-icons.min.css";
 
 @theme {
-  /* Superfícies */
+  /* Surfaces */
   --color-bg-base: #05070e;
   --color-bg-surface: #0a0e1a;
   --color-bg-elevated: #111728;
@@ -18,7 +18,7 @@
   --color-accent-violet: #7b3fe4;
   --color-accent-cyan: #38bdf8;
 
-  /* Semânticos */
+  /* Semantic */
   --color-positive: #16c784;
   --color-negative: #f6465d;
   --color-warning: #f0b90b;
@@ -29,7 +29,7 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
-  /* Animação */
+  /* Animation */
   --animate-marquee: marquee 40s linear infinite;
   --animate-ticker: marquee 60s linear infinite;
   --animate-dropdown: dropdown-in 150ms ease-out forwards;
@@ -55,9 +55,9 @@
   }
 }
 
-/* `inline` porque estas variáveis referenciam custom properties já
-   definidas no runtime (pelas classes do next/font em <html>), não
-   valores literais — ver docs do Tailwind v4 sobre @theme inline. */
+/* `inline` because these variables reference custom properties defined at
+   runtime (by the next/font classes on <html>), not literal values. See the
+   Tailwind v4 docs on @theme inline. */
 @theme inline {
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);

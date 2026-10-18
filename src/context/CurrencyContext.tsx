@@ -20,7 +20,7 @@ function isCurrency(value: string | null): value is Currency {
   return value !== null && (VALID_CURRENCIES as string[]).includes(value);
 }
 
-// preço de 1 USDT (a unidade interna) na moeda selecionada
+// price of 1 USDT (the internal unit) in the selected currency
 function rateFor(currency: Currency): number {
   switch (currency) {
     case "USDT":
@@ -28,7 +28,7 @@ function rateFor(currency: Currency): number {
     case "BTC":
       return 1 / BTC_USDT;
     case "USD":
-      return 1; // 1 USDT ≈ 1 USD, referência simulada
+      return 1; // 1 USDT ≈ 1 USD, simulated reference
     case "BRL":
       return USD_BRL;
     case "EUR":
@@ -36,9 +36,9 @@ function rateFor(currency: Currency): number {
   }
 }
 
-// casas decimais fixas por moeda — USDT usa 2 (padrão de stablecoin) e BTC
-// usa 8 (satoshis), para nunca truncar valores pequenos; moedas fiat usam a
-// formatação padrão do Intl (2 casas).
+// fixed decimal places per currency: USDT uses 2 (stablecoin convention) and
+// BTC uses 8 (satoshis), so small values are never truncated; fiat currencies
+// use Intl's default formatting (2 places).
 function decimalsFor(currency: Currency): number {
   return currency === "BTC" ? 8 : 2;
 }
@@ -46,13 +46,13 @@ function decimalsFor(currency: Currency): number {
 type CurrencyState = {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  /** valor convertido (número puro) para a moeda selecionada */
+  /** converted value (plain number) in the selected currency */
   convert: (valueInUsdt: number) => number;
-  /** converte um número já expresso na moeda selecionada de volta para USDT */
+  /** converts a number already in the selected currency back to USDT */
   toUsdt: (valueInCurrency: number) => number;
-  /** número formatado, sem símbolo de moeda — para tabelas densas */
+  /** formatted number without a currency symbol, for dense tables */
   formatPlain: (valueInUsdt: number) => string;
-  /** número formatado com símbolo/sufixo de moeda — para destaques */
+  /** formatted number with a currency symbol/suffix, for highlights */
   format: (valueInUsdt: number) => string;
 };
 
@@ -61,22 +61,22 @@ const CurrencyContext = createContext<CurrencyState | null>(null);
 export function useCurrency(): CurrencyState {
   const ctx = useContext(CurrencyContext);
   if (!ctx) {
-    throw new Error("useCurrency precisa estar dentro de <CurrencyProvider>");
+    throw new Error("useCurrency must be used inside <CurrencyProvider>");
   }
   return ctx;
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  // Sempre nasce em USDT — igual no servidor e no primeiro render do
-  // cliente. A preferência salva só é aplicada DEPOIS do mount, num efeito
-  // client-only (abaixo), pra nunca dar mismatch de hidratação.
+  // Always starts in USDT, the same on the server and on the client's first
+  // render. The saved preference is applied only AFTER mount, in a
+  // client-only effect (below), so there is never a hydration mismatch.
   const [currency, setCurrencyState] = useState<Currency>("USDT");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    // localStorage é um sistema externo só disponível no cliente — não dá
-    // pra ler durante o render (quebraria o SSR) nem existe alternativa
-    // sem efeito aqui; é exatamente o caso de uso que useEffect resolve.
+    // localStorage is an external system only available on the client: it
+    // can't be read during render (that would break SSR) and there is no
+    // effect-free alternative here; this is exactly what useEffect is for.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isCurrency(stored)) setCurrencyState(stored);
   }, []);

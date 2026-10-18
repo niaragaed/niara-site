@@ -15,8 +15,8 @@ function DepthBar({
   maxQty: number;
   side: "buy" | "sell";
 }) {
-  // normalizado pela maior quantidade do lado e sempre travado em 100% —
-  // uma ordem gigante nunca estoura a escala, só vira a barra "cheia".
+  // normalized by the largest quantity on that side and always capped at
+  // 100%: a huge order never breaks the scale, it just becomes a "full" bar.
   const pct = maxQty > 0 ? Math.min(100, (qty / maxQty) * 100) : 0;
   const colorVar =
     side === "buy" ? "var(--color-positive)" : "var(--color-negative)";
@@ -73,9 +73,9 @@ export function OrderBook() {
   const maxBidQty = Math.max(...bids.map((order) => order.qty), 1);
 
   const { bestAsk, bestBid } = getBestPrices(asks, bids);
-  // por construção (ordens que cruzam o livro executam na hora, ver
-  // trading.ts) bestAsk nunca fica abaixo de bestBid — o clamp aqui é só
-  // uma rede de segurança para nunca exibir spread negativo.
+  // by construction (orders that cross the book execute immediately, see
+  // trading.ts) bestAsk never falls below bestBid; the clamp here is only a
+  // safety net so a negative spread is never displayed.
   const spread =
     bestAsk !== undefined && bestBid !== undefined
       ? Math.max(bestAsk - bestBid, 0)

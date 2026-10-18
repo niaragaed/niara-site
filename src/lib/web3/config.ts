@@ -1,5 +1,5 @@
-// Configuração wagmi do piloto de carteira real (/pilot). Isolada do resto do
-// site simulado — usada só pelo Providers de src/app/pilot.
+// wagmi config for the real-wallet pilot (/pilot). Isolated from the rest of
+// the simulated site; used only by the Providers in src/app/pilot.
 import { cookieStorage, createConfig, createStorage, http } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
