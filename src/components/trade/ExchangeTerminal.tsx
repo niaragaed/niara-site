@@ -10,13 +10,12 @@ import { OrderForm } from "./OrderForm";
 import { OrdersPositionsPanel } from "./OrdersPositionsPanel";
 import { en } from "@/lib/i18n/en";
 
-// Ordem no DOM = ordem no mobile (empilhado, uma coluna). No desktop, cada
-// item é reposicionado por linha/coluna explícitas (col-start/row-start),
-// que independem da ordem no DOM — é o que permite o cabeçalho do ativo e o
-// livro compartilharem a coluna estreita da direita (linhas 1 e 2) enquanto
-// o gráfico ocupa as duas linhas de uma vez na coluna larga, sem quebrar a
-// sequência pedida para o mobile (cabeçalho, gráfico, boleta, livro,
-// ordens/posições).
+// DOM order = mobile order (stacked, one column). On desktop, each item is
+// repositioned with explicit rows/columns (col-start/row-start), which don't
+// depend on DOM order. That lets the asset header and the order book share
+// the narrow right column (rows 1 and 2) while the chart spans both rows in
+// the wide column, without breaking the order required on mobile (header,
+// chart, order form, order book, orders/positions).
 function ExchangeLayout() {
   const { selectedAsset } = useExchange();
 

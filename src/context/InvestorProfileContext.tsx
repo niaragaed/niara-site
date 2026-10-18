@@ -14,14 +14,14 @@ import {
   type InvestorProfileResult,
 } from "@/lib/investor-profile";
 
-// só a categoria, o escore agregado e a data são persistidos — nunca as
-// respostas individuais do questionário (dado de perfil, não dado sensível
-// de identificação, mas ainda assim mantemos o mínimo necessário).
+// only the category, the aggregate score and the date are persisted, never
+// the individual questionnaire answers (profile data, not sensitive identity
+// data, but we still keep only the minimum needed).
 const STORAGE_KEY = "niara:investor-profile";
 
 type InvestorProfileState = {
   result: InvestorProfileResult | null;
-  /** true só depois da hidratação no cliente — evita "pendente" piscar antes de ler o localStorage */
+  /** true only after client hydration, so "pending" doesn't flash before localStorage is read */
   hydrated: boolean;
   saveResult: (result: InvestorProfileResult) => void;
   clearResult: () => void;
@@ -32,15 +32,15 @@ const InvestorProfileContext = createContext<InvestorProfileState | null>(null);
 export function useInvestorProfile(): InvestorProfileState {
   const ctx = useContext(InvestorProfileContext);
   if (!ctx) {
-    throw new Error("useInvestorProfile precisa estar dentro de <InvestorProfileProvider>");
+    throw new Error("useInvestorProfile must be used inside <InvestorProfileProvider>");
   }
   return ctx;
 }
 
 export function InvestorProfileProvider({ children }: { children: ReactNode }) {
-  // nasce nulo no servidor e no primeiro render do cliente — a leitura do
-  // localStorage só acontece depois do mount, num efeito, pra não dar
-  // mismatch de hidratação.
+  // starts as null on the server and on the client's first render; reading
+  // localStorage only happens after mount, in an effect, to avoid a
+  // hydration mismatch.
   const [result, setResult] = useState<InvestorProfileResult | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -52,7 +52,7 @@ export function InvestorProfileProvider({ children }: { children: ReactNode }) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         if (isInvestorProfileResult(parsed)) setResult(parsed);
       } catch {
-        // valor corrompido/antigo — ignora e segue como "pendente"
+        // corrupted/old value: ignore it and stay "pending"
       }
     }
     setHydrated(true);

@@ -6,19 +6,19 @@ import { CITIES, type City } from "@/lib/cities";
 
 // #1B2440
 const BASE_COLOR: [number, number, number] = [0.106, 0.141, 0.251];
-// #2E6BFF, com a intensidade rebaixada para não estourar o fundo escuro
+// #2E6BFF, with the intensity lowered so it doesn't blow out the dark background
 const GLOW_COLOR: [number, number, number] = [0.108, 0.252, 0.6];
-// #38BDF8 — único marcador em destaque: "você está aqui"
+// #38BDF8: the only highlighted marker, "you are here"
 const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 
-// "poeira de luz": accent-blue puxado para o tom do próprio mapa (baseColor),
-// bem apagado — as cidades devem ler como textura do globo, não como pontos
-// flutuando por cima do conteúdo.
+// "light dust": accent-blue pulled toward the map's own tone (baseColor),
+// heavily dimmed. Cities should read as texture on the globe, not as dots
+// floating over the content.
 const CITY_COLOR: [number, number, number] = [0.128, 0.225, 0.476];
 const CITY_MIN_SIZE = 0.008;
 const CITY_MAX_SIZE = 0.02;
-const USER_MARKER_SIZE = 0.055; // destaque único, bem maior que as cidades
-const MARKER_ELEVATION = 0.01; // rente à superfície (padrão da cobe é 0.05)
+const USER_MARKER_SIZE = 0.055; // the single highlight, much larger than the cities
+const MARKER_ELEVATION = 0.01; // flush with the surface (cobe's default is 0.05)
 
 const MOBILE_BREAKPOINT = 640;
 const MOBILE_CITY_COUNT = 50;
@@ -72,8 +72,8 @@ export function HeroGlobe() {
     }
     readSize();
 
-    // Densidade de marcadores fixada no tamanho inicial da tela — evita
-    // recriar o globo a cada resize (só o canvas/resolução acompanham).
+    // Marker density is fixed at the initial screen size, so the globe isn't
+    // recreated on every resize (only the canvas/resolution follow it).
     const isMobile = width < MOBILE_BREAKPOINT;
     const cities = isMobile
       ? [...CITIES].sort((a, b) => b.pop - a.pop).slice(0, MOBILE_CITY_COUNT)
@@ -119,9 +119,9 @@ export function HeroGlobe() {
 
     const fadeInFrame = requestAnimationFrame(() => setReady(true));
 
-    // Geolocalização aproximada por IP (sem navigator.geolocation — evita o
-    // popup de permissão). Falha graciosa: sem marcador se bloquear/falhar.
-    // Localização não é armazenada, só usada em memória para recriar o globo.
+    // Approximate IP geolocation (no navigator.geolocation, which would show a
+    // permission popup). Fails gracefully: no marker if blocked or failing.
+    // The location is never stored; it's only used in memory to rebuild the globe.
     let cancelled = false;
     const geoController = new AbortController();
 
@@ -151,8 +151,8 @@ export function HeroGlobe() {
             color: USER_MARKER_COLOR,
           };
 
-          // Aproximação: orienta o globo para a longitude do visitante ficar
-          // de frente ao carregar. Heurística simples, não uma projeção exata.
+          // Approximation: rotate the globe so the visitor's longitude faces
+          // forward on load. A simple heuristic, not an exact projection.
           phi = (data.longitude * Math.PI) / 180;
 
           globe.destroy();
@@ -163,8 +163,8 @@ export function HeroGlobe() {
         },
       )
       .catch(() => {
-        // API de geolocalização indisponível/bloqueada (rede, CORS, etc.) —
-        // segue sem o marcador do usuário, sem quebrar o globo.
+        // Geolocation API unavailable or blocked (network, CORS, etc.):
+        // carry on without the user marker, without breaking the globe.
       });
 
     return () => {

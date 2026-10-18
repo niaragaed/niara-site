@@ -95,14 +95,14 @@ function display(value: string): string {
 }
 
 export function PersonalDataSection() {
-  // CPF (ou equivalente por país), data de nascimento e endereço são dados
-  // sensíveis (LGPD) e, como o site ainda não tem backend, vivem só neste
-  // estado de componente — nunca em localStorage, cookies ou qualquer outro
-  // storage persistente. Os demais campos seguem a mesma regra por
-  // simplicidade, já que nada aqui é realmente salvo em lugar nenhum.
-  // TODO: ao integrar backend — consentimento LGPD, criptografia em
-  // trânsito e repouso, política de privacidade e base legal para coleta de
-  // documentos de identificação.
+  // CPF (or each country's equivalent), date of birth and address are
+  // sensitive data (LGPD) and, since the site has no backend yet, they live
+  // only in this component state: never in localStorage, cookies or any other
+  // persistent storage. The other fields follow the same rule for
+  // simplicity, since nothing here is actually saved anywhere.
+  // TODO: when a backend is added: LGPD consent, encryption in transit and
+  // at rest, a privacy policy and a legal basis for collecting identity
+  // documents.
   const [saved, setSaved] = useState<FormData>(EMPTY_FORM);
   const [draft, setDraft] = useState<FormData>(EMPTY_FORM);
   const [mode, setMode] = useState<"view" | "edit">("edit");
@@ -110,10 +110,10 @@ export function PersonalDataSection() {
   const [justSaved, setJustSaved] = useState(false);
   const { result: investorResult, hydrated: investorHydrated } = useInvestorProfile();
 
-  // País por geolocalização de IP (mesma abordagem do HeroGlobe: ipwho.is,
-  // sem navigator.geolocation, falha graciosa) — só como sugestão inicial;
-  // nunca sobrescreve uma escolha que o usuário já tenha feito, e se a
-  // detecção falhar o campo fica vazio, obrigando a escolha manual.
+  // Country from IP geolocation (same approach as HeroGlobe: ipwho.is, no
+  // navigator.geolocation, fails gracefully), only as an initial suggestion.
+  // It never overrides a choice the user already made, and if detection
+  // fails the field stays empty, so the user has to pick manually.
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -131,8 +131,8 @@ export function PersonalDataSection() {
         setDraft((current) => (current.pais ? current : { ...current, pais: code }));
       })
       .catch(() => {
-        // API de geolocalização indisponível/bloqueada — deixa o país
-        // vazio, o usuário escolhe manualmente.
+        // Geolocation API unavailable or blocked: leave the country empty
+        // and let the user pick it manually.
       });
 
     return () => {
@@ -163,8 +163,8 @@ export function PersonalDataSection() {
   }
 
   function handleCountryChange(code: string) {
-    // trocar o país limpa o documento e o erro — um CPF válido não pode
-    // ficar preenchido num campo que virou SSN
+    // changing the country clears the document and its error: a valid CPF
+    // must not stay filled in a field that just became an SSN
     setDraft((current) => ({ ...current, pais: code, documento: "" }));
     setErrors((current) => ({ ...current, pais: undefined, documento: undefined }));
   }

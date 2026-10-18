@@ -30,8 +30,8 @@ function hashString(value: string): number {
   return hash;
 }
 
-// PRNG determinístico (mulberry32) — mesma seed sempre gera a mesma série,
-// sem depender de Math.random().
+// deterministic PRNG (mulberry32): the same seed always produces the same
+// series, without depending on Math.random().
 function mulberry32(seed: number) {
   let state = seed;
   return function random() {
@@ -43,9 +43,9 @@ function mulberry32(seed: number) {
   };
 }
 
-// série sintética — substituir por feed real. Random walk determinístico
-// (seed a partir de símbolo + timeframe) que termina no preço de
-// referência do ativo, para casar com o cabeçalho e o livro de ofertas.
+// synthetic series: replace with a real feed. A deterministic random walk
+// (seeded from symbol + timeframe) that ends at the asset's reference price,
+// so it matches the header and the order book.
 export function generateMockCandles(
   symbol: string,
   referencePrice: number,
@@ -73,9 +73,9 @@ export function generateMockCandles(
     const volume = Math.round(50 + rand() * 950);
 
     candles.push({ time, open, high, low, close, volume });
-    close = open; // o open deste candle vira o close do candle anterior (mais antigo)
+    close = open; // this candle's open becomes the previous (older) candle's close
   }
 
-  candles.reverse(); // ordem ascendente de tempo, como a lib exige
+  candles.reverse(); // ascending time order, as the library requires
   return candles;
 }

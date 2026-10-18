@@ -16,13 +16,13 @@ import { erc20Abi } from "@/lib/web3/abis/erc20";
 import { ERC20_TOKENS } from "@/lib/web3/tokens";
 import { en } from "@/lib/i18n/en";
 
-// Endereços confirmados com o usuário para a Etapa 2 do piloto — não constam
-// em nenhum outro doc do repo, são específicos deste fluxo de approve.
+// Addresses confirmed with the user for Step 2 of the pilot. They don't
+// appear in any other doc in the repo; they are specific to this approve flow.
 const NIARA_SETTLEMENT_ADDRESS: Address = "0xd7DEabcAc261CbDC9bb898baF8E60DA1355bD178";
 const MOCK_USDT_ADDRESS =
   ERC20_TOKENS.find((token) => token.fallbackSymbol === "USDT")?.address ??
   (() => {
-    throw new Error("MockUSDT não encontrado em ERC20_TOKENS");
+    throw new Error("MockUSDT not found in ERC20_TOKENS");
   })();
 
 type Phase =

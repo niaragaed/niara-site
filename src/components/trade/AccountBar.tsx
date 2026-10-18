@@ -6,10 +6,10 @@ import { CurrencySelector } from "./CurrencySelector";
 import { BTC_USDT, USD_BRL, USD_EUR } from "@/lib/rates";
 import { en } from "@/lib/i18n/en";
 
-// USDT é a unidade base — sem nota de referência (é o próprio valor). Nas
-// demais moedas, mostra quanto 1 USDT (ou, no caso do BTC, quanto 1 BTC)
-// vale na moeda selecionada, pra deixar claro que é só uma conversão de
-// exibição sobre o saldo real (sempre em USDT).
+// USDT is the base unit, so it gets no reference note (it is the value
+// itself). For other currencies, show what 1 USDT (or, for BTC, what 1 BTC)
+// is worth in the selected currency, to make it clear this is only a display
+// conversion on top of the real balance (always in USDT).
 function buildReferenceLabel(currency: Currency): string | null {
   const suffix = en.trade.accountBar.referenceSuffix;
   switch (currency) {

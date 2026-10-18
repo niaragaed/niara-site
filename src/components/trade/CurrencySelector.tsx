@@ -7,8 +7,8 @@ import { en } from "@/lib/i18n/en";
 
 type CurrencyOption = { value: Currency; label: string; hint: string };
 
-// USDT (unidade base) e BTC (segunda moeda principal) vêm primeiro; USD/BRL/
-// EUR são só referência de exibição — o divisor visual marca essa diferença.
+// USDT (base unit) and BTC (second main currency) come first; USD/BRL/EUR
+// are display references only, and the visual divider marks the difference.
 const PRIMARY_CURRENCIES: CurrencyOption[] = [
   { value: "USDT", label: "USDT", hint: en.trade.currencySelector.usdt },
   { value: "BTC", label: "BTC", hint: en.trade.currencySelector.btc },

@@ -23,8 +23,8 @@ export type MonthlyEvolution = {
   gainUsdt: number;
 };
 
-// série mensal (últimos 12 meses) — valor aplicado e ganho de capital
-// acumulados, mês a mês. Valores em USDT (unidade interna do site).
+// monthly series (last 12 months): invested amount and accumulated capital
+// gain, month by month. Amounts in USDT (the site's internal unit).
 export const MOCK_EVOLUTION: MonthlyEvolution[] = [
   { month: "Aug 25", investedUsdt: 24600, gainUsdt: 450 },
   { month: "Sep 25", investedUsdt: 26700, gainUsdt: 900 },

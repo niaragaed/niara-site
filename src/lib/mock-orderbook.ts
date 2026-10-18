@@ -11,7 +11,7 @@ export type BookOrder = {
 };
 
 const DEPTH = 8;
-const STEP = 0.0015; // 0.15% por nível
+const STEP = 0.0015; // 0.15% per level
 
 function hashString(value: string): number {
   let hash = 0;
@@ -21,9 +21,9 @@ function hashString(value: string): number {
   return hash;
 }
 
-// Livro simulado gerado em torno do preço do ativo — determinístico (sem
-// Math.random) para não gerar mismatch entre render no servidor e no
-// cliente. Dados ilustrativos, não refletem oferta/demanda real.
+// Simulated order book generated around the asset price. Deterministic (no
+// Math.random) to avoid a mismatch between server and client renders.
+// Illustrative data; it doesn't reflect real supply/demand.
 export function generateMockOrderBook(
   symbol: string,
   priceUsdt: number,

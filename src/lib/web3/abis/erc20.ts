@@ -1,5 +1,5 @@
-// ABI ERC-20 mínimo — funções usadas pelo TokenBalances (leitura) e pelo
-// ApproveUsdt (approve/allowance, escrita e leitura).
+// Minimal ERC-20 ABI: the functions used by TokenBalances (reads) and by
+// ApproveUsdt (approve/allowance, writes and reads).
 export const erc20Abi = [
   {
     type: "function",

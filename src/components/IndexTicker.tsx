@@ -9,11 +9,11 @@ type TickerItem = {
   icon?: "bitcoin" | "coins";
 };
 
-// TODO: substituir por feed de mercado real — valores meramente ilustrativos
-// Não passa pelo CurrencyContext: "value" aqui são pontos de índice (S&P
-// 500, Nikkei etc.) ou cotações de ativos em USD já formatadas como string,
-// não valores em USDT (a unidade interna) — não há o que converter de
-// moeda, e "change" é percentual, que também não se converte.
+// TODO: replace with a real market feed; these values are illustrative only.
+// Doesn't go through CurrencyContext: "value" here is index points (S&P 500,
+// Nikkei, etc.) or USD asset quotes already formatted as strings, not USDT
+// amounts (the internal unit), so there is no currency to convert, and
+// "change" is a percentage, which doesn't convert either.
 const TICKER_ITEMS: TickerItem[] = [
   { ticker: "S&P 500", flagCode: "us", value: "5,634.61", change: 0.42 },
   { ticker: "NASDAQ", flagCode: "us", value: "18,972.42", change: 0.68 },
