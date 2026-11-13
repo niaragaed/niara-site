@@ -29,8 +29,9 @@ Diferencial e motor de adoção: **cashback programático ao emissor** — parce
 taxa de transação devolvida automaticamente, via smart contract, à carteira da
 empresa emissora, proporcional ao volume negociado do próprio ativo.
 
-Receita: taxa de transação (0,1%–0,5%), taxa de listagem/tokenização e taxa de
-custódia (modelo AUM).
+Receita: duas taxas, ambas cobradas em USDT — taxa de negociação (0,1%–0,5% de
+cada operação) e taxa de listagem/tokenização (0,1%–1% do valuation do emissor).
+Não há taxa de custódia.
 
 **Estágio atual: site institucional + protótipo de interface. Não há backend,
 autenticação, carteira real nem blockchain conectada.**

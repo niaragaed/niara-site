@@ -439,15 +439,11 @@ export const en = {
     revenueItems: [
       {
         title: "Transaction fee",
-        text: "0.1% to 0.15% on each trade.",
+        text: "0.1% to 0.5% of each trade, paid in USDT.",
       },
       {
         title: "Listing/tokenization fee",
-        text: "charged to the issuing company when listing an asset on Niara.",
-      },
-      {
-        title: "Custody fee",
-        text: "AUM-based model (percentage of the volume of assets under custody).",
+        text: "0.1% to 1% of the issuer's valuation, charged to the issuing company when listing an asset on Niara and paid in USDT.",
       },
     ],
 
@@ -478,7 +474,7 @@ export const en = {
       {
         question: "What are the fees?",
         answer:
-          "The planned model includes a transaction fee (0.1%–0.15%), a listing/tokenization fee for issuing companies, and a custody fee on the volume under custody (AUM model). Final figures are still being defined.",
+          "The planned model has two fees, both paid in USDT: a transaction fee of 0.1% to 0.5% of each trade, and a listing/tokenization fee of 0.1% to 1% of the issuer's valuation. Final figures within these ranges are still being defined.",
       },
       {
         question: "How does a company list its asset on Niara?",
