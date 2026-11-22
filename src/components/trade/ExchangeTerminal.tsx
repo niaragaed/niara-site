@@ -1,7 +1,7 @@
 "use client";
 
 // Real terminal on testnet. DOM order = mobile order (single column):
-// listing, book, ticket, history (empty), session orders. On desktop,
+// listing, book, ticket, trade history, your orders. On desktop,
 // wide column on the left (history + orders), narrow one on the right.
 
 import { CHAINS } from "@/lib/exchange/chains";
@@ -13,9 +13,10 @@ import { useConnection } from "wagmi";
 import { en } from "@/lib/i18n/en";
 import { NetworkWalletBar } from "./NetworkWalletBar";
 import { ListingsPanel } from "./ListingsPanel";
-import { OrderBookPanel, TradeHistoryEmpty } from "./OrderBookPanel";
+import { OrderBookPanel } from "./OrderBookPanel";
 import { OrderTicket } from "./OrderTicket";
-import { SessionOrders } from "./SessionOrders";
+import { TradeHistory } from "./TradeHistory";
+import { YourOrders } from "./YourOrders";
 import { TradeProvider, useTrade } from "./TradeContext";
 
 function Banner() {
@@ -43,10 +44,10 @@ function Layout() {
         <OrderTicket />
       </div>
       <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
-        <TradeHistoryEmpty />
+        <TradeHistory />
       </div>
       <div className="min-h-[240px] lg:col-start-1 lg:row-start-3">
-        <SessionOrders />
+        <YourOrders />
       </div>
     </div>
   );

@@ -103,3 +103,173 @@ export function cancelOrder(cancel: CancelIntent, signature: string) {
 export function matchStatus(matchId: string) {
   return call<SettlementStatus>("GET", `/v1/matches/${encodeURIComponent(matchId)}`);
 }
+
+// ---------------------------------------------------------------------------
+// Read endpoints (engine commits 7b9d6b2..6f49b2d). Lists are newest first and
+// page with `limit` and `before` (the `next` cursor of the previous page).
+// ---------------------------------------------------------------------------
+
+export interface EngineQuoteAsset {
+  asset: string;
+  assetDecimals: number | null;
+  symbol: string | null;
+  name: string | null;
+}
+
+export interface EngineMarket {
+  asset: string;
+  symbol: string | null;
+  name: string | null;
+  assetDecimals: number;
+  lotSize: string;
+  status: string;
+}
+
+export interface EngineChainMarkets {
+  id: string;
+  kind: "solana" | "evm";
+  caip2: string;
+  evmChainId: number | null;
+  settlementProgram: string | null;
+  quoteAsset: EngineQuoteAsset | null;
+  minOrderNotional: string;
+  maxIntentValiditySecs: number | null;
+  /** Settlement program and quote asset configured: the service admits orders. */
+  ordersAccepted: boolean;
+  /** The settlement worker runs for this chain: matches get settled. */
+  settlementEnabled: boolean;
+  markets: EngineMarket[];
+}
+
+/** A stored order as `GET /v1/orders` and `GET /v1/orders/:id` return it. */
+export interface StoredOrder extends Omit<EngineOrder, "cancelReason"> {
+  seq: number;
+  paymentAsset: string;
+  nonce: string;
+  settledQuantity: string;
+  releasedQuantity: string;
+  voidedQuantity: string;
+  cancelReason: string | null;
+  /** ISO 8601. */
+  createdAt: string;
+}
+
+export interface MatchSettlement {
+  status: "pending" | "submitted" | "confirmed" | "failed";
+  attempts: number;
+  txHash: string | null;
+  error: string | null;
+  /** ISO 8601, once confirmed. */
+  settledAt: string | null;
+}
+
+export interface MatchHistory {
+  id: string;
+  sequence: number;
+  chain: string;
+  asset: string;
+  paymentAsset: string;
+  buyOrderId: string;
+  sellOrderId: string;
+  makerOrderId: string;
+  takerSide: "buy" | "sell";
+  quantity: string;
+  lotSize: string;
+  price: string;
+  paymentAmount: string;
+  expiresAt: number;
+  /** ISO 8601. */
+  matchedAt: string;
+  status: "pending" | "settling" | "settled" | "failed";
+  settlement: MatchSettlement | null;
+}
+
+/** One of the wallet's matches (`GET /v1/matches?chain=&wallet=`). */
+export interface WalletMatch extends MatchHistory {
+  matchId: string;
+  side: "buy" | "sell";
+  role: "maker" | "taker";
+  orderId: string;
+}
+
+/** A settled trade (`GET /v1/trades/:chain/:asset`): confirmed on-chain only. */
+export interface Trade {
+  matchId: string;
+  sequence: number;
+  price: string;
+  quantity: string;
+  lotSize: string;
+  paymentAmount: string;
+  takerSide: "buy" | "sell";
+  /** ISO 8601: the trade time used for candles. */
+  matchedAt: string;
+  settledAt: string;
+  txHash: string;
+}
+
+interface Page<T> {
+  items: T[];
+  next: number | null;
+}
+
+function pageQuery(params: Record<string, string | number | null | undefined>): string {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== null && v !== undefined) q.set(k, String(v));
+  const s = q.toString();
+  return s ? `?${s}` : "";
+}
+
+export function fetchMarkets() {
+  return call<{ testnet: boolean; chains: EngineChainMarkets[] }>("GET", "/v1/markets");
+}
+
+export async function fetchWalletOrders(chain: string, wallet: string, before?: number | null, limit = 50): Promise<Page<StoredOrder>> {
+  const r = await call<{ orders: StoredOrder[]; next: number | null }>(
+    "GET",
+    `/v1/orders${pageQuery({ chain, wallet, limit, before })}`,
+  );
+  return { items: r.orders, next: r.next };
+}
+
+export function fetchOrder(orderId: string) {
+  return call<{ order: StoredOrder; matchIds: string[]; matches: MatchHistory[] }>(
+    "GET",
+    `/v1/orders/${encodeURIComponent(orderId)}`,
+  );
+}
+
+export async function fetchWalletMatches(chain: string, wallet: string, before?: number | null, limit = 50): Promise<Page<WalletMatch>> {
+  const r = await call<{ matches: WalletMatch[]; next: number | null }>(
+    "GET",
+    `/v1/matches${pageQuery({ chain, wallet, limit, before })}`,
+  );
+  return { items: r.matches, next: r.next };
+}
+
+export async function fetchTrades(chain: string, asset: string, before?: number | null, limit = 500): Promise<Page<Trade>> {
+  const r = await call<{ trades: Trade[]; next: number | null }>(
+    "GET",
+    `/v1/trades/${encodeURIComponent(chain)}/${encodeURIComponent(asset)}${pageQuery({ limit, before })}`,
+  );
+  return { items: r.trades, next: r.next };
+}
+
+/**
+ * Every page of a list, up to `maxPages`. Returns `complete: false` when the cap
+ * was reached, so callers that need the whole list (approval sums) can refuse
+ * instead of working from a partial one.
+ */
+export async function fetchAllPages<T>(
+  fetchPage: (before: number | null) => Promise<Page<T>>,
+  maxPages: number,
+): Promise<{ items: T[]; complete: boolean }> {
+  const items: T[] = [];
+  let before: number | null = null;
+  for (let i = 0; i < maxPages; i++) {
+    const page = await fetchPage(before);
+    items.push(...page.items);
+    if (page.next === null) return { items, complete: true };
+    before = page.next;
+  }
+  return { items, complete: false };
+}

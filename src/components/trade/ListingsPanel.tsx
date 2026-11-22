@@ -3,6 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import { formatUnitsExact } from "@/lib/exchange/units";
 import { MarketDataError } from "@/lib/exchange/market-data";
+import { engineErrorMessage } from "./OrderTicket";
 import { en } from "@/lib/i18n/en";
 import { useTrade } from "./TradeContext";
 
@@ -13,10 +14,10 @@ export function marketDataMessage(error: unknown): string {
   return en.trade.errors.marketData;
 }
 
-/** Approved Equity listings (Supabase `listings`) and the chosen asset's header. */
+/** Approved Equity markets of the order service (`GET /v1/markets`) and the chosen asset's header. */
 export function ListingsPanel() {
   const t = en.trade.listings;
-  const { listings, listingsError, listingsLoading, listing, selectListing, assetMeta, config } = useTrade();
+  const { listings, marketsError, marketsLoading, listing, selectListing, config } = useTrade();
 
   return (
     <section aria-labelledby="listings-heading" className="rounded-md border border-border bg-bg-surface">
@@ -26,9 +27,9 @@ export function ListingsPanel() {
         </h2>
       </div>
 
-      {listingsError ? (
-        <p className="px-3 py-4 text-xs text-negative">{marketDataMessage(listingsError)}</p>
-      ) : listingsLoading ? (
+      {marketsError ? (
+        <p className="px-3 py-4 text-xs text-negative">{engineErrorMessage(marketsError)}</p>
+      ) : marketsLoading ? (
         <p className="px-3 py-4 text-xs text-text-muted">{t.loading}</p>
       ) : !listings || listings.length === 0 ? (
         <p className="px-3 py-4 text-xs text-text-muted">{t.empty}</p>
@@ -46,7 +47,7 @@ export function ListingsPanel() {
             >
               {listings.map((l) => (
                 <option key={l.asset} value={l.asset}>
-                  {l.asset === listing?.asset && assetMeta?.symbol ? `${assetMeta.symbol} · ` : ""}
+                  {l.symbol ? `${l.symbol} · ` : ""}
                   {short(l.asset)}
                 </option>
               ))}
@@ -58,8 +59,8 @@ export function ListingsPanel() {
               <div className="flex justify-between gap-3">
                 <dt className="text-text-muted">{t.asset}</dt>
                 <dd className="text-right text-text-primary">
-                  {assetMeta?.symbol ?? <span className="text-text-muted">{t.unknownSymbol}</span>}
-                  {assetMeta?.name && <span className="ml-1 text-text-secondary">({assetMeta.name})</span>}
+                  {listing.symbol ?? <span className="text-text-muted">{t.unknownSymbol}</span>}
+                  {listing.name && <span className="ml-1 text-text-secondary">({listing.name})</span>}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
@@ -71,7 +72,7 @@ export function ListingsPanel() {
               <div className="flex justify-between gap-3">
                 <dt className="text-text-muted">{t.lotSize}</dt>
                 <dd className="font-mono tabular-nums text-text-primary">
-                  {formatUnitsExact(listing.lotSize, listing.assetDecimals, true)} {assetMeta?.symbol ?? ""}
+                  {formatUnitsExact(listing.lotSize, listing.assetDecimals, true)} {listing.symbol ?? ""}
                 </dd>
               </div>
               {listing.issuer && (

@@ -1,5 +1,6 @@
 // Public reads of the Supabase niara-exchange-dev (PostgREST, anon key, RLS):
-// `chains`, `listings` (only approved equity/currency are visible) and the
+// `listings` (only approved equity/currency are visible; used for issuer and
+// cashback eligibility) and the
 // aggregated `order_book` view (price levels, never wallets/nonces).
 // `base_units` values are numeric: requested as text (`::text`) so no
 // precision is lost in a JSON number.
@@ -33,30 +34,6 @@ async function rest(path: string): Promise<unknown[]> {
   const body: unknown = await res.json();
   if (!Array.isArray(body)) throw new MarketDataError("bad_response", "unexpected Supabase response");
   return body;
-}
-
-export interface ChainRow {
-  id: ChainId;
-  settlementProgram: string | null;
-  quoteAsset: string | null;
-  minOrderNotional: bigint;
-  maxIntentValiditySecs: number;
-}
-
-export async function fetchChainRow(chain: ChainId): Promise<ChainRow | null> {
-  const rows = await rest(
-    `chains?select=id,settlement_program,quote_asset,min_order_notional::text,max_intent_validity_secs&id=eq.${encodeURIComponent(chain)}`,
-  );
-  const r = rows[0] as Record<string, unknown> | undefined;
-  if (!r) return null;
-  if (!isChainId(r.id)) throw new MarketDataError("bad_response", "unknown chain id");
-  return {
-    id: r.id,
-    settlementProgram: typeof r.settlement_program === "string" ? r.settlement_program : null,
-    quoteAsset: typeof r.quote_asset === "string" ? r.quote_asset : null,
-    minOrderNotional: parseBaseUnits(r.min_order_notional),
-    maxIntentValiditySecs: Number(r.max_intent_validity_secs),
-  };
 }
 
 export interface ListingRow {

@@ -106,9 +106,20 @@ export const en = {
 
     chart: {
       title: "Trade history",
+      intervalAria: "Candle interval",
+      loading: "Loading settled trades…",
       empty: "No trade history yet.",
       emptyDetail:
-        "The order service does not publish settled trades or candles yet, so there is nothing to chart. Nothing here is invented.",
+        "No trade of this market has settled on-chain yet. Candles are built only from settled trades, so there is nothing to chart. Nothing here is invented.",
+      source: (n: number, truncated: boolean) =>
+        `${n} settled trade${n === 1 ? "" : "s"} from the order service${truncated ? " (most recent only)" : ""}. Candles have no bar for periods without trades.`,
+      tableCaption: "Most recent settled trades",
+      time: "Time",
+      price: "Price / lot",
+      lots: "Lots",
+      taker: "Taker",
+      tx: "Tx",
+      viewTx: "View the settlement transaction",
     },
 
     book: {
@@ -143,11 +154,16 @@ export const en = {
       cashbackNone: "not eligible",
       minNotional: (value: string) => `Minimum order value: ${value} USDT`,
       approvalLabel: "On-chain approval",
+      approvalWhy:
+        "Your token account has a single approval for the exchange, and a new approval replaces the previous amount instead of adding to it. So it must cover all your open orders on this token plus this one, or the older orders would no longer be covered and could fail to settle.",
+      openOrdersNeed: (n: number) => `Your open orders on this token (${n})`,
+      thisOrderNeed: "This order",
+      totalNeed: "Approval needed",
       approvalExact: (amount: string, symbol: string, spender: string) =>
-        `Approve exactly ${amount} ${symbol} to the ${spender} — nothing more.`,
-      approvalCovered: "Your current approval already covers this order: no new approval.",
-      approvalReplaces:
-        "A new approval replaces your previous one for this token. Other open orders on the same token stay covered only if this amount covers them too.",
+        `Your wallet will be asked to approve exactly ${amount} ${symbol} to the ${spender} — nothing more.`,
+      approvalCovered: "Your current approval already covers your open orders and this one: no new approval.",
+      delegatedElsewhere:
+        "This token account currently delegates to another program. Approving here replaces that delegation.",
       balanceLabel: "Wallet balance",
       currentApproval: "Current approval",
       vaultLabel: "program vault",
@@ -158,11 +174,24 @@ export const en = {
       invalidPrice: (decimals: number) => `Enter a positive price with at most ${decimals} decimals.`,
       belowMin: "The order value is below this network's minimum.",
       insufficientBalance: "Your wallet balance does not cover this order.",
+      balanceBelowTotal:
+        "Your balance covers this order but not all your open orders on this token: some of them may be marked stale.",
+      tooManyOrders:
+        "Your order history on this network is longer than this page reads, so the approval your open orders need cannot be computed safely. Ordering is disabled.",
       overflow: "Amounts are too large for this network.",
-      configMismatch:
-        "This site's configuration does not match the exchange database (settlement program or USDT differ). Ordering is disabled.",
-      programPaused: "The settlement program is paused on-chain.",
       engineNotConfigured: "The order service URL is not configured in this deployment.",
+      blocked: {
+        engine_not_configured: "Ordering is disabled: the order service URL is not configured in this deployment.",
+        engine_unreachable:
+          "Ordering is disabled: the order service cannot be reached (it may be offline, or not accept requests from this site).",
+        orders_not_accepted:
+          "Ordering is disabled on this network: the order service does not accept orders here yet (no settlement program or USDT configured).",
+        settlement_disabled:
+          "Ordering is disabled on this network: the order service would accept and match orders, but its settlement worker does not settle on this network, so matches would never settle.",
+        config_mismatch:
+          "Ordering is disabled: this site's configuration does not match the order service (settlement program or USDT differ).",
+        paused: "Ordering is disabled: the settlement program is paused on-chain.",
+      } as Record<string, string>,
       steps: {
         sign: "Sign the order intent in your wallet",
         approve: "Approve the exact amount in your wallet",
@@ -173,6 +202,8 @@ export const en = {
       approvalTx: "Approval transaction",
       failed: "The order was not placed.",
       accepted: "Order accepted by the order service.",
+      acceptedStatus: (status: string, matches: number) =>
+        `Status: ${status}. ${matches === 0 ? "No match yet." : `${matches} match${matches === 1 ? "" : "es"} — see Your orders for settlement.`}`,
       reset: "New order",
       signedText: "What your wallet signs",
       loadingChain: "Reading the network…",
@@ -180,16 +211,18 @@ export const en = {
 
     session: {
       title: "Your orders and settlements",
-      subtitle: "Orders placed from this tab. Not saved: cleared on reload.",
-      noEndpoint:
-        "Your full order and settlement history needs an order-service endpoint that does not exist yet, so it is not shown.",
-      empty: "No order placed from this tab yet.",
-      side: "Side",
-      lots: "Lots",
-      price: "Price / lot",
-      status: "Status",
-      statusNote:
-        "Order status is the one returned when the order was placed or cancelled; the order service has no endpoint to refresh it.",
+      ordersTab: "Orders",
+      settlementsTab: "Settlements",
+      connect: "Connect a wallet for this network to see your orders and settlements.",
+      loading: "Loading…",
+      empty: "This wallet has no order on this network.",
+      noSettlements: "This wallet has no match on this network yet.",
+      truncated: "Showing your most recent orders only.",
+      publicNote:
+        "Testnet: the order service lists a wallet's orders by address, without sign-in. A mainnet deployment will require signing in.",
+      lots: "lots",
+      filled: (filled: string, remaining: string) => `Filled ${filled} · remaining ${remaining} lots`,
+      placed: "Placed",
       expires: "Expires",
       noMatches: "No match yet: the order rests in the book.",
       matchQty: (lots: string, price: string) => `${lots} lots at ${price} USDT/lot`,
@@ -199,13 +232,18 @@ export const en = {
         settled: "Settled on-chain",
         failed: "Settlement failed",
       } as Record<string, string>,
+      role: { maker: "maker", taker: "taker" } as Record<string, string>,
       viewTx: "View transaction",
       attempts: (n: number) => `${n} attempt${n === 1 ? "" : "s"}`,
-      statusUnavailable: "Could not read the settlement status.",
       cancel: "Cancel (signed)",
       cancelling: "Sign the cancellation in your wallet…",
       cancelNote:
         "Cancelling removes the order from the book off-chain. The on-chain guarantee is revoking your approval in your wallet.",
+      cancelReason: {
+        by_wallet: "cancelled by you",
+        self_trade_prevention: "cancelled: would trade with your own order",
+        below_min_notional: "cancelled: below the minimum order value",
+      } as Record<string, string>,
       orderStatus: {
         open: "Open",
         partially_filled: "Partially filled",

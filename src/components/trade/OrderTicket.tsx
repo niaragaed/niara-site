@@ -1,16 +1,23 @@
 "use client";
 
-// Real order ticket: builds the OrderIntent exactly as the engine defines it, the wallet
-// signs it, approves on-chain only the exact amount `settle` would move (if the current
-// approval doesn't cover it), submits to the order service and shows its answer. Nothing here
-// fakes success: the result shown is what the engine answered.
+// Real order ticket: builds the OrderIntent exactly as the engine defines it, the
+// wallet signs it, the delegate/allowance is raised to EXACTLY what the wallet's open
+// orders on that token plus this one need (a new approval replaces the previous one,
+// it does not add to it), the intent goes to the order service and the ticket shows
+// its answer. Nothing here fakes success: the result shown is what the engine answered.
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { CHAINS } from "@/lib/exchange/chains";
 import { ENGINE_URL, explorerTxUrl } from "@/lib/exchange/config";
-import { EngineError, submitOrder } from "@/lib/exchange/engine-api";
+import {
+  EngineError,
+  fetchAllPages,
+  fetchWalletOrders,
+  submitOrder,
+} from "@/lib/exchange/engine-api";
+import { requiredApproval } from "@/lib/exchange/approvals";
 import {
   IntentError,
   randomNonce,
@@ -29,7 +36,7 @@ const EXPIRY_OPTIONS = [3600, 86400, 604800, 2592000];
 type Phase =
   | { step: "form" }
   | { step: "sign" | "approve" | "confirming" | "submit"; approvalTx?: string | null }
-  | { step: "done"; orderId: string; approvalTx: string | null }
+  | { step: "done"; orderId: string; status: string; matches: number; approvalTx: string | null }
   | { step: "error"; message: string; approvalTx: string | null };
 
 export function engineErrorMessage(e: unknown): string {
@@ -44,10 +51,19 @@ export function engineErrorMessage(e: unknown): string {
   return t.generic(e instanceof Error ? e.message : String(e));
 }
 
+/** Why ordering is disabled on this chain, in the order that matters most. */
+export function blockerMessage(blockers: readonly string[]): string | null {
+  const t = en.trade.ticket.blocked;
+  for (const b of ["engine_not_configured", "engine_unreachable", "orders_not_accepted", "settlement_disabled", "config_mismatch", "paused"]) {
+    if (blockers.includes(b)) return t[b] ?? null;
+  }
+  return null;
+}
+
 export function OrderTicket() {
   const t = en.trade.ticket;
   const trade = useTrade();
-  const { chain, config, listing, terms, assetMeta, wallet, blockers, chainRow, addSessionOrder } = trade;
+  const { chain, config, listing, terms, wallet, blockers, chainInfo, orders, ordersComplete, refreshWallet } = trade;
   const actions = useChainActions(config);
   const kind = CHAINS[chain].kind;
 
@@ -59,8 +75,8 @@ export function OrderTicket() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const usdtDecimals = terms?.usdt.decimals;
-  const symbol = assetMeta?.symbol ?? "";
-  const maxValidity = chainRow?.maxIntentValiditySecs ?? 0;
+  const symbol = listing?.symbol ?? "";
+  const maxValidity = chainInfo?.maxIntentValiditySecs ?? 0;
   const expiryChoices = EXPIRY_OPTIONS.filter((s) => s <= maxValidity);
 
   // Exact values (bigint) from the text.
@@ -72,14 +88,20 @@ export function OrderTicket() {
     return { lots, price, quantity: lots * listing.lotSize, notional: lots * price };
   }, [lotsText, priceText, listing, usdtDecimals]);
 
-  // What `settle` will debit from this wallet (spec §3.5): the seller's asset,
-  // the buyer's maximum payment in USDT.
+  // What `settle` can debit for THIS order (spec §3.5): the seller's asset, the
+  // buyer's maximum payment in USDT.
   const need =
     parsed?.quantity && parsed.notional && listing && config.ready
       ? side === "sell"
         ? { token: listing.asset, amount: parsed.quantity, decimals: listing.assetDecimals, symbol: symbol || "asset" }
         : { token: config.usdt, amount: parsed.notional, decimals: usdtDecimals as number, symbol: terms?.usdt.symbol ?? "USDT" }
       : null;
+
+  // The approval that keeps the wallet's open orders on this token AND the new one covered.
+  // Read during render for display only; `place()` recomputes it from a fresh list.
+  const [renderNow] = useState(() => unixNow());
+  const requirement =
+    need && orders ? requiredApproval({ chain, token: need.token, openOrders: orders, newNeed: need.amount, now: renderNow }) : null;
 
   const coverage = useQuery({
     queryKey: ["exchange", "coverage", chain, wallet, need?.token],
@@ -89,29 +111,27 @@ export function OrderTicket() {
   });
 
   const busy = phase.step === "sign" || phase.step === "approve" || phase.step === "confirming" || phase.step === "submit";
+  const blocked = blockerMessage(blockers);
 
-  const blockerMessage = blockers.includes("not_configured")
-    ? null
-    : blockers.includes("config_mismatch")
-      ? t.configMismatch
-      : blockers.includes("paused")
-        ? t.programPaused
-        : blockers.includes("chain_not_ready")
-          ? en.trade.errors.codes.chain_not_ready
-          : !ENGINE_URL
-            ? t.engineNotConfigured
-            : null;
-
-  const canOrder = config.ready && blockers.length === 0 && Boolean(ENGINE_URL) && Boolean(wallet) && listing !== null && terms !== undefined && chainRow;
+  const canOrder =
+    config.ready &&
+    blockers.length === 0 &&
+    Boolean(ENGINE_URL) &&
+    Boolean(wallet) &&
+    listing !== null &&
+    terms !== undefined &&
+    chainInfo !== null &&
+    orders !== undefined &&
+    ordersComplete;
 
   async function place() {
     setFormError(null);
-    if (!canOrder || !listing || !wallet || !config.ready || !chainRow || usdtDecimals === undefined) return;
+    if (!canOrder || !listing || !wallet || !config.ready || !chainInfo || usdtDecimals === undefined) return;
     if (!parsed?.lots) return setFormError(t.invalidLots);
     if (!parsed.price || parsed.price <= BigInt(0) || !parsed.quantity || !parsed.notional) {
       return setFormError(t.invalidPrice(usdtDecimals));
     }
-    if (parsed.notional < chainRow.minOrderNotional) return setFormError(t.belowMin);
+    if (parsed.notional < chainInfo.minOrderNotional) return setFormError(t.belowMin);
 
     // 1. Build the intent exactly as the engine's src/intents.
     let intent: OrderIntent;
@@ -135,12 +155,17 @@ export function OrderTicket() {
     }
     const needNow = need!;
 
-    // Balance before asking for any signature (read-only).
+    // Fresh, complete list of the wallet's orders and the on-chain state, before any
+    // signature (read-only). A partial list would under-approve: refuse instead.
+    let total: bigint;
     let cov;
     try {
+      const all = await fetchAllPages((before) => fetchWalletOrders(chain, wallet, before, 100), 20);
+      if (!all.complete) return setFormError(t.tooManyOrders);
+      total = requiredApproval({ chain, token: needNow.token, openOrders: all.items, newNeed: needNow.amount, now: unixNow() }).total;
       cov = await actions.readCoverage(wallet, needNow.token);
-    } catch {
-      return setFormError(en.trade.errors.chainRead);
+    } catch (e) {
+      return setFormError(e instanceof EngineError ? engineErrorMessage(e) : en.trade.errors.chainRead);
     }
     if (cov.balance < needNow.amount) return setFormError(t.insufficientBalance);
 
@@ -150,10 +175,10 @@ export function OrderTicket() {
       setPhase({ step: "sign" });
       const signature = await actions.signIntent(intent);
 
-      // 3. Exact delegate / allowance, only if the current one doesn't cover it.
-      if (cov.approved < needNow.amount) {
+      // 3. Raise the delegate / allowance to exactly the total, only if it is below it.
+      if (cov.approved < total) {
         setPhase({ step: "approve" });
-        approvalTx = await actions.approveExact(wallet, needNow.token, needNow.amount, (tx) => {
+        approvalTx = await actions.approveExact(wallet, needNow.token, total, (tx) => {
           approvalTx = tx;
           setPhase({ step: "confirming", approvalTx: tx });
         });
@@ -163,11 +188,11 @@ export function OrderTicket() {
       // 4. Submit to the order service.
       setPhase({ step: "submit", approvalTx });
       const res = await submitOrder(intent, signature);
-      addSessionOrder({ intent, order: res.order, matches: res.matches, approvalTx, placedAt: unixNow() });
-      setPhase({ step: "done", orderId: res.order.id, approvalTx });
+      setPhase({ step: "done", orderId: res.order.id, status: res.order.status, matches: res.matches.length, approvalTx });
       void coverage.refetch();
+      void refreshWallet();
     } catch (e) {
-      const tx = approvalTx ?? ((e as { tx?: string; signature?: string })?.tx ?? (e as { signature?: string })?.signature ?? null);
+      const tx = approvalTx ?? ((e as { tx?: string })?.tx ?? (e as { signature?: string })?.signature ?? null);
       setPhase({ step: "error", message: isUserRejection(e) ? t.rejected : engineErrorMessage(e), approvalTx: tx });
     }
   }
@@ -221,7 +246,15 @@ export function OrderTicket() {
     }
   }, [kind, canOrder, parsed, listing, wallet, config, chain, side]);
 
-  if (!listing) return null;
+  if (!listing) {
+    return blocked ? (
+      <section className="rounded-md border border-border bg-bg-surface p-4">
+        <p className="text-xs text-warning">{blocked}</p>
+      </section>
+    ) : null;
+  }
+
+  const fmt = (v: bigint) => (need ? formatUnitsExact(v, need.decimals, true) : "");
 
   return (
     <section aria-labelledby="ticket-heading" className="rounded-md border border-border bg-bg-surface p-4">
@@ -233,6 +266,9 @@ export function OrderTicket() {
         <div className="mt-4 flex flex-col gap-2 rounded-md border border-positive/30 bg-positive/10 p-3 text-sm text-positive">
           <span className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> {t.accepted}
+          </span>
+          <span className="text-xs text-text-secondary">
+            {t.acceptedStatus(en.trade.session.orderStatus[phase.status] ?? phase.status, phase.matches)}
           </span>
           <span className="font-mono text-xs text-text-secondary">id {phase.orderId}</span>
           {approvalLink(phase.approvalTx)}
@@ -346,47 +382,72 @@ export function OrderTicket() {
             <div className="flex justify-between gap-3">
               <dt className="text-text-muted">{t.cashbackLabel}</dt>
               <dd className="font-mono tabular-nums text-text-secondary">
-                {!listing.cashbackEligible
+                {listing.cashbackEligible === false
                   ? t.cashbackNone
-                  : terms?.cashbackBps != null
+                  : listing.cashbackEligible && terms?.cashbackBps != null
                     ? t.cashbackValue(`${terms.cashbackBps / 100}%`)
                     : "—"}
               </dd>
             </div>
-            {chainRow && chainRow.minOrderNotional > BigInt(0) && usdtDecimals !== undefined && (
-              <p className="text-text-muted">{t.minNotional(formatUnitsExact(chainRow.minOrderNotional, usdtDecimals, true))}</p>
+            {chainInfo && chainInfo.minOrderNotional > BigInt(0) && usdtDecimals !== undefined && (
+              <p className="text-text-muted">{t.minNotional(formatUnitsExact(chainInfo.minOrderNotional, usdtDecimals, true))}</p>
             )}
           </dl>
 
           {need && wallet && (
             <div className="mt-3 rounded-md border border-border bg-bg-elevated p-3 text-xs">
               <p className="font-semibold text-text-primary">{t.approvalLabel}</p>
-              {coverage.data ? (
+              <p className="mt-1 text-text-secondary">{t.approvalWhy}</p>
+              {coverage.data && requirement ? (
                 <>
                   <dl className="mt-2 space-y-1">
                     <div className="flex justify-between gap-3">
-                      <dt className="text-text-muted">{t.balanceLabel}</dt>
+                      <dt className="text-text-muted">{t.openOrdersNeed(requirement.openCount)}</dt>
                       <dd className="font-mono tabular-nums text-text-secondary">
-                        {formatUnitsExact(coverage.data.balance, need.decimals, true)} {need.symbol}
+                        {fmt(requirement.openNeed)} {need.symbol}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-text-muted">{t.thisOrderNeed}</dt>
+                      <dd className="font-mono tabular-nums text-text-secondary">
+                        + {fmt(requirement.newNeed)} {need.symbol}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-t border-border pt-1">
+                      <dt className="text-text-secondary">{t.totalNeed}</dt>
+                      <dd className="font-mono tabular-nums text-text-primary">
+                        {fmt(requirement.total)} {need.symbol}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-text-muted">{t.currentApproval}</dt>
                       <dd className="font-mono tabular-nums text-text-secondary">
-                        {formatUnitsExact(coverage.data.approved, need.decimals, true)} {need.symbol}
+                        {fmt(coverage.data.approved)} {need.symbol}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-text-muted">{t.balanceLabel}</dt>
+                      <dd className="font-mono tabular-nums text-text-secondary">
+                        {fmt(coverage.data.balance)} {need.symbol}
                       </dd>
                     </div>
                   </dl>
                   <p className="mt-2 text-text-secondary">
-                    {coverage.data.approved >= need.amount
+                    {coverage.data.approved >= requirement.total
                       ? t.approvalCovered
-                      : t.approvalExact(formatUnitsExact(need.amount, need.decimals, true), need.symbol, spender)}
+                      : t.approvalExact(fmt(requirement.total), need.symbol, spender)}
                   </p>
-                  {coverage.data.approved < need.amount && <p className="mt-1 text-warning">{t.approvalReplaces}</p>}
-                  {coverage.data.balance < need.amount && <p className="mt-1 text-negative">{t.insufficientBalance}</p>}
+                  {coverage.data.delegatedElsewhere && <p className="mt-1 text-warning">{t.delegatedElsewhere}</p>}
+                  {coverage.data.balance < requirement.newNeed ? (
+                    <p className="mt-1 text-negative">{t.insufficientBalance}</p>
+                  ) : (
+                    coverage.data.balance < requirement.total && <p className="mt-1 text-warning">{t.balanceBelowTotal}</p>
+                  )}
                 </>
               ) : coverage.error ? (
                 <p className="mt-1 text-negative">{en.trade.errors.chainRead}</p>
+              ) : !ordersComplete ? (
+                <p className="mt-1 text-negative">{t.tooManyOrders}</p>
               ) : (
                 <p className="mt-1 text-text-muted">{t.loadingChain}</p>
               )}
@@ -410,7 +471,7 @@ export function OrderTicket() {
           )}
           {"approvalTx" in phase && approvalLink(phase.approvalTx)}
           {formError && <p className="mt-3 text-xs text-negative">{formError}</p>}
-          {blockerMessage && <p className="mt-3 text-xs text-warning">{blockerMessage}</p>}
+          {blocked && <p className="mt-3 text-xs text-warning">{blocked}</p>}
           {!wallet && config.ready && <p className="mt-3 text-xs text-text-muted">{t.connectFirst}</p>}
 
           <button

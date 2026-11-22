@@ -114,23 +114,3 @@ export function OrderBookPanel() {
     </section>
   );
 }
-
-export function TradeHistoryEmpty() {
-  const t = en.trade.chart;
-  return (
-    <section
-      aria-labelledby="history-heading"
-      className="flex h-full min-h-[200px] flex-col rounded-md border border-border bg-bg-surface"
-    >
-      <div className="border-b border-border px-3 py-2">
-        <h2 id="history-heading" className="text-sm font-semibold text-text-primary">
-          {t.title}
-        </h2>
-      </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-1 px-6 py-8 text-center">
-        <p className="text-sm text-text-secondary">{t.empty}</p>
-        <p className="max-w-md text-xs text-text-muted">{t.emptyDetail}</p>
-      </div>
-    </section>
-  );
-}
