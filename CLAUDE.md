@@ -264,6 +264,7 @@ src/
 4. **Local commit at the end of each task**, message in English using
    `feat:` / `fix:` / `refactor:` / `chore:`.
 5. Never `--force`, never rewrite history, never push unless asked.
+   2026-11-22: commit messages rewritten to English once, with the founder's authorization; the no-rewrite rule applies again from now on.
 6. If something breaks or is ambiguous: **stop and explain**, don't improvise.
 
 Git identity for this repository: `Niara <niaragaed@gmail.com>` (local, not `--global`).
