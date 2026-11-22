@@ -1,54 +1,49 @@
 # Engine changes needed by `/trade`
 
-`niara-site` `/trade` runs the real testnet flow against `niara-exchange-engine`
-(order service API at commit `d5b32d6`). These are the gaps the site hits.
-None of them is worked around in the site.
+`niara-site` `/trade` runs the real testnet flow against `niara-exchange-engine`.
+This list was written against engine commit `d5b32d6`. **Every item is now done**
+(engine commits `7b9d6b2..6f49b2d`) and used by the site.
 
 ## Blocking
 
-1. **CORS on the order service** (`src/service/http.ts`). The site calls
-   `POST /v1/orders`, `POST /v1/orders/cancel` and `GET /v1/matches/:id` from the
-   browser. Today there is no CORS middleware, so the browser blocks every call
-   (the site then shows "could not reach the order service … (CORS)").
-   - Allow only the site's origins (a list from env, e.g.
-     `CORS_ORIGINS=http://localhost:3000,https://<vercel domain>`), never `*`.
-   - Methods `GET, POST, OPTIONS`; header `content-type`; no credentials.
-   - Answer the `OPTIONS` preflight for `/v1/*` (Hono `cors()` does this).
+1. ✅ **CORS on the order service** — done in `7b9d6b2`: only the exact origins
+   of `CORS_ORIGINS`, never `*`; GET/POST/OPTIONS; `content-type`; no
+   credentials; preflights answered. The deployment must list the site's
+   origins (e.g. `http://localhost:3000` and the Vercel domain).
 
 ## Needed for "your orders and settlements"
 
-2. **List a wallet's orders**: e.g. `GET /v1/orders?chain=…&wallet=…`, newest
-   first, paginated, returning `orderJson` plus `nonce` (needed to cancel) and
-   `cancelReason`. Today the site only knows orders placed from the current
-   tab, and their status as returned at placement or cancel time.
-   - Orders are public on-chain intents, but a wallet's open orders and nonces
-     are not in the public `order_book` view; decide whether this endpoint must
-     be authenticated (e.g. a wallet-signed, short-lived read request) or is
-     public by wallet address.
-3. **One order's current status**: `GET /v1/orders/:id` (or by chain, wallet and
-   nonce), with `filledQuantity`, `remaining`, `status`, and its match ids. Today a
-   resting order filled later by another taker is never seen by the site.
-4. **A wallet's settlements**: matches of the wallet's orders with their
-   settlement status and tx hash (the shape of `GET /v1/matches/:id`), so a fill
-   that happens after the tab closes can still be shown with its explorer link.
+2. ✅ **List a wallet's orders** — `GET /v1/orders?chain=&wallet=` (`7448da2`),
+   newest first, paged, with `nonce` and `cancelReason`. Unsigned on testnet;
+   the engine's `docs/decisions.md` requires a wallet sign-in on mainnet. The
+   site uses it for "Your orders" (across sessions, with signed cancel) and to
+   sum the wallet's open orders for the approval amount.
+3. ✅ **One order's current status** — `GET /v1/orders/:id` (`0816eda`), with
+   its matches and their settlements. The site shows it when an order is
+   expanded.
+4. ✅ **A wallet's settlements** — `GET /v1/matches?chain=&wallet=` (`ada98d1`),
+   with side, role, settlement status and tx hash. The site's "Settlements" tab.
 
 ## Needed for real market data instead of empty states
 
-5. **Trade history / candles**: settled matches per market (time, price,
-   quantity, tx hash), e.g. `GET /v1/trades/:chain/:asset`, or a public
-   Supabase view over settled `matches` (no wallets). Until then `/trade` shows
-   "No trade history yet".
-6. **Listing metadata**: `symbol` / `name` in `listings` (or in a listings
-   endpoint). The site reads them on-chain today (Token-2022 metadata on
-   Solana, `symbol()`/`name()` on EVM); a listing without metadata shows
-   "symbol not published".
+5. ✅ **Trade history / candles** — `GET /v1/trades/:chain/:asset` (`f9e0a0c`):
+   settled trades only. The site builds candles (1h/4h/1d) and a trade table
+   from them; the empty state stays when a market has no settled trade.
+6. ✅ **Listing metadata** — `listings.symbol` / `listings.name` (`79b33f2`),
+   exposed by `GET /v1/markets`. The site no longer reads them on-chain.
 
 ## Nice to have
 
-7. **A listings/markets endpoint** on the order service (chains config +
-   approved Equity markets + lot size + min notional), so the site can use the
-   engine as its single source instead of reading Supabase directly.
-8. **Expose whether settlement is enabled per chain** (`EVM_SETTLEMENT_CHAINS` +
-   `reviewed`), e.g. in `/health`. Today an order on Robinhood or Tempo can be
-   accepted and matched but its match stays `pending`, and the site can only say
-   "waiting for settlement".
+7. ✅ **A markets endpoint** — `GET /v1/markets` (`6f49b2d`): chains, settlement
+   program, quote asset, minimum notional, intent validity and approved Equity
+   markets. The site's listings and order limits come from it. Supabase is still
+   read for the aggregated book and for issuer / cashback eligibility, which
+   `/v1/markets` does not carry.
+8. ✅ **Whether settlement is enabled per chain** — `ordersAccepted` and
+   `settlementEnabled` in `GET /v1/markets` (`6f49b2d`). The site disables
+   ordering where either is false and says which.
+
+## Remaining (not blocking)
+
+- `GET /v1/markets` could also carry `issuer` and `cashbackEligible` per market,
+  so the site would not need Supabase for them.

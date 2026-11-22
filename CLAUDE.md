@@ -82,12 +82,15 @@ regulatory risk.
 
 - Every page that touches a wallet shows the connected network and the permanent
   **"TESTNET — no real value"** banner (`src/components/web3/TestnetBanner.tsx`).
-- Market data comes only from the engine / Supabase (`listings`, `order_book`).
+- Market data comes only from the engine (`/v1/markets`, `/v1/trades`, `/v1/orders`,
+  `/v1/matches`) and Supabase (`order_book`). Candles are built only from settled trades.
   Where no real history exists, show an **empty state**, never invented data.
 - Order and cancel intents match the engine's `src/intents` **byte for byte**
   (`src/lib/exchange/intents`, with tests). Never change the format without
   changing the engine too.
-- Approve only the **exact** delegate/allowance an order needs, never "infinite".
+- Approve only the **exact** delegate/allowance needed, never "infinite": the sum of the
+  wallet's open orders on that token **plus** the new order, because a new approval
+  replaces the previous amount (`src/lib/exchange/approvals.ts`, with tests).
 - Never say an order executed before the engine answers; a settlement is only
   "settled" with the transaction hash and an explorer link.
 - Operator keys and any secret **never** go in `NEXT_PUBLIC_*`. The Supabase
@@ -277,8 +280,6 @@ Git identity for this repository: `Niara <niaragaed@gmail.com>` (local, not `--g
   cashback, how it works, roadmap, contact capture)
 - Page for issuing companies (cashback at the center of the pitch)
 - Replace the remaining mocks (`/assets`, `/exchange`, home) with real data
-- `/trade`: trade history/candles, "my orders" and CORS depend on engine changes
-  (see `docs/engine-changes-needed.md`)
 - Issuer flow (create mint, listing, listing fee, issuance batches, cashback
   withdrawal) and P2P escrow in the UI
 - Real profile and KYC
