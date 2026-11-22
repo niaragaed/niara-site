@@ -259,7 +259,7 @@ Identidade Git deste repositório: `Niara <niaragaed@gmail.com>` (local, sem `--
 - Página para empresas emissoras (cashback como centro do discurso)
 - Substituir os mocks restantes (`/assets`, `/exchange`, home) por dados reais
 - `/trade`: histórico de negócios/candles, "minhas ordens" e CORS dependem de
-  mudanças no engine (ver relatório da tarefa de integração)
+  mudanças no engine (ver `docs/engine-changes-needed.md`)
 - Fluxo do emissor (criar mint, listagem, taxa de listagem, lotes de emissão,
   saque de cashback) e P2P escrow na UI
 - Perfil e KYC reais
