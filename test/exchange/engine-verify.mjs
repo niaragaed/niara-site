@@ -1,8 +1,8 @@
-// Ponte de teste: roda o src/intents REAL do niara-exchange-engine (só leitura)
-// num processo node separado — o Vite não importa caminhos UNC (\\wsl.localhost).
-// Entrada (stdin): { orders: [{ intent, signature }], cancels: [{ cancel, signature }] }
-// com os corpos JSON exatamente como o site os envia. Saída (stdout): para cada
-// um, os bytes/digest que o engine reconstrói e se a assinatura é aceita.
+// Test bridge: runs the REAL src/intents of niara-exchange-engine (read-only)
+// in a separate node process — Vite does not import UNC paths (\\wsl.localhost).
+// Input (stdin): { orders: [{ intent, signature }], cancels: [{ cancel, signature }] }
+// with the JSON bodies exactly as the site sends them. Output (stdout): for each
+// one, the bytes/digest the engine rebuilds and whether the signature is accepted.
 import { pathToFileURL } from "node:url";
 
 const dir = process.env.NIARA_ENGINE_DIR;

@@ -1,12 +1,12 @@
-// Conversão exata entre texto decimal e unidades base (bigint). Nunca float:
-// o engine e os contratos só aceitam inteiros em unidades base.
+// Exact conversion between decimal text and base units (bigint). Never floats:
+// the engine and the contracts only accept integers in base units.
 
 const ZERO = BigInt(0);
 const TEN = BigInt(10);
 
 /**
- * "12.5" com 6 casas → 12500000n. Devolve null se o texto não for um decimal
- * positivo simples ou tiver mais casas do que `decimals` (nunca arredonda).
+ * "12.5" with 6 decimals → 12500000n. Returns null if the text is not a simple
+ * positive decimal or has more places than `decimals` (never rounds).
  */
 export function parseUnitsExact(text: string, decimals: number): bigint | null {
   const t = text.trim();
@@ -17,7 +17,7 @@ export function parseUnitsExact(text: string, decimals: number): bigint | null {
   return value;
 }
 
-/** 12500000n com 6 casas → "12.5" (sem zeros à direita; separador de milhar opcional). */
+/** 12500000n with 6 decimals → "12.5" (no trailing zeros; optional thousands separator). */
 export function formatUnitsExact(value: bigint, decimals: number, grouping = false): string {
   const negative = value < ZERO;
   const abs = negative ? -value : value;
@@ -28,7 +28,7 @@ export function formatUnitsExact(value: bigint, decimals: number, grouping = fal
   return `${negative ? "-" : ""}${wholeText}${frac ? `.${frac}` : ""}`;
 }
 
-/** Inteiro decimal em string vindo do engine/Supabase → bigint (lança se inválido). */
+/** Decimal integer string from the engine/Supabase → bigint (throws if invalid). */
 export function parseBaseUnits(value: unknown): bigint {
   if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return BigInt(value);
   if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) {
@@ -37,7 +37,7 @@ export function parseBaseUnits(value: unknown): bigint {
   return BigInt(value);
 }
 
-/** Segundos unix agora (para `expiresAt`; usado só em handlers, nunca no render). */
+/** Unix seconds now (for `expiresAt`; used only in handlers, never during render). */
 export function unixNow(): number {
   return Math.floor(Date.now() / 1000);
 }

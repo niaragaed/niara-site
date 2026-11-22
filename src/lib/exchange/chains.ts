@@ -1,7 +1,7 @@
-// Cadeias v1 do Niara Exchange (todas testnet). Porte fiel de
-// niara-exchange-engine/src/chains.ts (commit d5b32d6): `caip2` é o que a
-// intent assina, então qualquer divergência aqui invalida a assinatura no
-// verificador do engine. Não editar sem editar o engine junto.
+// Niara Exchange v1 chains (all testnets). Faithful port of
+// niara-exchange-engine/src/chains.ts (commit d5b32d6): `caip2` is what the
+// intent signs, so any divergence here invalidates the signature in the
+// engine's verifier. Do not edit without editing the engine too.
 
 export const CHAIN_IDS = [
   "solana-devnet",
@@ -19,13 +19,13 @@ export interface ChainInfo {
   id: ChainId;
   kind: ChainKind;
   caip2: string;
-  /** EIP-155 chain id; null na Solana. */
+  /** EIP-155 chain id; null on Solana. */
   evmChainId: number | null;
-  /** Genesis hash completo; null em EVM. */
+  /** Full genesis hash; null on EVM. */
   solanaGenesisHash: string | null;
 }
 
-/** Genesis hash da devnet (o engine confere o mesmo). */
+/** Devnet genesis hash (the engine checks the same one). */
 export const SOLANA_DEVNET_GENESIS = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
 
 export const CHAINS: Readonly<Record<ChainId, ChainInfo>> = {

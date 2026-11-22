@@ -22,8 +22,8 @@ export function Footer() {
 
         <nav aria-label={en.nav.footerAriaLabel}>
           <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">
-            {/* itens com submenu (About) viram links planos aqui — sem
-                dropdown no rodapé, só os filhos direto */}
+            {/* items with a submenu (About) become plain links here: no
+                dropdown in the footer, just the direct children */}
             {NAV_ITEMS.flatMap((item): (NavChild | NavItem)[] => item.children ?? [item]).map((link) => (
               <li key={link.href}>
                 <Link

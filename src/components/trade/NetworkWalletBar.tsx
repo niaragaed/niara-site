@@ -59,7 +59,7 @@ function SolanaWalletControl() {
             className="flex items-center gap-2 rounded-md border border-border bg-bg-surface px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue disabled:opacity-60"
           >
             {w.icon ? (
-              // Ícone fornecido pela própria carteira (data URI do Wallet Standard).
+              // Icon supplied by the wallet itself (Wallet Standard data URI).
               // eslint-disable-next-line @next/next/no-img-element
               <img src={w.icon} alt="" width={16} height={16} className="h-4 w-4" />
             ) : (

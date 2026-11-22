@@ -1,6 +1,6 @@
-// Porte de niara-exchange-engine/src/intents/cancel.ts (commit d5b32d6).
-// O cancelamento é só off-chain (o engine tira a ordem do livro). A garantia
-// on-chain de que uma ordem cancelada nunca liquida é revogar o delegate/allowance.
+// Port of niara-exchange-engine/src/intents/cancel.ts (commit d5b32d6).
+// Cancellation is off-chain only (the engine takes the order out of the book). The
+// on-chain guarantee that a cancelled order never settles is revoking the delegate/allowance.
 import { getAddress, hashTypedData, type Hex } from "viem";
 import { CHAINS, isChainId } from "../chains";
 import { EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from "./evm";
@@ -10,11 +10,11 @@ import { NONCE_PATTERN, checkAddress } from "./validate";
 export interface CancelIntent {
   version: typeof INTENT_VERSION;
   chain: keyof typeof CHAINS;
-  /** O mesmo programa/contrato da intent da ordem. */
+  /** The same program/contract as the order intent. */
   settlement: string;
-  /** Carteira da ordem, e quem assina. */
+  /** The order's wallet, and the signer. */
   wallet: string;
-  /** Nonce da intent da ordem (32 hex minúsculos). */
+  /** The order intent's nonce (32 lowercase hex chars). */
   nonce: string;
 }
 
@@ -32,12 +32,12 @@ export function validateCancelIntent(cancel: CancelIntent): CancelIntent {
   return { version: cancel.version, chain: cancel.chain, settlement, wallet, nonce: cancel.nonce };
 }
 
-/** Corpo de `POST /v1/orders/cancel` (`parseCancelIntent` recusa campos extras). */
+/** Body of `POST /v1/orders/cancel` (`parseCancelIntent` rejects extra fields). */
 export function cancelToJson(cancel: CancelIntent) {
   return validateCancelIntent(cancel);
 }
 
-/** Texto exato que a carteira Solana assina para cancelar. */
+/** Exact text a Solana wallet signs to cancel. */
 export function solanaCancelMessage(cancel: CancelIntent): Uint8Array {
   const c = validateCancelIntent(cancel);
   const chain = CHAINS[c.chain];
@@ -54,7 +54,7 @@ export function solanaCancelMessage(cancel: CancelIntent): Uint8Array {
   return new TextEncoder().encode(lines.join("\n"));
 }
 
-/** Mesmo domínio da `OrderIntent`; tipo primário distinto (digests nunca colidem). */
+/** Same domain as `OrderIntent`; distinct primary type (digests never collide). */
 export const CANCEL_ORDER_TYPES = {
   CancelOrder: [
     { name: "wallet", type: "address" },

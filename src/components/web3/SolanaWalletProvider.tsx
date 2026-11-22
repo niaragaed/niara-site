@@ -1,10 +1,10 @@
 "use client";
 
-// Carteiras Solana via Wallet Standard (Phantom, Backpack, Solflare…): o site
-// descobre as carteiras registradas no navegador, sem adaptador por marca.
-// Exigimos `standard:connect`, `solana:signMessage` (intents) e
-// `solana:signTransaction` (approve do delegate; o envio é nosso, pelo RPC
-// devnet com genesis conferido — ver lib/exchange/solana.ts).
+// Solana wallets via Wallet Standard (Phantom, Backpack, Solflare…): the site
+// discovers the wallets registered in the browser, with no per-brand adapter.
+// We require `standard:connect`, `solana:signMessage` (intents) and
+// `solana:signTransaction` (delegate approve; sending is ours, through the
+// devnet RPC with the genesis hash checked — see lib/exchange/solana.ts).
 
 import {
   createContext,
@@ -52,7 +52,7 @@ type SolanaWalletState = {
   wallets: readonly SolanaWallet[];
   wallet: SolanaWallet | null;
   account: WalletAccount | null;
-  /** Endereço base58, ou null se desconectado. */
+  /** Base58 address, or null if disconnected. */
   address: string | null;
   connecting: boolean;
   error: string | null;
@@ -77,7 +77,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Descoberta: carteiras podem se registrar depois da hidratação.
+  // Discovery: wallets may register after hydration.
   useEffect(() => {
     const api = getWallets();
     const refresh = () => setWallets(api.get().filter(isUsable));
@@ -90,7 +90,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Troca de conta / desconexão feita na própria carteira.
+  // Account change / disconnect done in the wallet itself.
   useEffect(() => {
     if (!wallet) return;
     const events = (wallet.features as Partial<StandardEventsFeature>)[StandardEvents];
@@ -136,7 +136,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     async (message: Uint8Array) => {
       if (!wallet || !account) throw new Error("wallet not connected");
       const [out] = await wallet.features[SolanaSignMessage].signMessage({ account, message });
-      // A carteira tem de ter assinado exatamente os nossos bytes.
+      // The wallet must have signed exactly our bytes.
       const signed = out.signedMessage;
       if (signed.length !== message.length || !signed.every((b, i) => b === message[i])) {
         throw new Error("the wallet signed a different message");

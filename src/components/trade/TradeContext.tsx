@@ -1,8 +1,8 @@
 "use client";
 
-// Estado do terminal real (/trade): cadeia selecionada, listagens aprovadas,
-// termos on-chain e as ordens enviadas DESTA aba. Os dados de mercado vêm só
-// do Supabase/engine e da própria cadeia — nada aqui é ilustrativo.
+// State of the real terminal (/trade): selected chain, approved listings,
+// on-chain terms and the orders submitted from THIS tab. Market data comes only
+// from Supabase/engine and the chain itself — nothing here is illustrative.
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -26,10 +26,10 @@ export interface TokenMeta {
 export interface ChainTerms {
   usdt: TokenMeta;
   feeBps: number;
-  /** Só na Solana (Config.cashback_bps); no EVM fica no CashbackDistributor. */
+  /** Solana only (Config.cashback_bps); on EVM it lives in the CashbackDistributor. */
   cashbackBps: number | null;
   paused: boolean;
-  /** A taxa on-chain é cobrada no mesmo USDT configurado aqui. */
+  /** The on-chain fee is charged in the same USDT configured here. */
   feeTokenMatches: boolean;
 }
 
@@ -38,7 +38,7 @@ export interface SessionOrder {
   order: EngineOrder;
   matches: EngineMatch[];
   approvalTx: string | null;
-  /** Segundos unix. */
+  /** Unix seconds. */
   placedAt: number;
 }
 
@@ -56,9 +56,9 @@ type TradeState = {
   assetMeta: TokenMeta | undefined;
   terms: ChainTerms | undefined;
   termsError: unknown;
-  /** Endereço da carteira da família da cadeia (Solana ou EVM), se conectada. */
+  /** Address of the wallet for the chain's family (Solana or EVM), if connected. */
   wallet: string | null;
-  /** Problemas que impedem ordens nesta cadeia (vazio = pode). */
+  /** Problems that block orders on this chain (empty = orders allowed). */
   blockers: string[];
   sessionOrders: SessionOrder[];
   addSessionOrder: (o: SessionOrder) => void;
@@ -107,7 +107,7 @@ export function TradeProvider({ children, initialAsset }: { children: ReactNode;
     );
   }, [listings, selectedAsset, chain]);
 
-  // Termos on-chain da cadeia (USDT e taxa), lidos pelo RPC do env.
+  // The chain's on-chain terms (USDT and fee), read through the env RPC.
   const termsQuery = useQuery({
     queryKey: ["exchange", "terms", chain],
     enabled: config.ready,

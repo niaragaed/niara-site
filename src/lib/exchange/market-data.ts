@@ -1,8 +1,8 @@
-// Leituras públicas do Supabase niara-exchange-dev (PostgREST, anon key, RLS):
-// `chains`, `listings` (só approved equity/currency são visíveis) e a view
-// agregada `order_book` (níveis de preço, nunca carteiras/nonces).
-// Valores `base_units` são numeric: pedidos como texto (`::text`) para não
-// perder precisão em JSON number.
+// Public reads of the Supabase niara-exchange-dev (PostgREST, anon key, RLS):
+// `chains`, `listings` (only approved equity/currency are visible) and the
+// aggregated `order_book` view (price levels, never wallets/nonces).
+// `base_units` values are numeric: requested as text (`::text`) so no
+// precision is lost in a JSON number.
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
 import { isChainId, type ChainId } from "./chains";
 import { parseBaseUnits } from "./units";
@@ -71,7 +71,7 @@ export interface ListingRow {
   txHash: string | null;
 }
 
-/** Listagens `equity` aprovadas da cadeia (as únicas negociáveis no livro). */
+/** Approved `equity` listings of the chain (the only ones tradable in the book). */
 export async function fetchEquityListings(chain: ChainId): Promise<ListingRow[]> {
   const rows = await rest(
     `listings?select=chain_id,asset,issuer,asset_class,status,cashback_eligible,asset_decimals,lot_size::text,tx_hash` +
@@ -97,9 +97,9 @@ export async function fetchEquityListings(chain: ChainId): Promise<ListingRow[]>
 }
 
 export interface BookLevel {
-  /** Unidades base de USDT por lote. */
+  /** USDT base units per lot. */
   price: bigint;
-  /** Unidades base do ativo ainda em aberto neste nível. */
+  /** Asset base units still open at this level. */
   quantity: bigint;
   orders: number;
 }
@@ -109,7 +109,7 @@ export interface Book {
   asks: BookLevel[];
 }
 
-/** Livro agregado (view `order_book`): bids do maior para o menor, asks do menor para o maior. */
+/** Aggregated book (`order_book` view): bids highest to lowest, asks lowest to highest. */
 export async function fetchBook(chain: ChainId, asset: string): Promise<Book> {
   const rows = await rest(
     `order_book?select=side,price::text,quantity::text,orders,lot_size::text` +
@@ -124,7 +124,7 @@ export async function fetchBook(chain: ChainId, asset: string): Promise<Book> {
     if (r.side === "buy") bids.push(level);
     else if (r.side === "sell") asks.push(level);
   }
-  // A view agrupa também por lot_size; níveis de mesmo preço são somados.
+  // The view also groups by lot_size; levels with the same price are summed.
   const merge = (levels: BookLevel[]) => {
     const map = new Map<string, BookLevel>();
     for (const l of levels) {

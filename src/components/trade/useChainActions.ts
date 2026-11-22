@@ -1,8 +1,8 @@
 "use client";
 
-// Ações dependentes da cadeia para o fluxo de ordem: assinar intent e
-// cancelamento, ler cobertura (saldo + delegate/allowance) e aprovar o valor
-// EXATO. Toda assinatura é conferida localmente antes de ir ao engine.
+// Chain-dependent actions for the order flow: sign the intent and the
+// cancellation, read coverage (balance + delegate/allowance) and approve the
+// EXACT amount. Every signature is checked locally before it goes to the engine.
 
 import { useCallback } from "react";
 import { PublicKey } from "@solana/web3.js";
@@ -38,9 +38,9 @@ import { base58 } from "@scure/base";
 
 export interface Coverage {
   balance: bigint;
-  /** Quanto o vault (Solana) / NiaraSettlement (EVM) pode mover hoje. */
+  /** How much the vault (Solana) / NiaraSettlement (EVM) can move today. */
   approved: bigint;
-  /** Solana: a ATA delega a outro (não ao vault) — aprovar substituiria. */
+  /** Solana: the ATA delegates to someone else (not the vault) — approving would replace it. */
   delegatedElsewhere: boolean;
 }
 
@@ -66,13 +66,13 @@ export function useChainActions(config: ChainConfig) {
     }
   }, [config]);
 
-  /** Assina a intent da ordem; devolve a assinatura no formato do engine. */
+  /** Signs the order intent; returns the signature in the engine's format. */
   const signIntent = useCallback(
     async (intent: OrderIntent): Promise<string> => {
       if (kind === "solana") {
         const message = solanaIntentMessage(intent);
         const sig = await sol.signMessage(message);
-        // verificação estrita local (mesma regra do engine) antes de enviar
+        // strict local verification (same rule as the engine) before sending
         if (!(await verifyAsync(sig, message, base58.decode(intent.wallet), { zip215: false }))) {
           throw new Error("the wallet's signature does not verify");
         }
@@ -113,7 +113,7 @@ export function useChainActions(config: ChainConfig) {
     [kind, sol, ensureEvmChain],
   );
 
-  /** Saldo e aprovação atuais da conta que `settle` vai debitar. */
+  /** Current balance and approval of the account `settle` will debit. */
   const readCoverage = useCallback(
     async (wallet: string, token: string): Promise<Coverage> => {
       if (!config.ready) throw new Error("chain not configured");
@@ -136,8 +136,8 @@ export function useChainActions(config: ChainConfig) {
   );
 
   /**
-   * Aprova EXATAMENTE `amount` de `token` para o vault PDA (Solana) ou o
-   * NiaraSettlement (EVM) e espera a confirmação. Devolve o hash/assinatura.
+   * Approves EXACTLY `amount` of `token` to the vault PDA (Solana) or the
+   * NiaraSettlement (EVM) and waits for confirmation. Returns the hash/signature.
    */
   const approveExact = useCallback(
     async (wallet: string, token: string, amount: bigint, onSent?: (tx: string) => void): Promise<string> => {

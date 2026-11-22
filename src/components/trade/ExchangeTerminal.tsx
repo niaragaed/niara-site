@@ -1,8 +1,8 @@
 "use client";
 
-// Terminal real em testnet. Ordem no DOM = ordem no mobile (uma coluna):
-// listagem, livro, boleta, histórico (vazio), ordens da sessão. No desktop,
-// coluna larga à esquerda (histórico + ordens) e estreita à direita.
+// Real terminal on testnet. DOM order = mobile order (single column):
+// listing, book, ticket, history (empty), session orders. On desktop,
+// wide column on the left (history + orders), narrow one on the right.
 
 import { CHAINS } from "@/lib/exchange/chains";
 import { CHAIN_LABEL } from "@/lib/exchange/config";
@@ -22,7 +22,7 @@ function Banner() {
   const { chain, wallet } = useTrade();
   const evm = useConnection();
   let network = CHAIN_LABEL[chain];
-  // EVM: mostra também a rede em que a carteira está, se for outra.
+  // EVM: also shows the network the wallet is on, if it differs.
   if (CHAINS[chain].kind === "evm" && evm.isConnected && evm.chainId !== CHAINS[chain].evmChainId) {
     const actual = evm.chainId === undefined ? null : (evmNetworkName(evm.chainId) ?? en.testnet.unknownNetwork(evm.chainId));
     if (actual) network = `${network} — ${en.testnet.walletOn(actual)}`;

@@ -1,9 +1,9 @@
 "use client";
 
-// Aviso permanente (não dispensável) em toda página que toca carteira: tudo
-// roda em testnet, sem valor real. Mostra também a rede e a carteira.
-// Sem props, lê a conexão EVM do wagmi (páginas do piloto Sepolia); /trade
-// passa a rede selecionada e a carteira da cadeia escolhida.
+// Permanent (non-dismissible) notice on every page that touches a wallet: everything
+// runs on testnet, with no real value. It also shows the network and the wallet.
+// With no props, it reads the EVM connection from wagmi (Sepolia pilot pages); /trade
+// passes the selected network and the wallet of the chosen chain.
 
 import { FlaskConical } from "lucide-react";
 import { useConnection } from "wagmi";

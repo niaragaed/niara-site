@@ -1,9 +1,9 @@
-// Cliente da API do order service (niara-exchange-engine/src/service/http.ts):
+// Client of the order service API (niara-exchange-engine/src/service/http.ts):
 //   POST /v1/orders          { intent, signature }
 //   POST /v1/orders/cancel   { cancel, signature }
-//   GET  /v1/matches/:id     status de liquidação e tx hash
-// Valores em string decimal. Nenhum segredo: a autenticação é a assinatura da
-// carteira sobre a intent.
+//   GET  /v1/matches/:id     settlement status and tx hash
+// Amounts are decimal strings. No secrets: authentication is the wallet's
+// signature over the intent.
 import { ENGINE_URL } from "./config";
 import type { CancelIntent } from "./intents/cancel";
 import { cancelToJson } from "./intents/cancel";
@@ -11,7 +11,7 @@ import type { OrderIntent } from "./intents/types";
 import { intentToJson } from "./intents/validate";
 
 export class EngineError extends Error {
-  /** Código do engine (`delegate_not_covered`, `bad_signature`…) ou de transporte. */
+  /** Engine code (`delegate_not_covered`, `bad_signature`…) or a transport code. */
   readonly code: string;
   readonly status: number | null;
   readonly detail: string | null;
@@ -69,14 +69,14 @@ async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Pr
       cache: "no-store",
     });
   } catch {
-    // fetch só falha assim por rede/CORS: o navegador não diz qual.
+    // fetch only fails like this on network/CORS: the browser doesn't say which.
     throw new EngineError("unreachable", null, null);
   }
   let json: unknown = null;
   try {
     json = await res.json();
   } catch {
-    // corpo não-JSON
+    // non-JSON body
   }
   if (!res.ok) {
     const o = (json ?? {}) as { error?: unknown; detail?: unknown };

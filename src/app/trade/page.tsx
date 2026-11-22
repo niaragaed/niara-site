@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 type TradePageProps = {
-  // Next 16: searchParams é assíncrono.
+  // Next 16: searchParams is async.
   searchParams: Promise<{ asset?: string | string[] }>;
 };
 
@@ -16,6 +16,6 @@ export default async function TradePage({ searchParams }: TradePageProps) {
   const params = await searchParams;
   const assetParam = Array.isArray(params.asset) ? params.asset[0] : params.asset;
 
-  // ?asset=<mint ou endereço do token> pré-seleciona a listagem, se existir.
+  // ?asset=<mint or token address> preselects the listing, if it exists.
   return <ExchangeTerminal initialAsset={assetParam} />;
 }

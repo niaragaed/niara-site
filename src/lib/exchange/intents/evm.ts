@@ -1,4 +1,4 @@
-// Porte de niara-exchange-engine/src/intents/evm.ts (commit d5b32d6).
+// Port of niara-exchange-engine/src/intents/evm.ts (commit d5b32d6).
 import { getAddress, hashTypedData, isHex, keccak256, toHex, type Hex } from "viem";
 import { CHAINS } from "../chains";
 import { IntentError, type OrderIntent } from "./types";
@@ -7,7 +7,7 @@ import { validateIntent } from "./validate";
 export const EIP712_DOMAIN_NAME = "Niara Exchange";
 export const EIP712_DOMAIN_VERSION = "1";
 
-/** A ordem dos campos faz parte do type hash: nunca reordenar. `side`: 0 = buy, 1 = sell. */
+/** Field order is part of the type hash: never reorder. `side`: 0 = buy, 1 = sell. */
 export const ORDER_INTENT_TYPES = {
   OrderIntent: [
     { name: "wallet", type: "address" },
@@ -28,14 +28,14 @@ export const ORDER_INTENT_TYPE =
 
 export const ORDER_INTENT_TYPEHASH = keccak256(toHex(ORDER_INTENT_TYPE));
 
-// Ordem do grupo secp256k1 e sua metade: o engine (como o ECDSA do OpenZeppelin)
-// recusa s alto, então cada intent tem uma única codificação válida.
+// secp256k1 group order and its half: the engine (like OpenZeppelin's ECDSA)
+// rejects a high s, so each intent has a single valid encoding.
 const SECP256K1_N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 const SECP256K1_HALF_N = BigInt("0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0");
 
 /**
- * Typed data EIP-712 da intent. Domínio: "Niara Exchange", versão "1", chain id
- * EIP-155 da cadeia e `verifyingContract` = NiaraSettlement.
+ * EIP-712 typed data of the intent. Domain: "Niara Exchange", version "1", the
+ * chain's EIP-155 id and `verifyingContract` = NiaraSettlement.
  */
 export function evmIntentTypedData(intent: OrderIntent) {
   const i = validateIntent(intent);
@@ -71,12 +71,12 @@ export function evmIntentDigest(intent: OrderIntent): Hex {
 }
 
 /**
- * Leva a assinatura que a carteira devolveu para a forma que o engine aceita
- * (`checkEvmSignatureFormat`): 65 bytes r‖s‖v, v ∈ {27, 28}, s baixo.
- * - v 0/1 (algumas carteiras e hardware wallets) → 27/28;
- * - s alto → (n − s) com v invertido: é a MESMA assinatura do mesmo signatário,
- *   só na codificação canônica.
- * Qualquer outra coisa é recusada.
+ * Turns the signature the wallet returned into the form the engine accepts
+ * (`checkEvmSignatureFormat`): 65 bytes r‖s‖v, v ∈ {27, 28}, low s.
+ * - v 0/1 (some wallets and hardware wallets) → 27/28;
+ * - high s → (n − s) with v flipped: it is the SAME signature by the same signer,
+ *   only in canonical encoding.
+ * Anything else is rejected.
  */
 export function normalizeEvmSignature(signature: string): Hex {
   if (!isHex(signature, { strict: true }) || signature.length !== 2 + 65 * 2) {

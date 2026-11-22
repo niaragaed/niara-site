@@ -1,6 +1,6 @@
-// Porte de niara-exchange-engine/src/intents/validate.ts (commit d5b32d6).
-// Mesma validação do servidor: uma intent que passa aqui passa lá (exceto as
-// regras de mercado e janela de validade, que são do engine).
+// Port of niara-exchange-engine/src/intents/validate.ts (commit d5b32d6).
+// Same validation as the server: an intent that passes here passes there (except the
+// market rules and validity window, which belong to the engine).
 import { base58 } from "@scure/base";
 import { getAddress, isAddress } from "viem";
 import { CHAINS, isChainId, type ChainKind } from "../chains";
@@ -9,10 +9,10 @@ import { INTENT_VERSION, IntentError, type OrderIntent } from "./types";
 export const U64_MAX = (BigInt(1) << BigInt(64)) - BigInt(1);
 export const U256_MAX = (BigInt(1) << BigInt(256)) - BigInt(1);
 
-/** 16 bytes como 32 caracteres hex minúsculos (nonce de ordem e de cancelamento). */
+/** 16 bytes as 32 lowercase hex chars (order and cancel nonce). */
 export const NONCE_PATTERN = /^[0-9a-f]{32}$/;
 
-/** Chave pública Solana canônica: decodifica em 32 bytes e reencoda igual. */
+/** Canonical Solana public key: decodes to 32 bytes and re-encodes identically. */
 export function isSolanaAddress(value: string): boolean {
   try {
     return base58.decode(value).length === 32 && base58.encode(base58.decode(value)) === value;
@@ -33,7 +33,7 @@ export function checkAddress(kind: ChainKind, field: string, value: unknown): st
   return checksummed;
 }
 
-/** Valida a intent e devolve a forma canônica (endereços EVM com checksum). */
+/** Validates the intent and returns its canonical form (checksummed EVM addresses). */
 export function validateIntent(intent: OrderIntent): OrderIntent {
   if (intent.version !== INTENT_VERSION) {
     throw new IntentError("unsupported_version", `intent version must be ${INTENT_VERSION}`);
@@ -54,7 +54,7 @@ export function validateIntent(intent: OrderIntent): OrderIntent {
   if (intent.quantity % intent.lotSize !== BigInt(0)) {
     throw new IntentError("not_whole_lots", "quantity must be a multiple of lotSize");
   }
-  // Larguras on-chain: `settle` da Solana recebe u64; EVM, uint256.
+  // On-chain widths: Solana's `settle` takes u64; EVM takes uint256.
   const max = kind === "solana" ? U64_MAX : U256_MAX;
   const notional = (intent.quantity / intent.lotSize) * intent.limitPrice;
   if (intent.quantity > max || intent.lotSize > max || intent.limitPrice > max || notional > max) {
@@ -71,8 +71,8 @@ export function validateIntent(intent: OrderIntent): OrderIntent {
 }
 
 /**
- * Corpo JSON que o engine espera em `POST /v1/orders` (`parseOrderIntent`):
- * valores em string decimal (nunca number JSON), `expiresAt` inteiro.
+ * JSON body the engine expects at `POST /v1/orders` (`parseOrderIntent`):
+ * amounts as decimal strings (never JSON numbers), integer `expiresAt`.
  */
 export function intentToJson(intent: OrderIntent) {
   const i = validateIntent(intent);
@@ -92,7 +92,7 @@ export function intentToJson(intent: OrderIntent) {
   };
 }
 
-/** Nonce novo: 16 bytes de `crypto.getRandomValues`, nunca todo zero. */
+/** Fresh nonce: 16 bytes from `crypto.getRandomValues`, never all zero. */
 export function randomNonce(): string {
   for (;;) {
     const bytes = new Uint8Array(16);

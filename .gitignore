@@ -40,5 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# exemplo público de configuração (sem segredos) — versionado
+# public example config (no secrets) — versioned
 !.env.example
+
+# local Claude Code state; only the shared settings are versioned
+/.claude/*
+!/.claude/settings.json

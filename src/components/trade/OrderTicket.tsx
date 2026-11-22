@@ -1,9 +1,9 @@
 "use client";
 
-// Boleta real: monta a OrderIntent exatamente como o engine define, a carteira
-// assina, aprova on-chain só o valor exato que `settle` moveria (se a aprovação
-// atual não cobre), envia ao order service e mostra a resposta dele. Nada aqui
-// finge sucesso: o resultado exibido é o que o engine respondeu.
+// Real order ticket: builds the OrderIntent exactly as the engine defines it, the wallet
+// signs it, approves on-chain only the exact amount `settle` would move (if the current
+// approval doesn't cover it), submits to the order service and shows its answer. Nothing here
+// fakes success: the result shown is what the engine answered.
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
@@ -63,7 +63,7 @@ export function OrderTicket() {
   const maxValidity = chainRow?.maxIntentValiditySecs ?? 0;
   const expiryChoices = EXPIRY_OPTIONS.filter((s) => s <= maxValidity);
 
-  // Valores exatos (bigint) a partir do texto.
+  // Exact values (bigint) from the text.
   const parsed = useMemo(() => {
     if (!listing || usdtDecimals === undefined) return null;
     const lots = /^[1-9][0-9]*$/.test(lotsText.trim()) ? BigInt(lotsText.trim()) : null;
@@ -72,8 +72,8 @@ export function OrderTicket() {
     return { lots, price, quantity: lots * listing.lotSize, notional: lots * price };
   }, [lotsText, priceText, listing, usdtDecimals]);
 
-  // O que `settle` vai debitar desta carteira (spec §3.5): vendedor o ativo,
-  // comprador o pagamento máximo em USDT.
+  // What `settle` will debit from this wallet (spec §3.5): the seller's asset,
+  // the buyer's maximum payment in USDT.
   const need =
     parsed?.quantity && parsed.notional && listing && config.ready
       ? side === "sell"
@@ -113,7 +113,7 @@ export function OrderTicket() {
     }
     if (parsed.notional < chainRow.minOrderNotional) return setFormError(t.belowMin);
 
-    // 1. Monta a intent exatamente como src/intents do engine.
+    // 1. Build the intent exactly as the engine's src/intents.
     let intent: OrderIntent;
     try {
       intent = validateIntent({
@@ -135,7 +135,7 @@ export function OrderTicket() {
     }
     const needNow = need!;
 
-    // Saldo antes de pedir qualquer assinatura (só leitura).
+    // Balance before asking for any signature (read-only).
     let cov;
     try {
       cov = await actions.readCoverage(wallet, needNow.token);
@@ -146,11 +146,11 @@ export function OrderTicket() {
 
     let approvalTx: string | null = null;
     try {
-      // 2. Assina a intent.
+      // 2. Sign the intent.
       setPhase({ step: "sign" });
       const signature = await actions.signIntent(intent);
 
-      // 3. Delegate / allowance exato, só se o atual não cobre.
+      // 3. Exact delegate / allowance, only if the current one doesn't cover it.
       if (cov.approved < needNow.amount) {
         setPhase({ step: "approve" });
         approvalTx = await actions.approveExact(wallet, needNow.token, needNow.amount, (tx) => {
@@ -160,7 +160,7 @@ export function OrderTicket() {
         setPhase({ step: "confirming", approvalTx });
       }
 
-      // 4. Envia ao order service.
+      // 4. Submit to the order service.
       setPhase({ step: "submit", approvalTx });
       const res = await submitOrder(intent, signature);
       addSessionOrder({ intent, order: res.order, matches: res.matches, approvalTx, placedAt: unixNow() });
@@ -193,7 +193,7 @@ export function OrderTicket() {
   const spender = kind === "solana" ? t.vaultLabel : t.settlementLabel;
   const feePct = terms ? `${(terms.feeBps / 100).toFixed(2)}%` : null;
 
-  // Pré-visualização do texto que a carteira Solana vai mostrar.
+  // Preview of the text the Solana wallet will show.
   const preview = useMemo(() => {
     if (kind !== "solana" || !canOrder || !parsed?.quantity || !parsed.price || !listing || !wallet || !config.ready) return null;
     try {
@@ -209,7 +209,7 @@ export function OrderTicket() {
           lotSize: listing.lotSize,
           limitPrice: parsed.price,
           paymentAsset: config.usdt,
-          // marcadores só para a prévia; as linhas são reescritas abaixo
+          // placeholders for the preview only; the lines are rewritten below
           nonce: "1".repeat(32),
           expiresAt: 1,
         }),

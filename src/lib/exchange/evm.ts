@@ -1,10 +1,10 @@
-// Leituras EVM (somente leitura, RPC do env) para o livro: metadados do token,
-// saldo/allowance para o NiaraSettlement e a taxa on-chain. O approve e a
-// assinatura EIP-712 vão pela carteira (wagmi) — ver components/trade.
+// EVM reads (read-only, env RPC) for the book: token metadata,
+// balance/allowance for NiaraSettlement and the on-chain fee. The approve and the
+// EIP-712 signature go through the wallet (wagmi) — see components/trade.
 import { createPublicClient, getAddress, http, type Address, type PublicClient } from "viem";
 import { erc20Abi } from "@/lib/web3/abis/erc20";
 
-/** Fragmento do ABI do NiaraSettlement (niara-exchange-engine/src/evm/abi). */
+/** Fragment of the NiaraSettlement ABI (niara-exchange-engine/src/evm/abi). */
 export const niaraSettlementAbi = [
   { type: "function", name: "feeBps", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint16" }] },
   { type: "function", name: "feeToken", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "address" }] },
@@ -27,7 +27,7 @@ export function evmClient(rpcUrl: string, chainId: number): PublicClient {
   return c;
 }
 
-/** Recusa um RPC cujo chain id não seja o esperado (o engine faz o mesmo). */
+/** Rejects an RPC whose chain id is not the expected one (the engine does the same). */
 export async function assertEvmChain(client: PublicClient, chainId: number): Promise<void> {
   const actual = await client.getChainId();
   if (actual !== chainId) throw new Error(`the configured RPC is chain ${actual}, expected ${chainId}`);

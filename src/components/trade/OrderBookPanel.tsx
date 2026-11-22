@@ -7,8 +7,8 @@ import { en } from "@/lib/i18n/en";
 import { marketDataMessage } from "./ListingsPanel";
 import { useTrade } from "./TradeContext";
 
-// Releitura periódica do livro agregado. Não é "tempo real": mostramos a hora
-// da última leitura.
+// Periodic re-read of the aggregated book. It is not "real time": we show the
+// time of the last read.
 const REFRESH_MS = 10_000;
 
 function Levels({
@@ -30,7 +30,7 @@ function Levels({
   return (
     <ul>
       {levels.map((l) => {
-        // largura relativa ao maior nível do lado (só visual, aria-hidden)
+        // width relative to the side's largest level (visual only, aria-hidden)
         const pct = Number((l.quantity * BigInt(100)) / max);
         return (
           <li
@@ -101,7 +101,7 @@ export function OrderBookPanel() {
             <span className="w-10 text-right">{t.orders}</span>
           </div>
           <h3 className="px-3 pt-1 text-[10px] uppercase tracking-wide text-negative">{t.asks}</h3>
-          {/* asks exibidos do maior para o menor, encostando no spread */}
+          {/* asks shown from highest to lowest, next to the spread */}
           <Levels levels={[...data.asks].reverse()} side="sell" lotSize={listing.lotSize} usdtDecimals={usdtDecimals} />
           <div className="my-1 flex items-center justify-between border-y border-border bg-bg-elevated px-3 py-1.5 font-mono text-xs tabular-nums text-text-muted">
             <span>{t.spread}</span>

@@ -1,33 +1,33 @@
-// cotações fixas de referência — simulação. Substituir por oráculo/feed
-// real (ex.: Chainlink ou API de mercado).
+// fixed reference rates: a simulation. Replace with a real oracle/feed
+// (e.g. Chainlink or a market API).
 //
-// USDT é a âncora interna do site: por definição, 1 USDT ≈ 1 USD
-// (aproximação — na prática o USDT oscila alguns centavos em torno do
-// dólar, mas para efeitos de demonstração tratamos como paridade exata).
-// USDT foi escolhido como unidade interna por ser estável — isso torna a
-// precificação dos ativos tokenizados legível; ETH e BTC oscilam bastante
-// e distorceriam a leitura de preço se fossem a unidade de referência.
+// USDT is the site's internal anchor: by definition, 1 USDT ≈ 1 USD (an
+// approximation; in practice USDT moves a few cents around the dollar, but
+// for demo purposes we treat it as exact parity). USDT was chosen as the
+// internal unit because it is stable, which keeps tokenized asset prices
+// readable; ETH and BTC move a lot and would distort price reading if they
+// were the reference unit.
 export const BTC_USDT = 65000;
 export const USD_BRL = 5.4;
 export const USD_EUR = 0.93;
 
-// ETH não é mais a unidade interna do site, mas continua disponível como
-// moeda de exibição no conversor de câmbio (/exchange).
+// ETH is no longer the site's internal unit, but it is still available as a
+// display currency in the currency converter (/exchange).
 export const ETH_USD = 3000;
 
 export type ExchangeCurrency = "BRL" | "USD" | "EUR" | "ETH" | "BTC" | "USDC" | "USDT";
 
-// preço de 1 unidade de cada moeda em USDT — USDT funciona como moeda-âncora
-// para toda conversão do câmbio, então "de X para Y" é sempre um único
-// passo (X→USDT→Y), nunca uma cadeia de pares que acumularia arredondamento.
+// price of 1 unit of each currency in USDT. USDT is the anchor currency for
+// every conversion, so "from X to Y" is always a single step (X→USDT→Y),
+// never a chain of pairs that would accumulate rounding.
 export const RATE_TO_USDT: Record<ExchangeCurrency, number> = {
   USDT: 1,
-  USD: 1, // 1 USDT ≈ 1 USD, referência simulada
+  USD: 1, // 1 USDT ≈ 1 USD, simulated reference
   BRL: 1 / USD_BRL,
   EUR: 1 / USD_EUR,
   ETH: ETH_USD,
   BTC: BTC_USDT,
-  USDC: 1, // stablecoin — paridade ~1 USD, referência simulada
+  USDC: 1, // stablecoin, ~1 USD parity, simulated reference
 };
 
 export function convertCurrency(

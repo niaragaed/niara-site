@@ -13,7 +13,7 @@ export function marketDataMessage(error: unknown): string {
   return en.trade.errors.marketData;
 }
 
-/** Listagens Equity aprovadas (Supabase `listings`) e o cabeçalho do ativo escolhido. */
+/** Approved Equity listings (Supabase `listings`) and the chosen asset's header. */
 export function ListingsPanel() {
   const t = en.trade.listings;
   const { listings, listingsError, listingsLoading, listing, selectListing, assetMeta, config } = useTrade();

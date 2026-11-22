@@ -1,8 +1,8 @@
-// Configuração wagmi do site (todas as redes são testnet).
-// - Sepolia: piloto antigo (/pilot, saldos em /profile e /assets).
-// - Base Sepolia, Robinhood Chain testnet, Tempo testnet e HyperEVM testnet:
-//   cadeias v1 do Niara Exchange usadas por /trade. RPCs vêm do env
-//   (.env.example); sem valor, cai no RPC público da definição do viem.
+// wagmi config for the site (every network is a testnet).
+// - Sepolia: the old pilot (/pilot, balances in /profile and /assets).
+// - Base Sepolia, Robinhood Chain testnet, Tempo testnet and HyperEVM testnet:
+//   Niara Exchange v1 chains used by /trade. RPC URLs come from env
+//   (.env.example); when unset, viem's public RPC for the chain is used.
 import { cookieStorage, createConfig, createStorage, http } from "wagmi";
 import { baseSepolia, hyperliquidEvmTestnet, robinhoodTestnet, sepolia, tempoModerato } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
@@ -29,11 +29,11 @@ declare module "wagmi" {
   }
 }
 
-/** Nome legível da rede EVM conectada (todas testnet). */
+/** Readable name of the connected EVM network (all testnets). */
 export function evmNetworkName(chainId: number | undefined): string | null {
   if (chainId === undefined) return null;
   return config.chains.find((c) => c.id === chainId)?.name ?? null;
 }
 
-/** União dos chain ids configurados no wagmi (exigida pelas actions tipadas). */
+/** Union of the chain ids configured in wagmi (required by the typed actions). */
 export type EvmChainId = (typeof config)["chains"][number]["id"];

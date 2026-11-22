@@ -1,10 +1,10 @@
-// Leituras e transação de delegate na Solana devnet para o livro de ofertas
-// (spec §3.5): a ordem fica viva enquanto a conta associada (ATA) da carteira
-// delega ao vault PDA do programa pelo menos o que `settle` moveria.
+// Reads and the delegate transaction on Solana devnet for the order book
+// (spec §3.5): an order stays live while the wallet's associated token account (ATA)
+// delegates to the program's vault PDA at least what `settle` would move.
 //
-// Só a transação de approve é montada aqui; a carteira assina
-// (`solana:signTransaction`) e o envio vai pelo RPC devnet configurado, depois
-// de conferir o genesis hash — nunca por um RPC escolhido pela carteira.
+// Only the approve transaction is built here; the wallet signs it
+// (`solana:signTransaction`) and it is sent through the configured devnet RPC, after
+// checking the genesis hash — never through an RPC chosen by the wallet.
 import {
   Connection,
   PublicKey,
@@ -32,7 +32,7 @@ export function solanaConnection(rpcUrl: string): Connection {
 
 const devnetChecked = new WeakSet<Connection>();
 
-/** Recusa qualquer RPC que não seja a devnet (mesma checagem do engine). */
+/** Rejects any RPC that is not devnet (same check as the engine). */
 export async function assertDevnet(connection: Connection): Promise<void> {
   if (devnetChecked.has(connection)) return;
   const genesis = await connection.getGenesisHash();
@@ -40,7 +40,7 @@ export async function assertDevnet(connection: Connection): Promise<void> {
   devnetChecked.add(connection);
 }
 
-/** PDA `["vault"]` do programa: o delegate das ordens do livro. */
+/** The program's `["vault"]` PDA: the delegate of order-book orders. */
 export function vaultAuthority(programId: string): PublicKey {
   return PublicKey.findProgramAddressSync([new TextEncoder().encode("vault")], new PublicKey(programId))[0];
 }
@@ -55,7 +55,7 @@ export function associatedTokenAddress(mint: PublicKey, owner: PublicKey, tokenP
 export interface SolanaMintInfo {
   decimals: number;
   tokenProgram: PublicKey;
-  /** Da extensão tokenMetadata (Token-2022), quando existe. */
+  /** From the tokenMetadata extension (Token-2022), when present. */
   name: string | null;
   symbol: string | null;
 }
@@ -92,7 +92,7 @@ export interface SolanaTokenAccountState {
   frozen: boolean;
 }
 
-/** Estado da ATA (saldo e delegate) — a mesma conta que o engine confere. */
+/** State of the ATA (balance and delegate) — the same account the engine checks. */
 export async function readTokenAccount(
   connection: Connection,
   owner: string,
@@ -119,7 +119,7 @@ export async function readTokenAccount(
   };
 }
 
-/** `approve_checked` (instrução 13 do SPL Token / Token-2022): delega `amount` ao `delegate`. */
+/** `approve_checked` (SPL Token / Token-2022 instruction 13): delegates `amount` to `delegate`. */
 export function approveCheckedInstruction(args: {
   tokenProgram: PublicKey;
   source: PublicKey;
@@ -147,8 +147,8 @@ export function approveCheckedInstruction(args: {
 }
 
 /**
- * Transação (legacy) com um único `approve_checked` do valor EXATO para o vault
- * PDA. Pagador da taxa = a própria carteira.
+ * Legacy transaction with a single `approve_checked` of the EXACT amount to the vault
+ * PDA. Fee payer = the wallet itself.
  */
 export async function buildApproveTransaction(
   connection: Connection,
@@ -172,8 +172,8 @@ export async function buildApproveTransaction(
 }
 
 /**
- * Confere que a transação assinada pela carteira é a que montamos (mesma
- * mensagem) antes de enviar — uma carteira não pode trocar o conteúdo.
+ * Checks that the transaction the wallet signed is the one we built (same
+ * message) before sending — a wallet cannot swap the contents.
  */
 export function checkSignedTransaction(unsigned: Uint8Array, signed: Uint8Array, owner: string): void {
   const a = Transaction.from(unsigned);
@@ -200,7 +200,7 @@ export async function sendAndConfirm(
   return signature;
 }
 
-// Discriminador Anchor da conta `Config` (IDL vendorizado no engine).
+// Anchor discriminator of the `Config` account (IDL vendored in the engine).
 const CONFIG_DISCRIMINATOR = [155, 12, 170, 224, 30, 250, 204, 130];
 
 export interface SolanaProgramTerms {
@@ -211,7 +211,7 @@ export interface SolanaProgramTerms {
 }
 
 /**
- * Lê a `Config` do programa (PDA `["config"]`). Layout (IDL): discriminador (8),
+ * Reads the program's `Config` (PDA `["config"]`). Layout (IDL): discriminator (8),
  * admin, listing_authority, settlement_operator, treasury, fee_mint (5 × 32),
  * fee_bps u16, cashback_bps u16, paused bool, …
  */

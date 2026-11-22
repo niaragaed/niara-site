@@ -1,4 +1,4 @@
-// Porte de niara-exchange-engine/src/intents/types.ts (commit d5b32d6).
+// Port of niara-exchange-engine/src/intents/types.ts (commit d5b32d6).
 import type { ChainId } from "../chains";
 
 export const INTENT_VERSION = 1;
@@ -6,31 +6,31 @@ export const INTENT_VERSION = 1;
 export type Side = "buy" | "sell";
 
 /**
- * O que a carteira assina para colocar uma ordem (spec §3.6). Unidades do engine:
- * `quantity` e `lotSize` em unidades base do ativo, `limitPrice` em unidades base
- * de USDT por lote.
+ * What the wallet signs to place an order (spec §3.6). Engine units:
+ * `quantity` and `lotSize` in the asset's base units, `limitPrice` in USDT base
+ * units per lot.
  *
- * Solana: o texto UTF-8 de `solanaIntentMessage`, assinado com `signMessage`.
- * EVM: o typed data EIP-712 de `evmIntentTypedData`.
+ * Solana: the UTF-8 text of `solanaIntentMessage`, signed with `signMessage`.
+ * EVM: the EIP-712 typed data of `evmIntentTypedData`.
  */
 export interface OrderIntent {
   version: typeof INTENT_VERSION;
   chain: ChainId;
-  /** Solana: program id do `niara_exchange`. EVM: endereço do `NiaraSettlement`. */
+  /** Solana: the `niara_exchange` program id. EVM: the `NiaraSettlement` address. */
   settlement: string;
-  /** Quem assina. Chave pública base58 (Solana) ou endereço EVM. */
+  /** The signer. Base58 public key (Solana) or EVM address. */
   wallet: string;
   side: Side;
-  /** Mint / endereço do token do ativo. */
+  /** Asset mint / token address. */
   asset: string;
   quantity: bigint;
   lotSize: bigint;
   limitPrice: bigint;
-  /** Mint / token USDT da cadeia. */
+  /** The chain's USDT mint / token. */
   paymentAsset: string;
-  /** 16 bytes aleatórios, hex minúsculo (32 caracteres). Único por (cadeia, carteira). */
+  /** 16 random bytes, lowercase hex (32 chars). Unique per (chain, wallet). */
   nonce: string;
-  /** Segundos unix. Obrigatório. */
+  /** Unix seconds. Required. */
   expiresAt: number;
 }
 

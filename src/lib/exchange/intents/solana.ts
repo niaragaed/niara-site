@@ -1,14 +1,14 @@
-// Porte de niara-exchange-engine/src/intents/solana.ts (commit d5b32d6).
-// O verificador do engine reconstrói ESTE texto a partir da intent estruturada
-// e confere a assinatura sobre ele — qualquer byte diferente = bad_signature.
+// Port of niara-exchange-engine/src/intents/solana.ts (commit d5b32d6).
+// The engine's verifier rebuilds THIS text from the structured intent
+// and checks the signature over it — any different byte = bad_signature.
 import { base58 } from "@scure/base";
 import { CHAINS } from "../chains";
 import { IntentError, type OrderIntent } from "./types";
 import { validateIntent } from "./validate";
 
 /**
- * Texto exato que a carteira Solana assina com `signMessage`: UTF-8, linhas
- * unidas por "\n", sem "\n" final, inteiros em decimal puro.
+ * Exact text a Solana wallet signs with `signMessage`: UTF-8, lines
+ * joined by "\n", no trailing "\n", integers in plain decimal.
  */
 export function solanaIntentMessage(intent: OrderIntent): Uint8Array {
   const i = validateIntent(intent);
@@ -33,13 +33,13 @@ export function solanaIntentMessage(intent: OrderIntent): Uint8Array {
   return new TextEncoder().encode(lines.join("\n"));
 }
 
-/** Assinatura ed25519 (64 bytes) → base58, como o engine espera. */
+/** ed25519 signature (64 bytes) → base58, as the engine expects. */
 export function encodeSolanaSignature(signature: Uint8Array): string {
   if (signature.length !== 64) throw new IntentError("invalid_signature_format", "signature must be 64 bytes");
   return base58.encode(signature);
 }
 
-/** Base58 → 64 bytes (mesmas regras de `decodeSolanaSignature` do engine). */
+/** Base58 → 64 bytes (same rules as the engine's `decodeSolanaSignature`). */
 export function decodeSolanaSignature(signature: string): Uint8Array {
   let bytes: Uint8Array;
   try {

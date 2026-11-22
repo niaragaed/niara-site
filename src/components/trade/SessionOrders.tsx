@@ -1,10 +1,10 @@
 "use client";
 
-// Ordens enviadas DESTA aba (estado React, não persistido) com o status que o
-// engine devolveu e, para cada match, o status de liquidação lido em
-// GET /v1/matches/:id. "Settled" só aparece com o hash da transação.
-// O histórico completo da carteira depende de um endpoint que o engine ainda
-// não tem — não é reconstruído aqui.
+// Orders submitted from THIS tab (React state, not persisted) with the status the
+// engine returned and, for each match, the settlement status read from
+// GET /v1/matches/:id. "Settled" only appears with the transaction hash.
+// The wallet's full history depends on an endpoint the engine doesn't have yet;
+// it is not reconstructed here.
 
 import { useState } from "react";
 import { ExternalLink, Info, Loader2 } from "lucide-react";

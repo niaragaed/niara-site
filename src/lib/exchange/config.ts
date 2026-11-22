@@ -1,9 +1,9 @@
-// Configuração do fluxo real em testnet. SÓ via env (.env.example): URL do
-// engine, Supabase (anon key é pública por design, RLS), RPCs, chain ids e
-// endereços. Nada aqui é segredo — e nada secreto pode entrar em NEXT_PUBLIC_*.
+// Configuration of the real testnet flow. Env ONLY (.env.example): engine URL,
+// Supabase (the anon key is public by design, RLS), RPCs, chain ids and
+// addresses. Nothing here is secret — and nothing secret may go in NEXT_PUBLIC_*.
 //
-// Next.js só inlina `process.env.NEXT_PUBLIC_X` escrito literalmente; por isso
-// cada variável é lida por extenso, sem lookup dinâmico.
+// Next.js only inlines `process.env.NEXT_PUBLIC_X` written literally, so
+// each variable is read in full, with no dynamic lookup.
 import { getAddress, isAddress, type Address } from "viem";
 import { CHAINS, type ChainId } from "./chains";
 import { isSolanaAddress } from "./intents/validate";
@@ -65,12 +65,12 @@ export type ChainConfig =
       chain: ChainId;
       ready: true;
       rpcUrl: string;
-      /** Solana: program id. EVM: NiaraSettlement (com checksum). */
+      /** Solana: program id. EVM: NiaraSettlement (checksummed). */
       settlement: string;
       /** Mint / token USDT. */
       usdt: string;
       evmChainId: number | null;
-      /** Template com `{tx}`. */
+      /** Template with `{tx}`. */
       explorerTx: string;
     }
   | { chain: ChainId; ready: false; problems: string[] };
@@ -93,7 +93,7 @@ function load(chain: ChainId): ChainConfig {
   let evmChainId: number | null = null;
   if (info.kind === "evm") {
     evmChainId = raw.chainId ? Number(raw.chainId) : null;
-    // O chain id é assinado no domínio EIP-712: tem de ser o do engine.
+    // The chain id is signed in the EIP-712 domain: it must be the engine's.
     if (evmChainId !== info.evmChainId) problems.push(`chain id must be ${info.evmChainId}`);
   }
   if (problems.length > 0 || !raw.rpcUrl || !settlement || !usdt || !raw.explorerTx) {
@@ -110,7 +110,7 @@ export const CHAIN_CONFIG: Readonly<Record<ChainId, ChainConfig>> = {
   "tempo-testnet": load("tempo-testnet"),
 };
 
-/** Ordem do seletor: Solana devnet primeiro (prioridade da spec), depois EVM. */
+/** Selector order: Solana devnet first (the spec's priority), then EVM. */
 export const CHAIN_ORDER: readonly ChainId[] = [
   "solana-devnet",
   "base-sepolia",
