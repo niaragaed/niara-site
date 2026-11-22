@@ -21,20 +21,45 @@ Pontos que já nos afetaram:
 
 ## O projeto
 
-**Niara** — infraestrutura de exchange global descentralizada. Tokeniza ativos
-reais (ações, ETFs, commodities, cripto) com lastro 1:1 sob custódia regulada e
-os negocia 24/7 em uma exchange descentralizada, sem bolsas tradicionais nem SWIFT.
+**Niara** — exchange peer-to-peer de valores mobiliários tokenizados, com
+**autocustódia** e **listagem curada**. Spec de referência:
+`niara-exchange-solana/EXCHANGE-MULTICHAIN-DESIGN.md`.
 
-Diferencial e motor de adoção: **cashback programático ao emissor** — parcela da
-taxa de transação devolvida automaticamente, via smart contract, à carteira da
-empresa emissora, proporcional ao volume negociado do próprio ativo.
+- **Emissão direta, aprovada pela Niara.** O emissor cria o token do próprio
+  ativo (equity, renda fixa ou crédito) a partir da **sua carteira de
+  autocustódia**; o token *é* o instrumento (emissão nativa). Não há lastro 1:1
+  nem custodiante: a Niara não guarda ativos de ninguém. O ativo só fica
+  negociável depois que a Niara aprova a listagem — a Niara controla a
+  elegibilidade, nunca a custódia.
+- **Dois modos de negociação, fixados pela classe do ativo (on-chain):**
+  `Equity` → livro de ofertas (o dono aprova o valor exato da ordem como
+  delegate SPL / allowance ERC-20; os tokens ficam na carteira); `FixedIncome`,
+  `Credit` e `Currency` → negociação P2P com escrow por negócio.
+- **Matching off-chain, liquidação on-chain atômica.** Ordens são intents
+  assinadas pela carteira, casadas pelo order engine (centralizado por design)
+  e liquidadas on-chain pelo operador de liquidação. **Não descrever como
+  "exchange descentralizada" nem "totalmente on-chain".** Até o contrato
+  verificar as intents on-chain, o operador é uma premissa de confiança
+  documentada — nunca dizer "trustless".
 
-Receita: duas taxas, ambas cobradas em USDT — taxa de negociação (0,1%–0,5% de
-cada operação) e taxa de listagem/tokenização (0,1%–1% do valuation do emissor).
-Não há taxa de custódia.
+Receita: duas taxas, ambas em **USDT**. Não há taxa de custódia.
+- **Taxa de negociação:** 0,1%–0,5% de cada operação, paga por quem recebe USDT
+  (o vendedor, no livro). On-chain só o teto é imposto: **0,5%**
+  (`MAX_FEE_BPS = 50`); o piso de 0,1% é política de preço.
+- **Taxa de listagem:** 0,1%–1% do valuation do emissor, uma vez por listagem
+  (teto on-chain de 1%).
 
-**Estágio atual: site institucional + protótipo de interface. Não há backend,
-autenticação, carteira real nem blockchain conectada.**
+Diferencial: **cashback ao emissor** = **20% da taxa de negociação**
+(`cashback_bps = 2000`), creditado em USDT ao emissor do ativo negociado, via
+contrato. A taxa de listagem não gera cashback; `Currency` nunca gera.
+
+**Estágio atual: smart contracts no ar em testnets (Solana devnet; Base
+Sepolia, Robinhood Chain testnet e Tempo testnet; HyperEVM ainda sem deploy)
++ order engine off-chain (`niara-exchange-engine`: API de ordens, matching e
+worker de liquidação; Supabase `niara-exchange-dev`).** `/trade` roda o fluxo
+real em testnet; o resto do site segue institucional/protótipo com dados
+ilustrativos. Tudo é testnet: tokens de teste, sem valor real, sem autorização
+regulatória — toda tela que toca carteira diz isso.
 
 ---
 
@@ -53,6 +78,21 @@ que parece operar mas não opera causa dano ao usuário e risco regulatório.
   endereços de contrato ou logos de instituições financeiras.
 - Não exibir logos de terceiros (Goldman Sachs, gestoras etc.) — sugeriria
   parcerias inexistentes.
+
+### Fluxo real em testnet (`/trade`)
+
+- Toda página que toca carteira mostra a rede conectada e o aviso permanente
+  **"TESTNET — no real value"** (`src/components/web3/TestnetBanner.tsx`).
+- Dados de mercado vêm só do engine / Supabase (`listings`, `order_book`).
+  Onde não há histórico real, **estado vazio** — nunca dado inventado.
+- Intents de ordem e cancelamento seguem **byte a byte** o `src/intents` do
+  engine (`src/lib/exchange/intents`, com testes). Não mudar formato sem mudar
+  o engine junto.
+- Aprovar só o delegate/allowance **exato** da ordem — nunca "infinito".
+- Nunca dizer que uma ordem executou antes de o engine responder; liquidação só
+  é "settled" com o hash da transação e link do explorer.
+- Chaves de operador e qualquer segredo **nunca** em `NEXT_PUBLIC_*`. A anon key
+  do Supabase é pública por design (RLS).
 
 ## 🔴 Dados sensíveis (LGPD)
 
@@ -131,7 +171,8 @@ demanda bilíngue.
 | Rota | O que é |
 |---|---|
 | `/` | Home: hero com globo 3D (cobe) + ticker de índices |
-| `/trade` | Terminal: gráfico candlestick, indicadores, livro, ordens/posições, boleta |
+| `/trade` | Terminal **real em testnet**: listagens e livro do engine, boleta com intent assinada, status de liquidação |
+| `/pilot` | Piloto antigo de carteira EVM (Sepolia) |
 | `/exchange` | Câmbio: conversor de moedas + tabela de paridades |
 | `/assets` | Carteira simulada (Recharts) + catálogo de ativos |
 | `/profile` | Perfil do usuário (dados pessoais, perfil de investidor, carteira) |
@@ -216,9 +257,12 @@ Identidade Git deste repositório: `Niara <niaragaed@gmail.com>` (local, sem `--
 - Home: faltam as seções de conteúdo abaixo do hero (problema, solução, cashback,
   como funciona, roadmap, captura de contato)
 - Página para empresas emissoras (cashback como centro do discurso)
-- Substituir mocks por feeds reais (mercado, on-chain)
-- Integração de carteira (wagmi/ethers) → depois disso, perfil e KYC reais
-- Contratos Solidity (`AssetToken`, exchange, cashback) — testnet Sepolia
+- Substituir os mocks restantes (`/assets`, `/exchange`, home) por dados reais
+- `/trade`: histórico de negócios/candles, "minhas ordens" e CORS dependem de
+  mudanças no engine (ver relatório da tarefa de integração)
+- Fluxo do emissor (criar mint, listagem, taxa de listagem, lotes de emissão,
+  saque de cashback) e P2P escrow na UI
+- Perfil e KYC reais
 - `README.md` ainda é o padrão do create-next-app
 - Deploy na Vercel
 - 2 vulnerabilidades moderadas do template (não rodar `npm audit fix --force`)
