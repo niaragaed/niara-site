@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PortfolioPage } from "@/components/portfolio/PortfolioPage";
+import { TestnetBanner } from "@/components/web3/TestnetBanner";
 import { en } from "@/lib/i18n/en";
 
 export const metadata: Metadata = {
@@ -8,5 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function AssetsPage() {
-  return <PortfolioPage />;
+  return (
+    <>
+      <TestnetBanner />
+      <PortfolioPage />
+    </>
+  );
 }
