@@ -1,64 +1,68 @@
 "use client";
 
-import { ExchangeProvider, useExchange } from "./ExchangeContext";
-import { TerminalHeader } from "./TerminalHeader";
-import { AccountBar } from "./AccountBar";
-import { AssetSearch } from "./AssetSearch";
-import { PriceChart } from "./PriceChart";
-import { OrderBook } from "./OrderBook";
-import { OrderForm } from "./OrderForm";
-import { OrdersPositionsPanel } from "./OrdersPositionsPanel";
+// Terminal real em testnet. Ordem no DOM = ordem no mobile (uma coluna):
+// listagem, livro, boleta, histórico (vazio), ordens da sessão. No desktop,
+// coluna larga à esquerda (histórico + ordens) e estreita à direita.
+
+import { CHAINS } from "@/lib/exchange/chains";
+import { CHAIN_LABEL } from "@/lib/exchange/config";
+import { SolanaWalletProvider } from "@/components/web3/SolanaWalletProvider";
+import { TestnetBanner } from "@/components/web3/TestnetBanner";
+import { evmNetworkName } from "@/lib/web3/config";
+import { useConnection } from "wagmi";
 import { en } from "@/lib/i18n/en";
+import { NetworkWalletBar } from "./NetworkWalletBar";
+import { ListingsPanel } from "./ListingsPanel";
+import { OrderBookPanel, TradeHistoryEmpty } from "./OrderBookPanel";
+import { OrderTicket } from "./OrderTicket";
+import { SessionOrders } from "./SessionOrders";
+import { TradeProvider, useTrade } from "./TradeContext";
 
-// Ordem no DOM = ordem no mobile (empilhado, uma coluna). No desktop, cada
-// item é reposicionado por linha/coluna explícitas (col-start/row-start),
-// que independem da ordem no DOM — é o que permite o cabeçalho do ativo e o
-// livro compartilharem a coluna estreita da direita (linhas 1 e 2) enquanto
-// o gráfico ocupa as duas linhas de uma vez na coluna larga, sem quebrar a
-// sequência pedida para o mobile (cabeçalho, gráfico, boleta, livro,
-// ordens/posições).
-function ExchangeLayout() {
-  const { selectedAsset } = useExchange();
+function Banner() {
+  const { chain, wallet } = useTrade();
+  const evm = useConnection();
+  let network = CHAIN_LABEL[chain];
+  // EVM: mostra também a rede em que a carteira está, se for outra.
+  if (CHAINS[chain].kind === "evm" && evm.isConnected && evm.chainId !== CHAINS[chain].evmChainId) {
+    const actual = evm.chainId === undefined ? null : (evmNetworkName(evm.chainId) ?? en.testnet.unknownNetwork(evm.chainId));
+    if (actual) network = `${network} — ${en.testnet.walletOn(actual)}`;
+  }
+  return <TestnetBanner network={network} wallet={wallet} />;
+}
 
+function Layout() {
   return (
-    <div className="mx-auto grid w-full max-w-[1600px] flex-1 grid-cols-1 gap-4 p-4 sm:p-6 lg:grid-cols-[minmax(0,2fr)_360px] lg:grid-rows-[auto_minmax(420px,1fr)_auto]">
+    <div className="mx-auto grid w-full max-w-[1600px] flex-1 grid-cols-1 gap-4 p-4 sm:p-6 lg:grid-cols-[minmax(0,2fr)_380px]">
       <div className="lg:col-start-2 lg:row-start-1">
-        <AssetSearch />
+        <ListingsPanel />
       </div>
-
-      <div className="h-64 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:h-auto lg:min-h-[420px]">
-        <PriceChart />
-      </div>
-
-      <div className="lg:col-start-2 lg:row-start-3">
-        <OrderForm key={selectedAsset.symbol} />
-      </div>
-
       <div className="min-h-[240px] lg:col-start-2 lg:row-start-2">
-        <OrderBook />
+        <OrderBookPanel />
       </div>
-
-      <div className="h-80 lg:col-start-1 lg:row-start-3 lg:h-auto">
-        <OrdersPositionsPanel />
+      <div className="lg:col-start-2 lg:row-start-3">
+        <OrderTicket />
+      </div>
+      <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+        <TradeHistoryEmpty />
+      </div>
+      <div className="min-h-[240px] lg:col-start-1 lg:row-start-3">
+        <SessionOrders />
       </div>
     </div>
   );
 }
 
-export function ExchangeTerminal({ initialSymbol }: { initialSymbol?: string }) {
+export function ExchangeTerminal({ initialAsset }: { initialAsset?: string }) {
   return (
-    <ExchangeProvider initialSymbol={initialSymbol}>
-      <div className="flex min-h-[70vh] flex-col bg-bg-base">
-        <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-text-secondary sm:text-sm">
-          <span className="font-semibold text-warning">{en.common.demoLabel}</span> —{" "}
-          {en.trade.demoBanner}
+    <SolanaWalletProvider>
+      <TradeProvider initialAsset={initialAsset}>
+        <div className="flex min-h-[70vh] flex-col bg-bg-base">
+          <Banner />
+          <NetworkWalletBar />
+          <p className="mx-auto w-full max-w-[1600px] px-4 pt-3 text-xs text-text-muted sm:px-6">{en.trade.flowNote}</p>
+          <Layout />
         </div>
-
-        <TerminalHeader />
-        <AccountBar />
-
-        <ExchangeLayout />
-      </div>
-    </ExchangeProvider>
+      </TradeProvider>
+    </SolanaWalletProvider>
   );
 }

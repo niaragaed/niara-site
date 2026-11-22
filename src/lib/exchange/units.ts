@@ -36,3 +36,8 @@ export function parseBaseUnits(value: unknown): bigint {
   }
   return BigInt(value);
 }
+
+/** Segundos unix agora (para `expiresAt`; usado só em handlers, nunca no render). */
+export function unixNow(): number {
+  return Math.floor(Date.now() / 1000);
+}
