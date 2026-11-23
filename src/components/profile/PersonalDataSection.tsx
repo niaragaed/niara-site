@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Pencil, ShieldAlert, TrendingUp } from "lucide-react";
 import { AvatarUpload } from "./AvatarUpload";
 import { CountrySelect } from "./CountrySelect";
@@ -8,7 +8,7 @@ import { Flag } from "@/components/ui/Flag";
 import { useInvestorProfile } from "@/context/InvestorProfileContext";
 import { INVESTOR_CATEGORY_LABELS } from "@/lib/investor-profile";
 import { en } from "@/lib/i18n/en";
-import { COUNTRIES, getCountryConfig, getCountryName } from "@/lib/countries";
+import { getCountryConfig, getCountryName } from "@/lib/countries";
 import {
   dateFormatPlaceholder,
   getDocumentRule,
@@ -50,8 +50,6 @@ const EMPTY_FORM: FormData = {
   cidade: "",
   estado: "",
 };
-
-const GEO_ENDPOINT = "https://ipwho.is/";
 
 function getDocumentText(countryCode: string): { label: string; placeholder: string } {
   return en.profile.personalData.documents[countryCode] ?? en.profile.personalData.genericDocument;
@@ -109,37 +107,6 @@ export function PersonalDataSection() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [justSaved, setJustSaved] = useState(false);
   const { result: investorResult, hydrated: investorHydrated } = useInvestorProfile();
-
-  // Country from IP geolocation (same approach as HeroGlobe: ipwho.is, no
-  // navigator.geolocation, fails gracefully), only as an initial suggestion.
-  // It never overrides a choice the user already made, and if detection
-  // fails the field stays empty, so the user has to pick manually.
-  useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    fetch(GEO_ENDPOINT, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error("geo lookup failed");
-        return response.json();
-      })
-      .then((data: { success?: boolean; country_code?: string }) => {
-        if (cancelled) return;
-        if (data?.success === false || typeof data.country_code !== "string") return;
-        const code = data.country_code.toUpperCase();
-        if (!COUNTRIES.some((country) => country.code === code)) return;
-        setDraft((current) => (current.pais ? current : { ...current, pais: code }));
-      })
-      .catch(() => {
-        // Geolocation API unavailable or blocked: leave the country empty
-        // and let the user pick it manually.
-      });
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, []);
 
   const countryConfig = getCountryConfig(draft.pais);
   const documentRule = getDocumentRule(draft.pais);

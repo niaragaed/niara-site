@@ -463,7 +463,6 @@ export const en = {
       selectCountry: "Select a country",
       searchCountryPlaceholder: "Search country...",
       noCountriesFound: "No country found.",
-      detectedHint: "Detected from your location — change it if it's wrong.",
 
       // identity document label + placeholder per country (ISO alpha-2).
       // Countries not in the map fall back to genericDocument.

@@ -8,8 +8,6 @@ import { CITIES, type City } from "@/lib/cities";
 const BASE_COLOR: [number, number, number] = [0.106, 0.141, 0.251];
 // #2E6BFF, with the intensity lowered so it doesn't blow out the dark background
 const GLOW_COLOR: [number, number, number] = [0.108, 0.252, 0.6];
-// #38BDF8: the only highlighted marker, "you are here"
-const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 
 // "light dust": accent-blue pulled toward the map's own tone (baseColor),
 // heavily dimmed. Cities should read as texture on the globe, not as dots
@@ -17,12 +15,10 @@ const USER_MARKER_COLOR: [number, number, number] = [0.22, 0.741, 0.973];
 const CITY_COLOR: [number, number, number] = [0.128, 0.225, 0.476];
 const CITY_MIN_SIZE = 0.008;
 const CITY_MAX_SIZE = 0.02;
-const USER_MARKER_SIZE = 0.055; // the single highlight, much larger than the cities
 const MARKER_ELEVATION = 0.01; // flush with the surface (cobe's default is 0.05)
 
 const MOBILE_BREAKPOINT = 640;
 const MOBILE_CITY_COUNT = 50;
-const GEO_ENDPOINT = "https://ipwho.is/";
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
@@ -100,7 +96,7 @@ export function HeroGlobe() {
       };
     }
 
-    let globe = createGlobe(canvas, buildOptions(cityMarkers));
+    const globe = createGlobe(canvas, buildOptions(cityMarkers));
 
     let frame: number;
     function animate() {
@@ -119,57 +115,7 @@ export function HeroGlobe() {
 
     const fadeInFrame = requestAnimationFrame(() => setReady(true));
 
-    // Approximate IP geolocation (no navigator.geolocation, which would show a
-    // permission popup). Fails gracefully: no marker if blocked or failing.
-    // The location is never stored; it's only used in memory to rebuild the globe.
-    let cancelled = false;
-    const geoController = new AbortController();
-
-    fetch(GEO_ENDPOINT, { signal: geoController.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error("geo lookup failed");
-        return response.json();
-      })
-      .then(
-        (data: {
-          success?: boolean;
-          latitude?: number;
-          longitude?: number;
-        }) => {
-          if (cancelled) return;
-          if (
-            data?.success === false ||
-            typeof data.latitude !== "number" ||
-            typeof data.longitude !== "number"
-          ) {
-            return;
-          }
-
-          const userMarker: Marker = {
-            location: [data.latitude, data.longitude],
-            size: USER_MARKER_SIZE,
-            color: USER_MARKER_COLOR,
-          };
-
-          // Approximation: rotate the globe so the visitor's longitude faces
-          // forward on load. A simple heuristic, not an exact projection.
-          phi = (data.longitude * Math.PI) / 180;
-
-          globe.destroy();
-          globe = createGlobe(
-            canvas,
-            buildOptions([...cityMarkers, userMarker]),
-          );
-        },
-      )
-      .catch(() => {
-        // Geolocation API unavailable or blocked (network, CORS, etc.):
-        // carry on without the user marker, without breaking the globe.
-      });
-
     return () => {
-      cancelled = true;
-      geoController.abort();
       cancelAnimationFrame(frame);
       cancelAnimationFrame(fadeInFrame);
       resizeObserver.disconnect();
