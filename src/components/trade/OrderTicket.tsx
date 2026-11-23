@@ -6,7 +6,7 @@
 // it does not add to it), the intent goes to the order service and the ticket shows
 // its answer. Nothing here fakes success: the result shown is what the engine answered.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { CHAINS } from "@/lib/exchange/chains";
@@ -18,6 +18,8 @@ import {
   submitOrder,
 } from "@/lib/exchange/engine-api";
 import { requiredApproval } from "@/lib/exchange/approvals";
+import { DelegationMismatchError, vaultAuthority } from "@/lib/exchange/solana";
+import { SignedTxError } from "@/lib/exchange/solana-tx-check";
 import {
   IntentError,
   randomNonce,
@@ -36,6 +38,7 @@ const EXPIRY_OPTIONS = [3600, 86400, 604800, 2592000];
 type Phase =
   | { step: "form" }
   | { step: "sign" | "approve" | "confirming" | "submit"; approvalTx?: string | null }
+  | { step: "explain"; amount: string; symbol: string; token: string; spenderAddress: string }
   | { step: "done"; orderId: string; status: string; matches: number; approvalTx: string | null }
   | { step: "error"; message: string; approvalTx: string | null };
 
@@ -48,6 +51,8 @@ export function engineErrorMessage(e: unknown): string {
     return known ? `${known}${e.detail ? ` (${e.detail})` : ""}` : `${e.code}${e.detail ? `: ${e.detail}` : ""}`;
   }
   if (e instanceof IntentError) return `${e.code}: ${e.message}`;
+  if (e instanceof SignedTxError) return t.signedTx(e.detail);
+  if (e instanceof DelegationMismatchError) return t.delegationMismatch;
   return t.generic(e instanceof Error ? e.message : String(e));
 }
 
@@ -73,6 +78,9 @@ export function OrderTicket() {
   const [expirySecs, setExpirySecs] = useState(86400);
   const [phase, setPhase] = useState<Phase>({ step: "form" });
   const [formError, setFormError] = useState<string | null>(null);
+  // Resolves the pause before the approval opens the wallet (true = continue).
+  const explainResolve = useRef<((proceed: boolean) => void) | null>(null);
+  useEffect(() => () => explainResolve.current?.(false), []);
 
   const usdtDecimals = terms?.usdt.decimals;
   const symbol = listing?.symbol ?? "";
@@ -110,7 +118,12 @@ export function OrderTicket() {
     staleTime: 15_000,
   });
 
-  const busy = phase.step === "sign" || phase.step === "approve" || phase.step === "confirming" || phase.step === "submit";
+  const busy =
+    phase.step === "sign" ||
+    phase.step === "explain" ||
+    phase.step === "approve" ||
+    phase.step === "confirming" ||
+    phase.step === "submit";
   const blocked = blockerMessage(blockers);
 
   const canOrder =
@@ -177,6 +190,22 @@ export function OrderTicket() {
 
       // 3. Raise the delegate / allowance to exactly the total, only if it is below it.
       if (cov.approved < total) {
+        // Before the wallet opens: say in plain words what the approval does.
+        const proceed = await new Promise<boolean>((resolve) => {
+          explainResolve.current = resolve;
+          setPhase({
+            step: "explain",
+            amount: formatUnitsExact(total, needNow.decimals, true),
+            symbol: needNow.symbol,
+            token: needNow.token,
+            spenderAddress: kind === "solana" ? vaultAuthority(config.settlement).toBase58() : config.settlement,
+          });
+        });
+        explainResolve.current = null;
+        if (!proceed) {
+          setPhase({ step: "error", message: t.approvalCancelled, approvalTx: null });
+          return;
+        }
         setPhase({ step: "approve" });
         approvalTx = await actions.approveExact(wallet, needNow.token, total, (tx) => {
           approvalTx = tx;
@@ -463,6 +492,33 @@ export function OrderTicket() {
             </details>
           )}
 
+          {phase.step === "explain" && (
+            <div className="mt-3 rounded-md border border-accent-blue/40 bg-accent-blue/10 p-3 text-xs">
+              <p className="font-semibold text-text-primary">{t.explain.title}</p>
+              <p className="mt-1 break-words text-text-secondary">
+                {t.explain.what(phase.amount, phase.symbol, phase.token, spender, phase.spenderAddress)}
+              </p>
+              <p className="mt-1 text-text-secondary">{t.explain.why}</p>
+              {kind === "solana" && <p className="mt-1 text-text-muted">{t.explain.solanaExtras}</p>}
+              <p className="mt-1 text-warning">{t.explain.warning}</p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => explainResolve.current?.(true)}
+                  className="rounded-md bg-gradient-primary px-3 py-1.5 font-semibold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-cyan"
+                >
+                  {t.explain.continue}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => explainResolve.current?.(false)}
+                  className="rounded-md border border-border px-3 py-1.5 text-text-secondary hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue"
+                >
+                  {t.explain.cancel}
+                </button>
+              </div>
+            </div>
+          )}
           {busy && (
             <p role="status" className="mt-3 flex items-center gap-2 text-xs text-accent-cyan">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

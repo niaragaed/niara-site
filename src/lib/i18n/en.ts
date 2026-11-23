@@ -162,6 +162,18 @@ export const en = {
       approvalExact: (amount: string, symbol: string, spender: string) =>
         `Your wallet will be asked to approve exactly ${amount} ${symbol} to the ${spender} — nothing more.`,
       approvalCovered: "Your current approval already covers your open orders and this one: no new approval.",
+      explain: {
+        title: "Before your wallet opens: the approval",
+        what: (amount: string, symbol: string, token: string, spender: string, spenderAddress: string) =>
+          `Your wallet will ask you to approve ${amount} ${symbol} (token ${token}) to the ${spender} (${spenderAddress}). That lets it move up to this amount from your wallet, only to settle your orders on this token when they match. Your tokens stay in your wallet until a trade settles.`,
+        why: "The amount covers your open orders on this token plus this one, because a new approval replaces the previous one instead of adding to it. You can revoke it in your wallet at any time.",
+        solanaExtras:
+          "Your wallet may add priority-fee and safety-check instructions to the transaction. This site accepts only those and refuses any other change.",
+        warning:
+          "Wallets often show a warning for approvals requested by sites they have not verified, as this testnet site is. Before approving, check that the token, amount and spender in your wallet match the ones above.",
+        continue: "Continue in wallet",
+        cancel: "Cancel",
+      },
       delegatedElsewhere:
         "This token account currently delegates to another program. Approving here replaces that delegation.",
       balanceLabel: "Wallet balance",
@@ -194,11 +206,13 @@ export const en = {
       } as Record<string, string>,
       steps: {
         sign: "Sign the order intent in your wallet",
+        explain: "Read what the approval does, then continue",
         approve: "Approve the exact amount in your wallet",
         confirming: "Waiting for the approval to confirm on-chain",
         submit: "Submitting the signed intent to the order service",
       },
       rejected: "You rejected the request in your wallet. Nothing was sent.",
+      approvalCancelled: "You cancelled before the approval. Nothing was sent and the order was not submitted.",
       approvalTx: "Approval transaction",
       failed: "The order was not placed.",
       accepted: "Order accepted by the order service.",
@@ -261,6 +275,10 @@ export const en = {
       marketNotConfigured: "The exchange database (Supabase) is not configured in this deployment.",
       chainRead: "Could not read this network's RPC.",
       generic: (message: string) => `Something went wrong: ${message}`,
+      signedTx: (detail: string) =>
+        `Your wallet returned a transaction that differs from the approval this site built, beyond the priority-fee and safety-check instructions wallets may add, so it was not sent. ${detail}.`,
+      delegationMismatch:
+        "The approval confirmed on-chain, but your token account does not show exactly the intended delegation to the program vault (it may have changed in the meantime, for example if an order settled). The order was not submitted.",
       codes: {
         delegate_not_covered: "The order service found that your on-chain approval or balance does not cover the order.",
         duplicate_nonce: "This order intent was already submitted.",

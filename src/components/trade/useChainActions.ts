@@ -25,13 +25,14 @@ import {
 } from "@/lib/exchange/intents";
 import {
   buildApproveTransaction,
-  checkSignedTransaction,
   readMint,
   readTokenAccount,
   sendAndConfirm,
   solanaConnection,
   vaultAuthority,
+  verifyDelegation,
 } from "@/lib/exchange/solana";
+import { checkSignedTransaction } from "@/lib/exchange/solana-tx-check";
 import { evmClient, readEvmCoverage } from "@/lib/exchange/evm";
 import { useSolanaWallet } from "@/components/web3/SolanaWalletProvider";
 import { base58 } from "@scure/base";
@@ -137,7 +138,9 @@ export function useChainActions(config: ChainConfig) {
 
   /**
    * Approves EXACTLY `amount` of `token` to the vault PDA (Solana) or the
-   * NiaraSettlement (EVM) and waits for confirmation. Returns the hash/signature.
+   * NiaraSettlement (EVM) and waits for confirmation. On Solana it then re-reads the
+   * token account and requires exactly that delegation to the vault. Returns the
+   * hash/signature.
    */
   const approveExact = useCallback(
     async (wallet: string, token: string, amount: bigint, onSent?: (tx: string) => void): Promise<string> => {
@@ -154,8 +157,19 @@ export function useChainActions(config: ChainConfig) {
           tokenProgram: mint.tokenProgram,
         });
         const signed = await sol.signTransaction(built.bytes);
-        checkSignedTransaction(built.bytes, signed, wallet);
-        return sendAndConfirm(conn, signed, built.blockhash, built.lastValidBlockHeight);
+        // Accepts only ComputeBudget / Lighthouse additions; refuses anything else.
+        await checkSignedTransaction(built.bytes, signed, wallet);
+        const signature = await sendAndConfirm(conn, signed, built.blockhash, built.lastValidBlockHeight, onSent);
+        // The order is submitted only if the chain shows exactly the intended delegation.
+        await verifyDelegation(conn, {
+          owner: wallet,
+          mint: token,
+          programId: config.settlement,
+          amount,
+          tokenProgram: mint.tokenProgram,
+          signature,
+        });
+        return signature;
       }
       await ensureEvmChain();
       const hash = await writeContract(wagmiConfig, {

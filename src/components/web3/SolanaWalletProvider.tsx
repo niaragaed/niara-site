@@ -66,7 +66,7 @@ const SolanaWalletContext = createContext<SolanaWalletState | null>(null);
 
 export function useSolanaWallet(): SolanaWalletState {
   const ctx = useContext(SolanaWalletContext);
-  if (!ctx) throw new Error("useSolanaWallet precisa estar dentro de <SolanaWalletProvider>");
+  if (!ctx) throw new Error("useSolanaWallet must be used inside <SolanaWalletProvider>");
   return ctx;
 }
 

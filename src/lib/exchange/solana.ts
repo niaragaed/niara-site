@@ -171,33 +171,46 @@ export async function buildApproveTransaction(
   return { bytes: new Uint8Array(bytes), blockhash, lastValidBlockHeight };
 }
 
-/**
- * Checks that the transaction the wallet signed is the one we built (same
- * message) before sending — a wallet cannot swap the contents.
- */
-export function checkSignedTransaction(unsigned: Uint8Array, signed: Uint8Array, owner: string): void {
-  const a = Transaction.from(unsigned);
-  const b = Transaction.from(signed);
-  const ma = a.serializeMessage();
-  const mb = b.serializeMessage();
-  if (ma.length !== mb.length || !ma.every((byte, i) => byte === mb[i])) {
-    throw new Error("the wallet returned a different transaction");
-  }
-  const sig = b.signatures.find((s) => s.publicKey.toBase58() === owner);
-  if (!sig?.signature) throw new Error("the wallet did not sign the transaction");
-}
-
 export async function sendAndConfirm(
   connection: Connection,
   signed: Uint8Array,
   blockhash: string,
   lastValidBlockHeight: number,
+  onSent?: (signature: string) => void,
 ): Promise<string> {
   await assertDevnet(connection);
   const signature = await connection.sendRawTransaction(signed, { preflightCommitment: "confirmed" });
+  onSent?.(signature);
   const result = await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
   if (result.value.err) throw Object.assign(new Error("the approval transaction failed on-chain"), { signature });
   return signature;
+}
+
+/** The approval confirmed, but the token account does not show the intended delegation. */
+export class DelegationMismatchError extends Error {
+  constructor(
+    readonly signature: string,
+    readonly delegate: string | null,
+    readonly delegatedAmount: bigint,
+  ) {
+    super("the token account does not show the intended delegation after the approval");
+    this.name = "DelegationMismatchError";
+  }
+}
+
+/**
+ * After the approval confirmed: reads the token account on-chain and requires the
+ * delegate to be the program's vault authority with EXACTLY `amount` delegated.
+ */
+export async function verifyDelegation(
+  connection: Connection,
+  args: { owner: string; mint: string; programId: string; amount: bigint; tokenProgram: PublicKey; signature: string },
+): Promise<void> {
+  const acct = await readTokenAccount(connection, args.owner, args.mint, args.tokenProgram);
+  const vault = vaultAuthority(args.programId).toBase58();
+  if (!acct.exists || acct.delegate !== vault || acct.delegatedAmount !== args.amount) {
+    throw new DelegationMismatchError(args.signature, acct.delegate, acct.delegatedAmount);
+  }
 }
 
 // Anchor discriminator of the `Config` account (IDL vendored in the engine).
