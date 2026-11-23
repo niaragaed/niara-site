@@ -57,7 +57,52 @@ export function connectOrigins(): string[] {
   return [...new Set(origins.filter((o): o is string => o !== null))];
 }
 
-export function buildCsp({ nonce, dev, connect }: { nonce: string; dev: boolean; connect: readonly string[] }): string {
+/**
+ * Hosts WalletConnect / Reown AppKit (the QR modal) needs, from Reown's CSP guide
+ * (docs.reown.com/advanced/security/content-security-policy), limited to what this
+ * site uses: no social login, on-ramp, swaps or token images. Allowed only when a
+ * WalletConnect project id is configured.
+ */
+export const WALLETCONNECT_SOURCES = {
+  connect: [
+    "https://rpc.walletconnect.com",
+    "https://rpc.walletconnect.org",
+    "https://relay.walletconnect.com",
+    "https://relay.walletconnect.org",
+    "wss://relay.walletconnect.com",
+    "wss://relay.walletconnect.org",
+    "https://pulse.walletconnect.com",
+    "https://pulse.walletconnect.org",
+    "https://api.web3modal.com",
+    "https://api.web3modal.org",
+    "https://keys.walletconnect.com",
+    "https://keys.walletconnect.org",
+    "https://notify.walletconnect.com",
+    "https://notify.walletconnect.org",
+    "https://echo.walletconnect.com",
+    "https://echo.walletconnect.org",
+    "https://push.walletconnect.com",
+    "https://push.walletconnect.org",
+  ],
+  img: ["https://api.web3modal.com", "https://api.web3modal.org", "https://*.walletconnect.com", "https://*.walletconnect.org"],
+  font: ["https://fonts.reown.com"],
+  frame: ["https://verify.walletconnect.com", "https://verify.walletconnect.org"],
+} as const;
+
+export const WALLETCONNECT_ENABLED = Boolean(env(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID));
+
+export function buildCsp({
+  nonce,
+  dev,
+  connect,
+  walletConnect = false,
+}: {
+  nonce: string;
+  dev: boolean;
+  connect: readonly string[];
+  walletConnect?: boolean;
+}): string {
+  const wc = walletConnect ? WALLETCONNECT_SOURCES : { connect: [], img: [], font: [], frame: [] };
   const directives: [string, ...string[]][] = [
     ["default-src", "'self'"],
     // React needs eval only in development (debug stack reconstruction).
@@ -66,12 +111,13 @@ export function buildCsp({ nonce, dev, connect }: { nonce: string; dev: boolean;
     // styles cannot run code.
     ["style-src", "'self'", "'unsafe-inline'"],
     // Wallet icons are data URIs (EIP-6963, Wallet Standard).
-    ["img-src", "'self'", "data:", "blob:"],
-    ["font-src", "'self'"],
-    ["connect-src", "'self'", ...connect],
+    ["img-src", "'self'", "data:", "blob:", ...wc.img],
+    ["font-src", "'self'", ...wc.font],
+    ["connect-src", "'self'", ...connect, ...wc.connect],
     ["worker-src", "'self'", "blob:"],
     ["manifest-src", "'self'"],
-    ["frame-src", "'none'"],
+    // WalletConnect's Verify API runs in an iframe; nothing else is framed.
+    wc.frame.length > 0 ? ["frame-src", ...wc.frame] : ["frame-src", "'none'"],
     ["object-src", "'none'"],
     ["base-uri", "'self'"],
     ["form-action", "'self'"],

@@ -18,6 +18,8 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: en.nav.trade, href: "/trade" },
+  // Planned, not available: /futures says so.
+  { label: en.nav.futures, href: "/futures" },
   { label: en.nav.exchange, href: "/exchange" },
   { label: en.nav.assets, href: "/assets" },
   { label: en.nav.profile, href: "/profile" },

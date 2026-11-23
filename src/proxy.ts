@@ -4,13 +4,13 @@
 // cookie header for wagmi), which a nonce requires. The other security headers are
 // static and live in next.config.ts.
 import { NextResponse, type NextRequest } from "next/server";
-import { buildCsp, connectOrigins } from "@/lib/security/csp";
+import { WALLETCONNECT_ENABLED, buildCsp, connectOrigins } from "@/lib/security/csp";
 
 const CONNECT = connectOrigins();
 
 export function proxy(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
-  const csp = buildCsp({ nonce, dev: process.env.NODE_ENV === "development", connect: CONNECT });
+  const csp = buildCsp({ nonce, dev: process.env.NODE_ENV === "development", connect: CONNECT, walletConnect: WALLETCONNECT_ENABLED });
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);

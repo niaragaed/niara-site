@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCsp, originOf, wsOriginOf } from "@/lib/security/csp";
+import { WALLETCONNECT_SOURCES, buildCsp, originOf, wsOriginOf } from "@/lib/security/csp";
 
 const directive = (csp: string, name: string) =>
   csp
@@ -44,5 +44,17 @@ describe("CSP", () => {
     expect(originOf("not a url")).toBeNull();
     expect(wsOriginOf("https://api.devnet.solana.com")).toBe("wss://api.devnet.solana.com");
     expect(wsOriginOf("http://127.0.0.1:8899")).toBe("ws://127.0.0.1:8900");
+  });
+
+  it("adds the WalletConnect hosts only when enabled", () => {
+    expect(prod).not.toContain("walletconnect");
+    const wc = buildCsp({ nonce: "abc123", dev: false, connect, walletConnect: true });
+    expect(directive(wc, "connect-src")).toEqual(["'self'", ...connect, ...WALLETCONNECT_SOURCES.connect]);
+    expect(directive(wc, "frame-src")).toEqual([...WALLETCONNECT_SOURCES.frame]);
+    expect(directive(wc, "font-src")).toEqual(["'self'", "https://fonts.reown.com"]);
+    // still strict where it matters
+    expect(directive(wc, "script-src")).toEqual(["'self'", "'nonce-abc123'", "'strict-dynamic'"]);
+    expect(directive(wc, "frame-ancestors")).toEqual(["'none'"]);
+    expect(wc).not.toContain(" * ");
   });
 });

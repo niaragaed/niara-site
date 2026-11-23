@@ -1,17 +1,17 @@
 "use client";
 
-import { AlertTriangle, Loader2, LogOut, Wallet } from "lucide-react";
+import { useCallback, useState } from "react";
+import { AlertTriangle, Loader2, LogOut } from "lucide-react";
 import { useConnection, useDisconnect, useSwitchChain } from "wagmi";
 import { CHAINS } from "@/lib/exchange/chains";
 import { CHAIN_CONFIG, CHAIN_LABEL, CHAIN_ORDER } from "@/lib/exchange/config";
-import { EvmWalletPicker, safeWalletIcon } from "@/components/web3/EvmWalletPicker";
+import { ConnectWalletButton, WalletDialog } from "@/components/web3/WalletDialog";
 import { useSolanaWallet } from "@/components/web3/SolanaWalletProvider";
 import { en } from "@/lib/i18n/en";
 import type { EvmChainId } from "@/lib/web3/config";
 import { useTrade } from "./TradeContext";
 
 const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
-
 
 function ConnectedChip({ address, onDisconnect }: { address: string; onDisconnect: () => void }) {
   return (
@@ -35,42 +35,22 @@ function ConnectedChip({ address, onDisconnect }: { address: string; onDisconnec
   );
 }
 
-function SolanaWalletControl() {
-  const t = en.trade.wallet;
-  const sol = useSolanaWallet();
-
-  if (sol.address) return <ConnectedChip address={sol.address} onDisconnect={() => void sol.disconnect()} />;
-
-  if (sol.wallets.length === 0) {
-    return <p className="text-sm text-text-secondary">{t.noSolanaWallet}</p>;
-  }
-
+/** Opens the shared connect dialog (both wallet families). */
+function ConnectControl({ evmChainId }: { evmChainId?: EvmChainId }) {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   return (
-    <div className="flex flex-col items-start gap-1 sm:items-end">
-      <div className="flex flex-wrap gap-2">
-        {sol.wallets.map((w) => (
-          <button
-            key={w.name}
-            type="button"
-            disabled={sol.connecting}
-            onClick={() => void sol.connect(w.name)}
-            className="flex items-center gap-2 rounded-md border border-border bg-bg-surface px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue disabled:opacity-60"
-          >
-            {safeWalletIcon(w.icon) ? (
-              // Icon supplied by the wallet itself (Wallet Standard data URI).
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={safeWalletIcon(w.icon)!} alt="" width={16} height={16} className="h-4 w-4" />
-            ) : (
-              <Wallet className="h-4 w-4" aria-hidden="true" />
-            )}
-            {sol.connecting ? t.connecting : t.connectWith(w.name)}
-          </button>
-        ))}
-      </div>
-      {sol.error === "rejected" && <span className="text-xs text-text-muted">{t.rejected}</span>}
-      {sol.error === "no-account" && <span className="text-xs text-text-muted">{t.noAccount}</span>}
-    </div>
+    <>
+      <ConnectWalletButton onClick={() => setOpen(true)} />
+      <WalletDialog open={open} onClose={close} evmChainId={evmChainId} />
+    </>
   );
+}
+
+function SolanaWalletControl() {
+  const sol = useSolanaWallet();
+  if (sol.address) return <ConnectedChip address={sol.address} onDisconnect={() => void sol.disconnect()} />;
+  return <ConnectControl />;
 }
 
 function EvmWalletControl() {
@@ -104,13 +84,7 @@ function EvmWalletControl() {
     );
   }
 
-  return (
-    <EvmWalletPicker
-      chainId={target}
-      labels={{ connectWith: t.connectWith, connecting: t.connecting, rejected: t.rejected }}
-      noWallet={<p className="text-sm text-text-secondary">{t.noEvmWallet}</p>}
-    />
-  );
+  return <ConnectControl evmChainId={target} />;
 }
 
 export function NetworkWalletBar() {

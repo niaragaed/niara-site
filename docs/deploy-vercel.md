@@ -62,6 +62,11 @@ Set them in Vercel → Project → Settings → Environment Variables, scope
 | `NEXT_PUBLIC_HYPEREVM_TESTNET_EXPLORER_TX` | *(empty)* |
 | **Ethereum Sepolia** (old `/pilot`) | |
 | `NEXT_PUBLIC_SEPOLIA_RPC_URL` | *(empty: viem's public Sepolia RPC is used)* or a public RPC URL |
+| **Wallets** | |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | the project id from the Reown dashboard (public by design). Empty = no WalletConnect, and its hosts stay out of the CSP |
+| **Other Niara products** (header links) | |
+| `NEXT_PUBLIC_REGISTER_URL` | the Register product's https URL (empty = link hidden) |
+| `NEXT_PUBLIC_SMES_URL` | the SMEs product's https URL (empty = link hidden) |
 
 The contract addresses are the testnet deployments from `niara-exchange-engine/config`
 (the same values as `.env.example`). Check them against the engine's config before
@@ -98,14 +103,27 @@ At the DNS provider:
 
 Vercel issues the HTTPS certificates once the records resolve.
 
-## 4. The order service (`api.niaraglobal.com`)
+## 4. WalletConnect (Reown)
+
+- Create a project at the Reown dashboard and copy its project id into
+  `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`.
+- In the project's settings, set the allowed domains to `niaraglobal.com` only
+  (plus `localhost` on a separate development project). That stops other sites from
+  using the id.
+- When the id is set, the CSP adds WalletConnect's relay, RPC, API, font and Verify
+  hosts (`WALLETCONNECT_SOURCES` in `src/lib/security/csp.ts`).
+- The WalletConnect client starts only when someone picks WalletConnect, or when
+  reconnecting a wallet that last connected through it. Other visitors never
+  contact WalletConnect's servers.
+
+## 5. The order service (`api.niaraglobal.com`)
 
 - The engine's `CORS_ORIGINS` must contain exactly `https://niaraglobal.com`. `www`
   never calls the API, because it redirects first.
 - `api.niaraglobal.com` must serve HTTPS. The site sends HSTS with
   `includeSubDomains`, so browsers refuse plain HTTP on every subdomain.
 
-## 5. Security headers (already in the code)
+## 6. Security headers (already in the code)
 
 - `src/proxy.ts`: a per-request `Content-Security-Policy` with a nonce. Scripts run
   only with the nonce (`'strict-dynamic'`), with no `'unsafe-inline'` and, in
@@ -123,7 +141,7 @@ Preview deployments (`*.vercel.app`):
 - The CSP also blocks the Vercel Toolbar script on previews. Turn the toolbar off in
   Project → Settings if its console errors bother you.
 
-## 6. After the first deploy
+## 7. After the first deploy
 
 - Run `curl -sI https://niaraglobal.com` and check that `content-security-policy`,
   `x-frame-options: DENY` and `strict-transport-security` are present.

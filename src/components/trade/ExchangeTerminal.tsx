@@ -6,7 +6,6 @@
 
 import { CHAINS } from "@/lib/exchange/chains";
 import { CHAIN_LABEL } from "@/lib/exchange/config";
-import { SolanaWalletProvider } from "@/components/web3/SolanaWalletProvider";
 import { TestnetBanner } from "@/components/web3/TestnetBanner";
 import { evmNetworkName } from "@/lib/web3/config";
 import { useConnection } from "wagmi";
@@ -55,15 +54,13 @@ function Layout() {
 
 export function ExchangeTerminal({ initialAsset }: { initialAsset?: string }) {
   return (
-    <SolanaWalletProvider>
-      <TradeProvider initialAsset={initialAsset}>
-        <div className="flex min-h-[70vh] flex-col bg-bg-base">
-          <Banner />
-          <NetworkWalletBar />
-          <p className="mx-auto w-full max-w-[1600px] px-4 pt-3 text-xs text-text-muted sm:px-6">{en.trade.flowNote}</p>
-          <Layout />
-        </div>
-      </TradeProvider>
-    </SolanaWalletProvider>
+    <TradeProvider initialAsset={initialAsset}>
+      <div className="flex min-h-[70vh] flex-col bg-bg-base">
+        <Banner />
+        <NetworkWalletBar />
+        <p className="mx-auto w-full max-w-[1600px] px-4 pt-3 text-xs text-text-muted sm:px-6">{en.trade.flowNote}</p>
+        <Layout />
+      </div>
+    </TradeProvider>
   );
 }

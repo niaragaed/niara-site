@@ -190,6 +190,7 @@ applies to every Niara repository, including new ones: copy both files when crea
 | Route | What it is |
 |---|---|
 | `/` | Home: hero with a 3D globe (cobe) + index ticker |
+| `/futures` | Futures: planned, not available (no trading UI, no prices) |
 | `/trade` | **Real testnet terminal**: engine listings and book, signed-intent order form, settlement status |
 | `/exchange` | Currency exchange: converter + pairs table |
 | `/assets` | Simulated portfolio (Recharts) + asset catalog |
@@ -200,7 +201,9 @@ applies to every Niara repository, including new ones: copy both files when crea
 | `/styleguide` | Internal design system reference |
 
 Nav (`src/components/nav-items.ts`, shared by Header and Footer):
-Trade · Exchange · Assets · Profile · About (submenu: Docs & FAQs, Contact)
+Trade · Futures · Exchange · Assets · Profile · About (submenu: Docs & FAQs, Contact), plus
+external links to the other Niara products (Register, SMEs) from `NEXT_PUBLIC_REGISTER_URL` /
+`NEXT_PUBLIC_SMES_URL` (`src/lib/site-links.ts`)
 
 "Cashback" was removed from the nav: it's a selling point for issuing companies
 and will get its own issuer-facing page.
@@ -256,8 +259,10 @@ src/
 - **CSP:** `src/proxy.ts` sends a per-request nonce CSP (`src/lib/security/csp.ts`); other
   security headers live in `next.config.ts`. A new external host the browser calls must be
   added to `connect-src` there, or it is blocked. No inline `<script>`, no `eval`.
-- **EVM wallets:** detected only through EIP-6963 (`EvmWalletPicker`), Solana through Wallet
-  Standard. Never read or write `window.ethereum`.
+- **Wallets:** one connect dialog (`src/components/web3/WalletDialog.tsx`). EVM detected only
+  through EIP-6963, mobile EVM through WalletConnect (lazy, project id in env), Solana through Wallet
+  Standard. Never read or write `window.ethereum`. "Get a wallet" links only to official vendor
+  sites (`src/lib/web3/wallet-directory.ts`, guarded by a test); no wallet logos.
 
 ---
 

@@ -1,10 +1,14 @@
 "use client";
 
-import { AlertTriangle, Loader2, LogOut, Wallet } from "lucide-react";
+import { useCallback, useState } from "react";
+import { AlertTriangle, Loader2, LogOut } from "lucide-react";
 import { useConnection, useDisconnect, useSwitchChain } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { en } from "@/lib/i18n/en";
-import { EvmWalletPicker } from "./EvmWalletPicker";
+import type { WalletFamily } from "@/lib/web3/wallet-directory";
+import { ConnectWalletButton, WalletDialog } from "./WalletDialog";
+
+const EVM_ONLY: WalletFamily[] = ["evm"];
 
 function truncateAddress(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -15,6 +19,8 @@ export function ConnectWallet() {
   const { mutate: disconnect } = useDisconnect();
   const { mutate: switchChain, isPending: isSwitching } = useSwitchChain();
 
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   const isWrongNetwork = connection.isConnected && connection.chainId !== sepolia.id;
 
   if (connection.isConnected && isWrongNetwork) {
@@ -71,24 +77,11 @@ export function ConnectWallet() {
     );
   }
 
+  // The pilot is EVM only (Sepolia).
   return (
-    <EvmWalletPicker
-      chainId={sepolia.id}
-      labels={{ connectWith: en.pilot.connectWith, connecting: en.pilot.connecting, rejected: en.pilot.rejected }}
-      noWallet={
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-bg-surface px-3 py-1.5 text-sm text-text-secondary">
-          <Wallet className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{en.pilot.noWallet}</span>
-          <a
-            href="https://metamask.io/download/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-accent-blue underline underline-offset-2 hover:text-accent-cyan"
-          >
-            {en.pilot.installMetaMask}
-          </a>
-        </div>
-      }
-    />
+    <>
+      <ConnectWalletButton onClick={() => setOpen(true)} />
+      <WalletDialog open={open} onClose={close} families={EVM_ONLY} evmChainId={sepolia.id} />
+    </>
   );
 }

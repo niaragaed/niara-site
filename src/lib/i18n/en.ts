@@ -33,6 +33,48 @@ export const en = {
     footerAriaLabel: "Footer links",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    futures: "Futures",
+    register: "Register",
+    smes: "SMEs",
+    otherProducts: "Other Niara products",
+    externalHint: "(opens another Niara site)",
+  },
+
+  futures: {
+    metaTitle: "Futures — Niara",
+    metaDescription: "Futures on Niara are planned and not available.",
+    heading: "Futures",
+    status: "Planned — not available",
+    body: [
+      "Niara does not offer futures. There is no futures market on this site: no contracts, no prices, no order book and nothing to trade.",
+      "Futures are on Niara's plans. There is no launch date. Anything about them will be announced here first, and nothing will be tradable before it is.",
+    ],
+    cta: "Go to the testnet terminal",
+  },
+
+  wallets: {
+    heading: "Use Niara Wallet or the self-custody wallet you prefer",
+    close: "Close",
+    connect: "Connect wallet",
+    connecting: "Connecting…",
+    niaraWallet: "Niara Wallet",
+    comingSoon: "Coming soon",
+    detected: "Detected in this browser",
+    noneDetected: "No wallet announced itself in this browser. Install one below, or use a mobile wallet.",
+    rejected: "Connection request rejected.",
+    mobile: "Mobile wallet",
+    walletConnect: "WalletConnect (scan with your phone)",
+    walletConnectOff: "WalletConnect is not configured in this deployment.",
+    solanaMobile:
+      "Solana on mobile: open this site in your wallet's in-app browser (for example Phantom or Solflare), where it is detected directly.",
+    getWallet: "Get a wallet",
+    officialSite: "(official site, opens in a new tab)",
+    hardware: "Hardware wallets",
+    hardwareNote:
+      "Ledger, Trezor and Tangem keep your keys on a device. They do not connect to websites directly: pair the device with a software wallet (for example MetaMask, Rabby, Phantom or Solflare, or the vendor's own app) and connect that wallet here, or through WalletConnect.",
+    disclaimer:
+      "Links go to each provider's official site. Niara has no partnership with these providers and does not endorse them. Only install wallets from official sources, and never share your recovery phrase.",
+    family: { evm: "EVM", solana: "Solana" } as Record<string, string>,
   },
 
   home: {
@@ -75,12 +117,9 @@ export const en = {
     },
 
     wallet: {
-      connectWith: (name: string) => `Connect ${name}`,
       connect: "Connect wallet",
       connecting: "Connecting…",
       disconnect: "Disconnect",
-      noSolanaWallet: "No Solana wallet found in this browser (Wallet Standard: Phantom, Backpack, Solflare…).",
-      noEvmWallet: "No EVM wallet announced itself in this browser (EIP-6963: MetaMask, Rabby, Coinbase Wallet, Phantom…).",
       rejected: "Connection request rejected.",
       noAccount: "The wallet did not share a Solana account.",
       switchTo: (network: string) => `Switch to ${network}`,
@@ -670,14 +709,11 @@ export const en = {
     bannerText:
       "Test network only. Tokens have no economic value. This is a technical demonstration environment, not a financial product.",
     connect: "Connect wallet",
-    connectWith: (name: string) => `Connect ${name}`,
     connecting: "Connecting…",
     disconnect: "Disconnect",
     switchNetwork: "Switch to Sepolia",
     switching: "Switching…",
     wrongNetwork: "Wrong network",
-    noWallet: "No wallet extension detected.",
-    installMetaMask: "Install MetaMask",
     rejected: "Connection request rejected.",
     panelTitle: "Connection details",
     addressLabel: "Address",

@@ -5,15 +5,64 @@
 //   (.env.example); when unset, viem's public RPC for the chain is used.
 import { cookieStorage, createConfig, createStorage, http, type CreateConnectorFn } from "wagmi";
 import { baseSepolia, hyperliquidEvmTestnet, robinhoodTestnet, sepolia, tempoModerato } from "wagmi/chains";
+import { walletConnect } from "wagmi/connectors";
 
 const rpc = (url: string | undefined) => (url && url.trim() !== "" ? url.trim() : undefined);
 
+// WalletConnect project id (Reown dashboard): public by design, it only identifies
+// the app to the relay. Without it, WalletConnect is not offered.
+const WALLETCONNECT_PROJECT_ID = rpc(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID);
+
+/**
+ * WalletConnect (Reown AppKit QR modal), started lazily. wagmi's connector would
+ * start the WalletConnect client on every page load (in `setup`, and through
+ * `isAuthorized` during reconnect), contacting WalletConnect's servers for every
+ * visitor. Here it starts only when the user picks WalletConnect, or on reconnect
+ * when WalletConnect was the last connector used.
+ */
+function lazyWalletConnect(projectId: string): CreateConnectorFn {
+  const create = walletConnect({
+    projectId,
+    showQrModal: true,
+    qrModalOptions: { themeMode: "dark" },
+    metadata: {
+      name: "Niara (testnet)",
+      description: "Niara testnet exchange. Test tokens only, no real value.",
+      url: typeof window !== "undefined" ? window.location.origin : "https://niaraglobal.com",
+      icons: [],
+    },
+  });
+  return (cfg) => {
+    const inner = create(cfg);
+    let started = false;
+    return {
+      ...inner,
+      async setup() {
+        // deferred to the first connect
+      },
+      async connect(params) {
+        if (!started) {
+          started = true;
+          await inner.setup?.call(this);
+        }
+        return inner.connect.call(this, params);
+      },
+      async isAuthorized() {
+        const recent = await cfg.storage?.getItem("recentConnectorId");
+        if (recent !== inner.id) return false;
+        return inner.isAuthorized.call(this);
+      },
+    } as typeof inner;
+  };
+}
+
 export const config = createConfig({
   chains: [sepolia, baseSepolia, robinhoodTestnet, tempoModerato, hyperliquidEvmTestnet],
-  // EIP-6963 only: every installed wallet announces itself and gets its own
-  // connector. No generic injected() connector, which would read the legacy
-  // `window.ethereum` global that several wallets overwrite.
-  connectors: [] as CreateConnectorFn[],
+  // Browser wallets through EIP-6963 only: every installed wallet announces itself
+  // and gets its own connector. No generic injected() connector, which would read
+  // the legacy `window.ethereum` global that several wallets overwrite.
+  // Mobile wallets through WalletConnect, when a project id is configured.
+  connectors: (WALLETCONNECT_PROJECT_ID ? [lazyWalletConnect(WALLETCONNECT_PROJECT_ID)] : []) as CreateConnectorFn[],
   multiInjectedProviderDiscovery: true,
   storage: createStorage({ storage: cookieStorage }),
   ssr: true,

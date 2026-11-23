@@ -19,6 +19,7 @@
     "@wallet-standard/app": "1.1.1",
     "@wallet-standard/base": "1.1.1",
     "@wallet-standard/features": "1.1.1",
+    "@walletconnect/ethereum-provider": "2.26.0",
     "buffer": "6.0.3",
     "cobe": "^2.0.1",
     "flag-icons": "^7.5.0",

@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, ExternalLink, Menu, X } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
 import { NavDropdown } from "./NavDropdown";
 import { en } from "@/lib/i18n/en";
+import { EXTERNAL_PRODUCTS } from "@/lib/site-links";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -68,6 +69,20 @@ export function Header() {
                 </li>
               ),
             )}
+            {EXTERNAL_PRODUCTS.map((p) => (
+              <li key={p.key}>
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text-primary"
+                >
+                  {en.nav[p.key]}
+                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">{en.nav.externalHint}</span>
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -164,6 +179,28 @@ export function Header() {
                 </li>
               );
             })}
+            {EXTERNAL_PRODUCTS.length > 0 && (
+              <li className="border-t border-border pt-4">
+                <span className="mb-3 block text-xs uppercase tracking-wide text-text-muted">{en.nav.otherProducts}</span>
+                <ul className="flex flex-col gap-3">
+                  {EXTERNAL_PRODUCTS.map((p) => (
+                    <li key={p.key}>
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeMobileMenu}
+                        className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
+                      >
+                        {en.nav[p.key]}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                        <span className="sr-only">{en.nav.externalHint}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )}
             <li>
               <Link
                 href="/trade"
