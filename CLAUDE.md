@@ -253,6 +253,11 @@ src/
   visible focus, decorative charts with `aria-hidden` (the data also appears in
   a table/legend).
 - **Responsive**, always: test desktop and mobile.
+- **CSP:** `src/proxy.ts` sends a per-request nonce CSP (`src/lib/security/csp.ts`); other
+  security headers live in `next.config.ts`. A new external host the browser calls must be
+  added to `connect-src` there, or it is blocked. No inline `<script>`, no `eval`.
+- **EVM wallets:** detected only through EIP-6963 (`EvmWalletPicker`), Solana through Wallet
+  Standard. Never read or write `window.ethereum`.
 
 ---
 
@@ -287,5 +292,5 @@ Git identity for this repository: `Niara <niaragaed@gmail.com>` (local, not `--g
 - Solidity contracts (`AssetToken`, exchange, cashback) live in
   `niaragaed/niara-contracts`
 - `README.md` is still the create-next-app default
-- Deploy on Vercel
+- Deploy on Vercel: prepared (`docs/deploy-vercel.md`, https://niaraglobal.com, testnet only); domain, env and DNS are set by hand
 - 2 moderate vulnerabilities from the template (don't run `npm audit fix --force`)

@@ -3,15 +3,18 @@
 // - Base Sepolia, Robinhood Chain testnet, Tempo testnet and HyperEVM testnet:
 //   Niara Exchange v1 chains used by /trade. RPC URLs come from env
 //   (.env.example); when unset, viem's public RPC for the chain is used.
-import { cookieStorage, createConfig, createStorage, http } from "wagmi";
+import { cookieStorage, createConfig, createStorage, http, type CreateConnectorFn } from "wagmi";
 import { baseSepolia, hyperliquidEvmTestnet, robinhoodTestnet, sepolia, tempoModerato } from "wagmi/chains";
-import { injected } from "wagmi/connectors";
 
 const rpc = (url: string | undefined) => (url && url.trim() !== "" ? url.trim() : undefined);
 
 export const config = createConfig({
   chains: [sepolia, baseSepolia, robinhoodTestnet, tempoModerato, hyperliquidEvmTestnet],
-  connectors: [injected()],
+  // EIP-6963 only: every installed wallet announces itself and gets its own
+  // connector. No generic injected() connector, which would read the legacy
+  // `window.ethereum` global that several wallets overwrite.
+  connectors: [] as CreateConnectorFn[],
+  multiInjectedProviderDiscovery: true,
   storage: createStorage({ storage: cookieStorage }),
   ssr: true,
   transports: {

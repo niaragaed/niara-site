@@ -80,7 +80,7 @@ export const en = {
       connecting: "Connecting…",
       disconnect: "Disconnect",
       noSolanaWallet: "No Solana wallet found in this browser (Wallet Standard: Phantom, Backpack, Solflare…).",
-      noEvmWallet: "No EVM wallet extension detected.",
+      noEvmWallet: "No EVM wallet announced itself in this browser (EIP-6963: MetaMask, Rabby, Coinbase Wallet, Phantom…).",
       rejected: "Connection request rejected.",
       noAccount: "The wallet did not share a Solana account.",
       switchTo: (network: string) => `Switch to ${network}`,
@@ -671,6 +671,7 @@ export const en = {
     bannerText:
       "Test network only. Tokens have no economic value. This is a technical demonstration environment, not a financial product.",
     connect: "Connect wallet",
+    connectWith: (name: string) => `Connect ${name}`,
     connecting: "Connecting…",
     disconnect: "Disconnect",
     switchNetwork: "Switch to Sepolia",
