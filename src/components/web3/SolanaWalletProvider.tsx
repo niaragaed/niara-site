@@ -31,6 +31,7 @@ import {
   type SolanaSignMessageFeature,
   type SolanaSignTransactionFeature,
 } from "@solana/wallet-standard-features";
+import { WalletNoAccountError } from "@/lib/web3/wallet-errors";
 
 const DEVNET = "solana:devnet";
 
@@ -54,8 +55,7 @@ type SolanaWalletState = {
   account: WalletAccount | null;
   /** Base58 address, or null if disconnected. */
   address: string | null;
-  connecting: boolean;
-  error: string | null;
+  /** Rejects with the wallet's error, or WalletNoAccountError. */
   connect: (walletName: string) => Promise<void>;
   disconnect: () => Promise<void>;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
@@ -74,8 +74,6 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
   const [wallets, setWallets] = useState<readonly SolanaWallet[]>([]);
   const [wallet, setWallet] = useState<SolanaWallet | null>(null);
   const [account, setAccount] = useState<WalletAccount | null>(null);
-  const [connecting, setConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Discovery: wallets may register after hydration.
   useEffect(() => {
@@ -101,23 +99,17 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     });
   }, [wallet]);
 
+  // Rejects with the wallet's own error (or WalletNoAccountError); the caller shows
+  // it and applies the timeout (see lib/web3/wallet-errors.ts).
   const connect = useCallback(
     async (walletName: string) => {
       const target = wallets.find((w) => w.name === walletName);
-      if (!target) return;
-      setConnecting(true);
-      setError(null);
-      try {
-        const { accounts } = await target.features[StandardConnect].connect();
-        const first = accounts.find((a) => a.chains.some((c) => c.startsWith("solana:"))) ?? accounts[0] ?? null;
-        setWallet(target);
-        setAccount(first);
-        if (!first) setError("no-account");
-      } catch {
-        setError("rejected");
-      } finally {
-        setConnecting(false);
-      }
+      if (!target) throw Object.assign(new Error("wallet not found"), { name: "ProviderNotFoundError" });
+      const { accounts } = await target.features[StandardConnect].connect();
+      const first = accounts.find((a) => a.chains.some((c) => c.startsWith("solana:"))) ?? accounts[0] ?? null;
+      if (!first) throw new WalletNoAccountError();
+      setWallet(target);
+      setAccount(first);
     },
     [wallets],
   );
@@ -165,14 +157,12 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       wallet,
       account,
       address: account?.address ?? null,
-      connecting,
-      error,
       connect,
       disconnect,
       signMessage,
       signTransaction,
     }),
-    [wallets, wallet, account, connecting, error, connect, disconnect, signMessage, signTransaction],
+    [wallets, wallet, account, connect, disconnect, signMessage, signTransaction],
   );
 
   return <SolanaWalletContext.Provider value={value}>{children}</SolanaWalletContext.Provider>;

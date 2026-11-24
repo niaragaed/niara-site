@@ -61,9 +61,10 @@ export const en = {
     comingSoon: "Coming soon",
     detected: "Detected in this browser",
     noneDetected: "No wallet announced itself in this browser. Install one below, or use a mobile wallet.",
-    rejected: "Connection request rejected.",
+    genericWallet: "The wallet",
     mobile: "Mobile wallet",
-    walletConnect: "WalletConnect (scan with your phone)",
+    walletConnectName: "WalletConnect",
+    walletConnectHint: "Scan a QR code with your phone's wallet",
     walletConnectOff: "WalletConnect is not configured in this deployment.",
     solanaMobile:
       "Solana on mobile: open this site in your wallet's in-app browser (for example Phantom or Solflare), where it is detected directly.",
@@ -75,6 +76,49 @@ export const en = {
     disclaimer:
       "Links go to each provider's official site. Niara has no partnership with these providers and does not endorse them. Only install wallets from official sources, and never share your recovery phrase.",
     family: { evm: "EVM", solana: "Solana" } as Record<string, string>,
+    familiesAria: "Networks",
+    connectOn: (wallet: string, network: string) => `Connect ${wallet} on ${network}`,
+    connectsOn: (network: string) => `Connects on ${network}`,
+    connectFamily: (wallet: string, family: string) => `Connect ${wallet} for ${family}`,
+    missingFamily: (family: string) => `No ${family} provider detected`,
+    missingFamilyDetail: (wallet: string, family: string, network: string) =>
+      `${wallet} did not expose a ${family} provider in this browser, and ${network} needs one. Turn on ${family} in ${wallet}, or pick another wallet.`,
+    waiting: (wallet: string) => `Waiting for ${wallet}…`,
+    switchingTo: (network: string) => `Switching to ${network}…`,
+    connectedOther: (wallet: string, family: string, network: string) =>
+      `${wallet} is connected for ${family}. This page is on ${network}: select a ${family} network to use it.`,
+    errorHeading: "The wallet did not connect",
+    switchErrorHeading: "The network did not switch",
+    errors: {
+      timeout: (wallet: string, secs: number) => `${wallet} did not answer within ${secs} seconds.`,
+      timeoutAction: (wallet: string) =>
+        `Open ${wallet}: a request may be waiting for approval, or the wallet may be locked. Unlock it, approve or close the request, then try again.`,
+      phantomTimeoutAction:
+        "Open Phantom: a request may be waiting for approval, or the wallet may be locked. For Niara's testnets, also turn on Testnet Mode (Settings → Developer Settings → Testnet Mode), then try again.",
+      switchTimeout: (wallet: string, network: string, secs: number) =>
+        `${wallet} did not switch to ${network} within ${secs} seconds.`,
+      rejected: (wallet: string) => `The request was rejected in ${wallet}.`,
+      rejectedAction: "Try again and approve the request in the wallet.",
+      switchRejected: (wallet: string, network: string) => `The switch to ${network} was rejected in ${wallet}.`,
+      switchRejectedAction: (network: string) => `Try again and approve the network switch, or select ${network} in the wallet.`,
+      pending: (wallet: string) => `${wallet} already has a request waiting.`,
+      pendingAction: (wallet: string) => `Open ${wallet}, approve or close that request, then try again.`,
+      unsupportedChain: (wallet: string, network: string) => `${network} is not available in ${wallet}.`,
+      unsupportedChainAction: (network: string) =>
+        `Add ${network} to the wallet or turn on its test networks, then try again. A wallet that can add custom networks (for example MetaMask or Rabby) works on every Niara EVM testnet.`,
+      phantomTestnets: (network: string) =>
+        `Phantom lists EVM testnets only with Testnet Mode on (Settings → Developer Settings → Testnet Mode), and supports only some of them. Turn it on and try again; if ${network} is still not offered, use a wallet that can add custom networks, such as MetaMask or Rabby.`,
+      locked: (wallet: string) => `${wallet} is locked or has not authorized this site.`,
+      lockedAction: (wallet: string) => `Unlock ${wallet} and try again.`,
+      notFound: (wallet: string) => `${wallet} is no longer available in this browser.`,
+      notFoundAction: "Check that the extension is enabled, reload the page and try again.",
+      noAccount: (wallet: string) => `${wallet} did not share a Solana account.`,
+      noAccountAction: (wallet: string) => `Create or select a Solana account in ${wallet}, then try again.`,
+      other: (wallet: string, detail: string | null) => `${wallet} could not connect${detail ? `: ${detail}` : "."}`,
+      switchOther: (wallet: string, network: string, detail: string | null) =>
+        `${wallet} could not switch to ${network}${detail ? `: ${detail}` : "."}`,
+      otherAction: "Try again. If it keeps failing, unlock the wallet or reload the page.",
+    },
   },
 
   home: {
@@ -120,8 +164,6 @@ export const en = {
       connect: "Connect wallet",
       connecting: "Connecting…",
       disconnect: "Disconnect",
-      rejected: "Connection request rejected.",
-      noAccount: "The wallet did not share a Solana account.",
       switchTo: (network: string) => `Switch to ${network}`,
       switching: "Switching…",
       wrongNetwork: (network: string) => `Your wallet is on another network. Orders here are signed for ${network}.`,
@@ -143,15 +185,35 @@ export const en = {
       approvalTx: "Listing approval transaction",
     },
 
+    priceChart: {
+      title: "Price chart",
+      timeframeAria: "Timeframe",
+      indicators: "Indicators",
+      searchIndicatorLabel: "Search indicator",
+      searchIndicatorPlaceholder: "Search indicator…",
+      removeIndicator: (label: string) => `Remove indicator ${label}`,
+      overlayGroup: "Overlay",
+      paneGroup: "Separate pane",
+      bollinger: "Bollinger Bands (20/2)",
+      donchian: "Donchian Channel (20)",
+      stochastic: "Stochastic (14/3/3)",
+      notEnoughData: (have: number, need: number) => `not enough data (${have}/${need} candles)`,
+      notEnoughDetail: (label: string, have: number, need: number) =>
+        `${label} needs at least ${need} intervals with settled trades; this timeframe has ${have}. Nothing is drawn until there are enough.`,
+      volume: "Vol",
+      lots: "lots",
+      noTrades: "no trade in this interval",
+      source: (n: number, partial: boolean) =>
+        `${n} settled trade${n === 1 ? "" : "s"} from the order service${partial ? " (most recent only)" : ""}. Intervals without trades are left blank. Volume colored by taker side.`,
+      truncated: (slots: number) => `Showing the most recent ${slots} intervals.`,
+    },
+
     chart: {
       title: "Trade history",
-      intervalAria: "Candle interval",
       loading: "Loading settled trades…",
       empty: "No trade history yet.",
       emptyDetail:
         "No trade of this market has settled on-chain yet. Candles are built only from settled trades, so there is nothing to chart. Nothing here is invented.",
-      source: (n: number, truncated: boolean) =>
-        `${n} settled trade${n === 1 ? "" : "s"} from the order service${truncated ? " (most recent only)" : ""}. Candles have no bar for periods without trades.`,
       tableCaption: "Most recent settled trades",
       time: "Time",
       price: "Price / lot",

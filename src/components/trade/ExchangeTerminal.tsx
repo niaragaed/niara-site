@@ -1,8 +1,8 @@
 "use client";
 
 // Real terminal on testnet. DOM order = mobile order (single column):
-// listing, book, ticket, trade history, your orders. On desktop,
-// wide column on the left (history + orders), narrow one on the right.
+// listing, chart, book, ticket, trade history, your orders. On desktop,
+// wide column on the left (chart, history, orders), narrow one on the right.
 
 import { CHAINS } from "@/lib/exchange/chains";
 import { CHAIN_LABEL } from "@/lib/exchange/config";
@@ -14,6 +14,7 @@ import { NetworkWalletBar } from "./NetworkWalletBar";
 import { ListingsPanel } from "./ListingsPanel";
 import { OrderBookPanel } from "./OrderBookPanel";
 import { OrderTicket } from "./OrderTicket";
+import { PriceChart } from "./PriceChart";
 import { TradeHistory } from "./TradeHistory";
 import { YourOrders } from "./YourOrders";
 import { TradeProvider, useTrade } from "./TradeContext";
@@ -36,16 +37,19 @@ function Layout() {
       <div className="lg:col-start-2 lg:row-start-1">
         <ListingsPanel />
       </div>
+      <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+        <PriceChart />
+      </div>
       <div className="min-h-[240px] lg:col-start-2 lg:row-start-2">
         <OrderBookPanel />
       </div>
-      <div className="lg:col-start-2 lg:row-start-3">
+      <div className="lg:col-start-2 lg:row-span-2 lg:row-start-3">
         <OrderTicket />
       </div>
-      <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+      <div className="lg:col-start-1 lg:row-start-3">
         <TradeHistory />
       </div>
-      <div className="min-h-[240px] lg:col-start-1 lg:row-start-3">
+      <div className="min-h-[240px] lg:col-start-1 lg:row-start-4">
         <YourOrders />
       </div>
     </div>

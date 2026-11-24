@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { orderNeed, requiredApproval, type OpenOrderLike } from "@/lib/exchange/approvals";
-import { buildCandles } from "@/lib/exchange/candles";
+import { CANDLE_INTERVALS, bucketStart, buildCandles, fillGaps, pricePrecision } from "@/lib/exchange/candles";
 
 const NOW = 1_800_000_000;
 const ASSET = "8LjQkS1rTJGpzz9wbyAmqJk7oZgDsZS6vhPBv2BhzsTo";
@@ -92,11 +92,12 @@ describe("approval sum", () => {
 });
 
 describe("candles from settled trades", () => {
-  const t = (iso: string, price: string, qty: string, sequence: number) => ({
+  const t = (iso: string, price: string, qty: string, sequence: number, takerSide: "buy" | "sell" = "buy") => ({
     matchedAt: iso,
     price,
     quantity: qty,
     lotSize: "1",
+    takerSide,
     sequence,
   });
 
@@ -108,9 +109,9 @@ describe("candles from settled trades", () => {
     const candles = buildCandles(
       [
         t("2026-11-22T10:50:00Z", "30", "1", 4),
-        t("2026-11-22T10:05:00Z", "25", "2", 1),
+        t("2026-11-22T10:05:00Z", "25", "2", 1, "sell"),
         t("2026-11-22T10:20:00Z", "28", "3", 2),
-        t("2026-11-22T10:20:00Z", "22", "1", 3),
+        t("2026-11-22T10:20:00Z", "22", "1", 3, "sell"),
         t("2026-11-22T13:00:00Z", "40", "5", 5),
       ],
       3600,
@@ -123,9 +124,64 @@ describe("candles from settled trades", () => {
       low: BigInt(22),
       close: BigInt(30),
       lots: BigInt(7),
+      buyLots: BigInt(4),
+      sellLots: BigInt(3),
       trades: 4,
     });
     // No candles are invented for the empty 11:00 and 12:00 buckets.
     expect(candles[1].time).toBe(Date.parse("2026-11-22T13:00:00Z") / 1000);
+  });
+});
+
+describe("chart slots", () => {
+  const H = 3600;
+  const base = Date.parse("2026-11-22T10:00:00Z") / 1000;
+  const trade = (offsetHours: number, price: string, sequence: number) => ({
+    matchedAt: new Date((base + offsetHours * H) * 1000).toISOString(),
+    price,
+    quantity: "1",
+    lotSize: "1",
+    takerSide: "buy" as const,
+    sequence,
+  });
+
+  it("fills empty intervals with whitespace, never with a price", () => {
+    const candles = buildCandles([trade(0, "10", 1), trade(3, "12", 2)], H);
+    const { slots, truncated } = fillGaps(candles, H);
+    expect(truncated).toBe(false);
+    expect(slots.map((s) => s.time)).toEqual([base, base + H, base + 2 * H, base + 3 * H]);
+    expect(slots.map((s) => s.candle !== null)).toEqual([true, false, false, true]);
+    expect(slots[0].candle).toBe(candles[0]);
+    expect(slots[3].candle).toBe(candles[1]);
+  });
+
+  it("is empty without candles", () => {
+    expect(fillGaps([], H)).toEqual({ slots: [], truncated: false });
+  });
+
+  it("keeps only the most recent intervals past the cap", () => {
+    const candles = buildCandles([trade(0, "10", 1), trade(9, "12", 2)], H);
+    const { slots, truncated } = fillGaps(candles, H, 4);
+    expect(truncated).toBe(true);
+    expect(slots).toHaveLength(4);
+    expect(slots[0].time).toBe(base + 6 * H);
+    expect(slots[3].candle?.close).toBe(BigInt(12));
+  });
+
+  it("starts weekly buckets on Monday 00:00 UTC", () => {
+    const week = CANDLE_INTERVALS.find((i) => i.id === "1W")!;
+    // 2026-11-22 is a Sunday: its week started on Monday 2026-11-16.
+    const at = Date.parse("2026-11-22T15:30:00Z") / 1000;
+    expect(bucketStart(at, week.seconds, week.offset)).toBe(Date.parse("2026-11-16T00:00:00Z") / 1000);
+    expect(new Date(bucketStart(at, week.seconds, week.offset) * 1000).getUTCDay()).toBe(1);
+  });
+
+  it("uses enough price decimals to show every price exactly", () => {
+    const c = (p: string) => buildCandles([{ ...trade(0, p, 1) }], H)[0];
+    expect(pricePrecision([c("25000000")], 6)).toBe(2); // 25.00
+    expect(pricePrecision([c("25500000"), c("25010000")], 6)).toBe(2); // 25.50, 25.01
+    expect(pricePrecision([c("25001000")], 6)).toBe(3); // 25.001
+    expect(pricePrecision([c("1")], 6)).toBe(6); // 0.000001
+    expect(pricePrecision([c("5")], 0)).toBe(0);
   });
 });
