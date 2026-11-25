@@ -14,7 +14,9 @@ import { cancelOrder, fetchOrder, type MatchHistory, type StoredOrder, type Wall
 import { coversOrderFills, summarizeFills } from "@/lib/exchange/fills";
 import { formatUnitsExact, unixNow } from "@/lib/exchange/units";
 import { en } from "@/lib/i18n/en";
+import { registerRecordUrl } from "@/lib/site-links";
 import { engineErrorMessage } from "./OrderTicket";
+import { RegisterRecordLink } from "./RegisterRecordLink";
 import { useTrade } from "./TradeContext";
 import { isUserRejection, useChainActions } from "./useChainActions";
 
@@ -28,6 +30,8 @@ function SettlementLine({ m }: { m: MatchHistory | WalletMatch }) {
   const tx = m.settlement?.txHash ?? null;
   const settled = m.status === "settled" && tx;
   const url = tx ? explorerTxUrl(config, tx) : null;
+  // The Register's record exists only for a confirmed settlement.
+  const record = settled && tx ? registerRecordUrl(config.chain, tx) : null;
   return (
     <span className="flex flex-wrap items-center gap-2">
       <span className={settled ? "text-positive" : m.status === "failed" ? "text-negative" : "flex items-center gap-1 text-accent-cyan"}>
@@ -40,6 +44,7 @@ function SettlementLine({ m }: { m: MatchHistory | WalletMatch }) {
           {t.viewTx}: {tx.slice(0, 10)}… <ExternalLink className="h-3 w-3" aria-hidden="true" />
         </a>
       )}
+      {record && <RegisterRecordLink href={record} />}
       {m.status === "failed" && m.settlement?.error && <span className="text-text-muted">{m.settlement.error}</span>}
     </span>
   );

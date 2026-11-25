@@ -65,7 +65,7 @@ Set them in Vercel → Project → Settings → Environment Variables, scope
 | **Wallets** | |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | the project id from the Reown dashboard (public by design). Empty = no WalletConnect, and its hosts stay out of the CSP |
 | **Other Niara products** (header links, opened in a new tab) | |
-| `NEXT_PUBLIC_REGISTER_URL` | `https://register.niaraglobal.com` (empty = the "Register" link is hidden) |
+| `NEXT_PUBLIC_REGISTER_URL` | `https://register.niaraglobal.com` (empty = the "Register" link and the "Register record ↗" links on `/trade` are hidden) |
 | `NEXT_PUBLIC_SMES_URL` | `https://sme.niaraglobal.com` (empty = the "SMEs" link is hidden) |
 
 The contract addresses are the testnet deployments from `niara-exchange-engine/config`

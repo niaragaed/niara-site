@@ -9,7 +9,9 @@ import { ExternalLink } from "lucide-react";
 import { explorerTxUrl } from "@/lib/exchange/config";
 import { formatUnitsExact } from "@/lib/exchange/units";
 import { en } from "@/lib/i18n/en";
+import { registerRecordUrl } from "@/lib/site-links";
 import { engineErrorMessage } from "./OrderTicket";
+import { RegisterRecordLink } from "./RegisterRecordLink";
 import { useTrade } from "./TradeContext";
 import { useMarketTrades } from "./useMarketTrades";
 
@@ -52,6 +54,8 @@ export function TradeHistory() {
             <tbody className="font-mono tabular-nums">
               {items.slice(0, RECENT_ROWS).map((tr) => {
                 const url = explorerTxUrl(config, tr.txHash);
+                // Every row here is a confirmed settlement.
+                const record = registerRecordUrl(config.chain, tr.txHash);
                 return (
                   <tr key={tr.matchId} className="border-t border-border">
                     <td className="py-1 text-text-secondary">{new Date(tr.matchedAt).toLocaleString("en-US")}</td>
@@ -63,17 +67,20 @@ export function TradeHistory() {
                       {tr.takerSide === "buy" ? en.trade.ticket.buy : en.trade.ticket.sell}
                     </td>
                     <td className="py-1 text-right">
-                      {url && (
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={t.viewTx}
-                          className="inline-flex items-center gap-1 text-accent-blue hover:underline"
-                        >
-                          {tr.txHash.slice(0, 6)}… <ExternalLink className="h-3 w-3" aria-hidden="true" />
-                        </a>
-                      )}
+                      <span className="inline-flex flex-wrap items-center justify-end gap-x-2">
+                        {url && (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={t.viewTx}
+                            className="inline-flex items-center gap-1 text-accent-blue hover:underline"
+                          >
+                            {tr.txHash.slice(0, 6)}… <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                          </a>
+                        )}
+                        {record && <RegisterRecordLink href={record} />}
+                      </span>
                     </td>
                   </tr>
                 );

@@ -353,6 +353,12 @@ export const en = {
       loadingChain: "Reading the network…",
     },
 
+    registerRecord: {
+      label: "Register record",
+      title: "This settlement's record in the Niara Register's global registry",
+      srHint: "(the settlement's record in the Niara Register, opens in a new tab)",
+    },
+
     session: {
       title: "Your orders and settlements",
       ordersTab: "Orders",
