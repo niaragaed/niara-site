@@ -64,9 +64,9 @@ Set them in Vercel → Project → Settings → Environment Variables, scope
 | `NEXT_PUBLIC_SEPOLIA_RPC_URL` | *(empty: viem's public Sepolia RPC is used)* or a public RPC URL |
 | **Wallets** | |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | the project id from the Reown dashboard (public by design). Empty = no WalletConnect, and its hosts stay out of the CSP |
-| **Other Niara products** (header links) | |
-| `NEXT_PUBLIC_REGISTER_URL` | the Register product's https URL (empty = link hidden) |
-| `NEXT_PUBLIC_SMES_URL` | the SMEs product's https URL (empty = link hidden) |
+| **Other Niara products** (header links, opened in a new tab) | |
+| `NEXT_PUBLIC_REGISTER_URL` | `https://register.niaraglobal.com` (empty = the "Register" link is hidden) |
+| `NEXT_PUBLIC_SMES_URL` | `https://sme.niaraglobal.com` (empty = the "SMEs" link is hidden) |
 
 The contract addresses are the testnet deployments from `niara-exchange-engine/config`
 (the same values as `.env.example`). Check them against the engine's config before
