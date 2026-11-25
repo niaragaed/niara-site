@@ -110,7 +110,8 @@ export function buildCsp({
     // Inline style attributes (charts, globe, layout) need 'unsafe-inline' for styles;
     // styles cannot run code.
     ["style-src", "'self'", "'unsafe-inline'"],
-    // Wallet icons are data URIs (EIP-6963, Wallet Standard).
+    // Wallet icons: data URIs announced by the wallets (EIP-6963, Wallet Standard)
+    // and the official brand-kit files served from 'self' (public/wallets/).
     ["img-src", "'self'", "data:", "blob:", ...wc.img],
     ["font-src", "'self'", ...wc.font],
     ["connect-src", "'self'", ...connect, ...wc.connect],

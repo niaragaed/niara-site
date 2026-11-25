@@ -262,7 +262,10 @@ src/
 - **Wallets:** one connect dialog (`src/components/web3/WalletDialog.tsx`). EVM detected only
   through EIP-6963, mobile EVM through WalletConnect (lazy, project id in env), Solana through Wallet
   Standard. Never read or write `window.ethereum`. "Get a wallet" links only to official vendor
-  sites (`src/lib/web3/wallet-directory.ts`, guarded by a test); no wallet logos.
+  sites (`src/lib/web3/wallet-directory.ts`, guarded by a test). Wallet logos come from two
+  sources only, never redrawn or approximated: the icon the detected wallet announces
+  (EIP-6963 / Wallet Standard), or the vendor's own brand-kit file shipped unmodified under
+  `public/wallets/`, with its source noted in `wallet-directory.ts` (`src/lib/web3/wallet-icon.ts`).
 
 ---
 

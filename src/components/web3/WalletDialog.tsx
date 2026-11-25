@@ -33,7 +33,7 @@ import {
 } from "@/lib/web3/wallet-errors";
 import { useSolanaWallet } from "./SolanaWalletProvider";
 import { WalletErrorNotice } from "./WalletErrorNotice";
-import { safeWalletIcon } from "./wallet-icon";
+import { walletIconCandidates } from "@/lib/web3/wallet-icon";
 
 type EvmConnector = ReturnType<typeof useConnectors>[number];
 type SolWallet = ReturnType<typeof useSolanaWallet>["wallets"][number];
@@ -43,18 +43,35 @@ type Pending = { key: string; stage: "connect" | "switch" };
 const FAMILIES: WalletFamily[] = ["evm", "solana"];
 const familyLabel = (f: WalletFamily) => en.wallets.family[f];
 
-/** Every wallet icon: the same size, inside the same rounded container. */
-function IconBox({ icon, children }: { icon?: string; children?: ReactNode }) {
-  const safe = safeWalletIcon(icon);
+/**
+ * Every wallet icon: the same size, inside the same rounded container. `icons` are
+ * tried in order (an image that fails to load moves to the next one); with none
+ * left, the generic wallet glyph, never a drawn logo.
+ */
+function IconBox({ icons = [], small = false, children }: { icons?: readonly string[]; small?: boolean; children?: ReactNode }) {
+  const list = icons.join("\n");
+  const [failed, setFailed] = useState({ list, count: 0 });
+  const count = failed.list === list ? failed.count : 0;
+  const src = icons[count];
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-bg-base">
+    <span
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-bg-base ${small ? "h-6 w-6" : "h-8 w-8"}`}
+    >
       {children ??
-        (safe ? (
-          // Icon supplied by the installed wallet itself (data URI).
+        (src ? (
+          // The wallet's own icon (data URI) or the vendor's brand-kit file (public/wallets).
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={safe} alt="" width={20} height={20} className="h-5 w-5 object-contain" />
+          <img
+            key={src}
+            src={src}
+            alt=""
+            width={20}
+            height={20}
+            onError={() => setFailed({ list, count: count + 1 })}
+            className={`object-contain ${small ? "h-4 w-4" : "h-5 w-5"}`}
+          />
         ) : (
-          <Wallet className="h-4 w-4 text-text-muted" aria-hidden="true" />
+          <Wallet className={`text-text-muted ${small ? "h-3.5 w-3.5" : "h-4 w-4"}`} aria-hidden="true" />
         ))}
     </span>
   );
@@ -131,7 +148,7 @@ function BrandRow({
         className="absolute inset-0 rounded-md transition-colors enabled:hover:bg-accent-blue/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue disabled:cursor-not-allowed"
       />
       <div className="pointer-events-none relative flex h-full items-center gap-3 px-3">
-        <IconBox icon={brand.icon}>{here ? <Loader2 className="h-4 w-4 animate-spin text-text-secondary" aria-hidden="true" /> : icon}</IconBox>
+        <IconBox icons={walletIconCandidates([brand.evm?.icon, brand.solana?.icon], brand.name)}>{here ?<Loader2 className="h-4 w-4 animate-spin text-text-secondary" aria-hidden="true" /> : icon}</IconBox>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm leading-5 text-text-primary" title={brand.name}>
             {brand.name}
@@ -318,7 +335,7 @@ export function WalletDialog({
   };
 
   const wcBrand: Brand | null = walletConnect
-    ? { key: "walletconnect", name: t.walletConnectName, icon: undefined, evm: { name: t.walletConnectName, icon: undefined, ref: walletConnect }, solana: null }
+    ? { key: "walletconnect", name: t.walletConnectName, evm:{ name: t.walletConnectName, icon: undefined, ref: walletConnect }, solana: null }
     : null;
 
   async function connectWalletConnect(connector: EvmConnector) {
@@ -446,6 +463,7 @@ export function WalletDialog({
                   rel="noopener noreferrer"
                   className="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm hover:border-accent-blue/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue"
                 >
+                  <IconBox small icons={w.icon ? [w.icon] : []} />
                   <span className="min-w-0 flex-1 truncate text-text-primary" title={w.name}>
                     {w.name}
                   </span>

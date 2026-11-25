@@ -25,7 +25,7 @@ export interface WalletBrand<E, S> {
   key: string;
   /** Name as the wallet announces it (the EVM one when both exist). */
   name: string;
-  icon: string | undefined;
+  /** Each provider keeps its own icon; `walletIconCandidates` (wallet-icon.ts) picks the row's. */
   evm: DetectedWallet<E> | null;
   solana: DetectedWallet<S> | null;
 }
@@ -49,21 +49,17 @@ export function groupWalletBrands<E, S>(
   for (const w of evm) {
     const key = brandKey(w.name);
     const b = brands.get(key);
-    if (!b) brands.set(key, { key, name: w.name, icon: w.icon, evm: w, solana: null });
+    if (!b) brands.set(key, { key, name: w.name, evm: w, solana: null });
     else if (!b.evm) {
       b.evm = w;
       b.name = w.name;
-      b.icon = b.icon ?? w.icon;
     }
   }
   for (const w of solana) {
     const key = brandKey(w.name);
     const b = brands.get(key);
-    if (!b) brands.set(key, { key, name: w.name, icon: w.icon, evm: null, solana: w });
-    else if (!b.solana) {
-      b.solana = w;
-      b.icon = b.icon ?? w.icon;
-    }
+    if (!b) brands.set(key, { key, name: w.name, evm: null, solana: w });
+    else if (!b.solana) b.solana = w;
   }
   return [...brands.values()];
 }
