@@ -1,6 +1,6 @@
 # Wallet icons: sources
 
-Every file here is the vendor's own artwork from its official brand or press kit,
+Every file here is the vendor's own artwork, from its official brand or press kit or (the `.png` files) from the vendor's own Reown/WalletConnect Explorer listing,
 copied **unmodified** (never redrawn, recolored or approximated). Checked on
 2026-11-25. Niara has no partnership with any of these vendors; the connect dialog
 says so. A wallet that is not listed here shows a generic wallet glyph.
@@ -16,15 +16,15 @@ below with its SHA-256, and that the directory only points to files that exist.
 | `backpack.svg` | Backpack | `symbol/backpack-symbol-color.svg` from Backpack's brand page https://backpack.exchange/brand (assets under `/marketing/brand/assets/`; full kit: https://backpack.exchange/marketing/brand/downloads/backpack-brand-assets.zip) | `6f0c325af04c526d8971ffa68f38c0928aac5cf0d93c6df21678218fe6d7720d` |
 | `ledger.svg` | Ledger | `Logos/Ledger/LEDGER-WORDMARK-SINGLE-CHARACTER-BLACK-CMYK-01.svg` in Ledger's press kit (`Ledger_Press_kit_october_2025.zip`), linked from https://www.ledger.com/press. Black artwork on a transparent background, so the dialog shows it on a light tile. | `ff2408c70d73cd6d1ba3fd91d82d78f4f0fc6a15261678c68701d72b90d407fc` |
 | `trezor.svg` | Trezor | `trezor-symbol-white-rgb.svg` from Trezor's brand manual (Logos → Symbol), https://trezor.visualbook.pro/trezor/logos, linked from https://trezor.io/press-and-media | `f2c498f96003cd5a535658ceca24ff10cb41b620234399473156ebbdbb4ac2c2` |
+| `trust.png` | Trust Wallet | Reown/WalletConnect Explorer listing "Trust Wallet" (listing id `4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0`, homepage https://trustwallet.com/), logo `https://explorer-api.walletconnect.com/v3/logo/md/7677b54f-3486-46e2-4e37-bf8747814f00?projectId=<PROJECT_ID>`, uploaded by the vendor and downloaded unmodified. | `32ea106f5fc21a04906e76ae6782c720bfcc6c74d9f98850b57c941c50bcc869` |
+| `coinbase.png` | Coinbase Wallet | Reown/WalletConnect Explorer listing "Coinbase Wallet" (listing id `d0ca99ff52b99abc48743dad0f7fc891e041be73574f7fac4afe5d4bb83845c8`, homepage https://wallet.coinbase.com/), logo `https://explorer-api.walletconnect.com/v3/logo/md/594627bd-6d35-406a-8d2b-31e0b5f03c00?projectId=<PROJECT_ID>`, uploaded by the vendor and downloaded unmodified. | `e22d14b506b0803dd48e7a5b477f9ba0727419a584abe3c409d4462345a1d262` |
+| `kraken.png` | Kraken Wallet | Reown/WalletConnect Explorer listing "Kraken Wallet" (listing id `18450873727504ae9315a084fa7624b5297d2fe5880f0982979c17345a138277`, homepage https://www.kraken.com/wallet), logo `https://explorer-api.walletconnect.com/v3/logo/md/8eb0c803-fd4f-4b7f-88ac-d26f315fd300?projectId=<PROJECT_ID>`, uploaded by the vendor and downloaded unmodified. | `9b19a2c8ec52525cd3c41385b38091fe6d0c3baf9a30d97d58849b5750449a3f` |
+| `rabby.png` | Rabby | Reown/WalletConnect Explorer listing "Rabby" (listing id `18388be9ac2d02726dbac9777c96efaac06d744b2f6d580fccdd4127a6d01fd1`, homepage https://rabby.io/), logo `https://explorer-api.walletconnect.com/v3/logo/md/255e6ba2-8dfd-43ad-e88e-57cbb98f6800?projectId=<PROJECT_ID>`, uploaded by the vendor and downloaded unmodified. | `8db41d54e00869195f97180100e6fc42e0dd4a10bf1823f4559b77addcfd8593` |
+| `binance.png` | Binance Wallet | Reown/WalletConnect Explorer listing "Binance Wallet" (listing id `8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4`, homepage https://www.binance.com/en/web3wallet), logo `https://explorer-api.walletconnect.com/v3/logo/md/ebac7b39-688c-41e3-7912-a4fefba74600?projectId=<PROJECT_ID>`, uploaded by the vendor and downloaded unmodified. | `ef716f9e98f5f1b2406a6a93f21ea15121128cbe9605bc20d64e79ed60b1cad8` |
 
 ## No icon shipped (generic glyph kept)
 
 | Wallet | Why |
 |---|---|
-| Trust Wallet | Its official kit (https://trustwallet.com/download/logos.zip, linked from https://trustwallet.com/press) has only wordmark and stacked lockups on a 1920×1080 canvas, with no icon-only file. Scaled to icon size they are unreadable, and cropping them would modify the artwork. |
-| Coinbase Wallet | No kit reachable: coinbase.com/press and its brand pages answer 403 to automated requests, and the wallet icon kit its developer docs used to link is gone (404). |
-| Kraken Wallet | Kraken's kit (https://payward.com/newsroom) has the Kraken wordmark and Payward logos, but no Kraken Wallet icon. |
-| Rabby | No public brand or press kit on rabby.io. |
-| OKX Wallet | No public brand or press kit found on okx.com or web3.okx.com. |
-| Binance Wallet | binance.com's brand pages answer 202 to automated requests with no content, so no kit could be read. |
-| Tangem | No public brand or press kit on tangem.com (its media kit is not on the official site). |
+| OKX Wallet | The Reown Explorer has two listings named exactly "OKX Wallet" (homepages okx.com/web3 and okx.com/download) with different logos, so the right one is ambiguous. |
+| Tangem | The Reown Explorer has no listing named exactly "Tangem"; the only match is "Tangem Wallet" (tangem.com). Left generic rather than assume. |
