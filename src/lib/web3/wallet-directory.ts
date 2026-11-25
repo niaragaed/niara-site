@@ -10,10 +10,8 @@
 // Icons: only the vendor's own file, from its official brand kit, shipped unmodified
 // under public/wallets/ (never redrawn or approximated), with its source noted here.
 // An entry without one shows the generic wallet glyph. The disclaimer under the list
-// states there is no partnership.
-// - phantom.svg: the icon Phantom recommends for dApp integrations, from
-//   https://docs.phantom.com/resources/assets (fetched 2026-11-25, SHA-256
-//   2f238875a4b52e80eac9acfdd7e30bd9d81e7f8d13a3faff80cacd6cf413cddd).
+// states there is no partnership. Each file's source URL and SHA-256 are in
+// public/wallets/SOURCES.md, and a test checks that every file there is listed.
 
 export type WalletFamily = "evm" | "solana";
 
@@ -25,6 +23,8 @@ export interface WalletDirectoryEntry {
   kind: "software" | "hardware";
   /** Official brand-kit icon under public/ (site path), if shipped. */
   icon?: string;
+  /** The file is dark artwork on a transparent background: show it on a light tile. */
+  iconOnLight?: boolean;
 }
 
 export const WALLET_DIRECTORY: readonly WalletDirectoryEntry[] = [
@@ -35,16 +35,29 @@ export const WALLET_DIRECTORY: readonly WalletDirectoryEntry[] = [
     kind: "software",
     icon: "/wallets/phantom.svg",
   },
-  { name: "MetaMask", url: "https://metamask.io/download", families: ["evm", "solana"], kind: "software" },
+  {
+    name: "MetaMask",
+    url: "https://metamask.io/download",
+    families: ["evm", "solana"],
+    kind: "software",
+    icon: "/wallets/metamask.svg",
+  },
   { name: "Trust Wallet", url: "https://trustwallet.com/download", families: ["evm", "solana"], kind: "software" },
   { name: "Coinbase Wallet", url: "https://www.coinbase.com/wallet", families: ["evm", "solana"], kind: "software" },
   { name: "Rabby", url: "https://rabby.io", families: ["evm"], kind: "software" },
   { name: "OKX Wallet", url: "https://web3.okx.com/download", families: ["evm", "solana"], kind: "software" },
   { name: "Binance Wallet", url: "https://web3.binance.com/en/about", families: ["evm", "solana"], kind: "software" },
   { name: "Kraken Wallet", url: "https://www.kraken.com/wallet", families: ["evm", "solana"], kind: "software" },
-  { name: "Solflare", url: "https://solflare.com", families: ["solana"], kind: "software" },
-  { name: "Backpack", url: "https://backpack.app", families: ["solana", "evm"], kind: "software" },
-  { name: "Ledger", url: "https://www.ledger.com", families: ["evm", "solana"], kind: "hardware" },
-  { name: "Trezor", url: "https://trezor.io", families: ["evm", "solana"], kind: "hardware" },
+  { name: "Solflare", url: "https://solflare.com", families: ["solana"], kind: "software", icon: "/wallets/solflare.svg" },
+  { name: "Backpack", url: "https://backpack.app", families: ["solana", "evm"], kind: "software", icon: "/wallets/backpack.svg" },
+  {
+    name: "Ledger",
+    url: "https://www.ledger.com",
+    families: ["evm", "solana"],
+    kind: "hardware",
+    icon: "/wallets/ledger.svg",
+    iconOnLight: true,
+  },
+  { name: "Trezor", url: "https://trezor.io", families: ["evm", "solana"], kind: "hardware", icon: "/wallets/trezor.svg" },
   { name: "Tangem", url: "https://tangem.com", families: ["evm", "solana"], kind: "hardware" },
 ];

@@ -48,14 +48,25 @@ const familyLabel = (f: WalletFamily) => en.wallets.family[f];
  * tried in order (an image that fails to load moves to the next one); with none
  * left, the generic wallet glyph, never a drawn logo.
  */
-function IconBox({ icons = [], small = false, children }: { icons?: readonly string[]; small?: boolean; children?: ReactNode }) {
+function IconBox({
+  icons = [],
+  small = false,
+  light = false,
+  children,
+}: {
+  icons?: readonly string[];
+  small?: boolean;
+  /** Dark artwork on a transparent background (the vendor's file, unmodified): light tile. */
+  light?: boolean;
+  children?: ReactNode;
+}) {
   const list = icons.join("\n");
   const [failed, setFailed] = useState({ list, count: 0 });
   const count = failed.list === list ? failed.count : 0;
   const src = icons[count];
   return (
     <span
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-bg-base ${small ? "h-6 w-6" : "h-8 w-8"}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border ${light ? "bg-text-primary" : "bg-bg-base"} ${small ? "h-6 w-6" : "h-8 w-8"}`}
     >
       {children ??
         (src ? (
@@ -463,7 +474,7 @@ export function WalletDialog({
                   rel="noopener noreferrer"
                   className="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm hover:border-accent-blue/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue"
                 >
-                  <IconBox small icons={w.icon ? [w.icon] : []} />
+                  <IconBox small light={w.iconOnLight} icons={w.icon ? [w.icon] : []} />
                   <span className="min-w-0 flex-1 truncate text-text-primary" title={w.name}>
                     {w.name}
                   </span>
@@ -486,6 +497,7 @@ export function WalletDialog({
                   rel="noopener noreferrer"
                   className="flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm hover:border-accent-blue/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue"
                 >
+                  <IconBox small light={w.iconOnLight} icons={w.icon ? [w.icon] : []} />
                   <span className="min-w-0 flex-1 truncate text-text-primary" title={w.name}>
                     {w.name}
                   </span>

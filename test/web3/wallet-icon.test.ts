@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildCsp } from "@/lib/security/csp";
@@ -53,6 +54,22 @@ describe("wallet icons", () => {
       const file = readFileSync(join(process.cwd(), "public", w.icon!), "utf8");
       expect(file, w.name).not.toMatch(/<script|foreignObject|\bon[a-z]+=|href=/i);
     }
+  });
+
+  it("SOURCES.md lists every file in public/wallets with its SHA-256, and every directory icon exists", () => {
+    const dir = join(process.cwd(), "public", "wallets");
+    const sources = readFileSync(join(dir, "SOURCES.md"), "utf8");
+    const files = readdirSync(dir).filter((f) => /\.(svg|png)$/.test(f));
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) {
+      // LF-normalized, as git stores it.
+      const bytes = readFileSync(join(dir, f));
+      const hash = createHash("sha256").update(bytes.toString("latin1").replace(/\r\n/g, "\n"), "latin1").digest("hex");
+      expect(sources, f).toContain(`\`${f}\``);
+      expect(sources, f).toContain(hash);
+    }
+    const used = WALLET_DIRECTORY.filter((w) => w.icon).map((w) => w.icon!.replace("/wallets/", ""));
+    expect([...used].sort()).toEqual([...files].sort());
   });
 
   it("the CSP lets the page load both icon sources", () => {
