@@ -44,7 +44,7 @@ function SettlementLine({ m }: { m: MatchHistory | WalletMatch }) {
   );
 }
 
-function OrderMatches({ orderId, usdtDecimals }: { orderId: string; usdtDecimals: number }) {
+function OrderMatches({ orderId, usdtDecimals, ioc }: { orderId: string; usdtDecimals: number; ioc: boolean }) {
   const t = en.trade.session;
   const detail = useQuery({
     queryKey: ["exchange", "order", orderId],
@@ -54,7 +54,7 @@ function OrderMatches({ orderId, usdtDecimals }: { orderId: string; usdtDecimals
   });
   if (detail.error) return <p className="text-negative">{engineErrorMessage(detail.error)}</p>;
   if (!detail.data) return <p className="text-text-muted">{t.loading}</p>;
-  if (detail.data.matches.length === 0) return <p className="text-text-muted">{t.noMatches}</p>;
+  if (detail.data.matches.length === 0) return <p className="text-text-muted">{ioc ? t.noMatchesIoc : t.noMatches}</p>;
   return (
     <ul className="flex flex-col gap-1.5">
       {detail.data.matches.map((m) => (
@@ -80,6 +80,7 @@ function OrderRow({ order }: { order: StoredOrder }) {
   const usdtDecimals = terms?.usdt.decimals ?? 0;
   const symbol = listings?.find((l) => l.asset === order.asset)?.symbol ?? short(order.asset);
   const live = LIVE.has(order.status) && order.expiresAt > now;
+  const tif = order.timeInForce ?? "GTC";
 
   async function doCancel() {
     if (!config.ready) return;
@@ -113,8 +114,18 @@ function OrderRow({ order }: { order: StoredOrder }) {
         <span className="font-mono tabular-nums text-text-secondary">
           {lots(order.quantity, order.lotSize)} {t.lots} · {formatUnitsExact(BigInt(order.limitPrice), usdtDecimals, true)} USDT
         </span>
-        <span className="rounded-full border border-border px-2 py-0.5 text-text-primary">
-          {t.orderStatus[order.status] ?? order.status}
+        <span className="flex items-center gap-1.5">
+          {/* Time in force (intent v2); v1 orders and older engine builds are GTC. */}
+          <span
+            title={t.timeInForceTitle[tif]}
+            className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${tif === "IOC" ? "border-accent-cyan/40 text-accent-cyan" : "border-border text-text-secondary"}`}
+          >
+            <span className="sr-only">{t.timeInForceTitle[tif]}: </span>
+            {t.timeInForce[tif]}
+          </span>
+          <span className="rounded-full border border-border px-2 py-0.5 text-text-primary">
+            {t.orderStatus[order.status] ?? order.status}
+          </span>
         </span>
       </div>
       <p className="mt-1 text-[11px] text-text-muted">
@@ -125,7 +136,7 @@ function OrderRow({ order }: { order: StoredOrder }) {
 
       {open && (
         <div className="mt-2">
-          <OrderMatches orderId={order.id} usdtDecimals={usdtDecimals} />
+          <OrderMatches orderId={order.id} usdtDecimals={usdtDecimals} ioc={tif === "IOC"} />
         </div>
       )}
 

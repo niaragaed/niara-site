@@ -1,9 +1,10 @@
-// Port of niara-exchange-engine/src/intents/solana.ts (commit d5b32d6).
+// Port of niara-exchange-engine/src/intents/solana.ts (commit ad3a082).
 // The engine's verifier rebuilds THIS text from the structured intent
 // and checks the signature over it — any different byte = bad_signature.
+// v2 adds one line, `Time in force`, after the limit price; v1 texts are unchanged.
 import { base58 } from "@scure/base";
 import { CHAINS } from "../chains";
-import { IntentError, type OrderIntent } from "./types";
+import { IntentError, type OrderIntent, type TimeInForce } from "./types";
 import { validateIntent } from "./validate";
 
 /**
@@ -26,12 +27,18 @@ export function solanaIntentMessage(intent: OrderIntent): Uint8Array {
     `Quantity: ${i.quantity} (asset base units)`,
     `Lot size: ${i.lotSize} (asset base units)`,
     `Limit price: ${i.limitPrice} (payment base units per lot)`,
+    ...(i.version === 1 ? [] : [`Time in force: ${TIF_TEXT[i.timeInForce!]}`]),
     `Payment asset: ${i.paymentAsset}`,
     `Nonce: ${i.nonce}`,
     `Expires at: ${i.expiresAt} (unix seconds)`,
   ];
   return new TextEncoder().encode(lines.join("\n"));
 }
+
+const TIF_TEXT: Record<TimeInForce, string> = {
+  GTC: "GTC (rests in the book until filled, cancelled or expired)",
+  IOC: "IOC (fills now up to the limit price; the rest is cancelled)",
+};
 
 /** ed25519 signature (64 bytes) → base58, as the engine expects. */
 export function encodeSolanaSignature(signature: Uint8Array): string {

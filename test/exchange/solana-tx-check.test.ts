@@ -6,8 +6,10 @@ import {
   SystemProgram,
   Transaction,
   TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
 } from "@solana/web3.js";
-import { approveCheckedInstruction, TOKEN_2022_PROGRAM_ID } from "@/lib/exchange/solana";
+import { approveCheckedInstruction, buildApproveTransaction, TOKEN_2022_PROGRAM_ID } from "@/lib/exchange/solana";
 import {
   LIGHTHOUSE_PROGRAM_ID,
   SignedTxError,
@@ -34,16 +36,21 @@ const approve = (amount = BigInt(1_000_000)) =>
     decimals: 6,
   });
 
+/** A v0 transaction (no lookup tables), as `buildApproveTransaction` builds it. */
+function v0(payer: Keypair, instructions: TransactionInstruction[], signers: Keypair[] = []): Uint8Array {
+  const message = new TransactionMessage({ payerKey: payer.publicKey, recentBlockhash: blockhash, instructions }).compileToV0Message();
+  const tx = new VersionedTransaction(message);
+  if (signers.length > 0) tx.sign(signers);
+  return tx.serialize();
+}
+
 function unsigned(): Uint8Array {
-  const tx = new Transaction({ feePayer: owner.publicKey, blockhash, lastValidBlockHeight: 1 }).add(approve());
-  return new Uint8Array(tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
+  return v0(owner, [approve()]);
 }
 
 /** What a wallet would return: its own instruction list, signed by `payer`. */
 function signedWith(instructions: TransactionInstruction[], payer: Keypair = owner): Uint8Array {
-  const tx = new Transaction({ feePayer: payer.publicKey, blockhash, lastValidBlockHeight: 1 }).add(...instructions);
-  tx.sign(payer);
-  return new Uint8Array(tx.serialize());
+  return v0(payer, instructions, [payer]);
 }
 
 const lighthouse = (discriminator: number, account: PublicKey) =>
@@ -118,17 +125,50 @@ describe("compareSignedTransaction", () => {
 
   it("refuses a changed fee payer", () => {
     // The original approve keeps the owner as a signer, so `other` pays and both must sign.
-    const tx = new Transaction({ feePayer: other.publicKey, blockhash, lastValidBlockHeight: 1 }).add(approve());
-    tx.sign(other, owner);
-    expect(codeOf(() => compareSignedTransaction(unsigned(), new Uint8Array(tx.serialize())))).toBe("fee_payer_changed");
+    const tx = v0(other, [approve()], [other, owner]);
+    expect(codeOf(() => compareSignedTransaction(unsigned(), tx))).toBe("fee_payer_changed");
   });
 
   it("refuses an unsigned or wrongly signed transaction", async () => {
-    const tx = new Transaction({ feePayer: owner.publicKey, blockhash, lastValidBlockHeight: 1 }).add(approve());
-    const bytes = new Uint8Array(tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
+    const bytes = v0(owner, [approve()]);
     await expect(checkSignedTransaction(unsigned(), bytes, owner.publicKey.toBase58())).rejects.toMatchObject({ code: "not_signed" });
     const forged = signedWith([approve()]);
     forged[1] ^= 0xff; // corrupt the signature
     await expect(checkSignedTransaction(unsigned(), forged, owner.publicKey.toBase58())).rejects.toMatchObject({ code: "not_signed" });
+  });
+
+  it("refuses a v0 approval that comes back as a legacy transaction", () => {
+    const legacy = new Transaction({ feePayer: owner.publicKey, blockhash, lastValidBlockHeight: 1 }).add(approve());
+    legacy.sign(owner);
+    expect(codeOf(() => compareSignedTransaction(unsigned(), new Uint8Array(legacy.serialize())))).toBe("version_changed");
+  });
+});
+
+describe("buildApproveTransaction", () => {
+  it("builds a v0 transaction with one exact approve_checked and no lookup tables", async () => {
+    const conn = { getLatestBlockhash: async () => ({ blockhash, lastValidBlockHeight: 99 }) };
+    const programId = Keypair.fromSeed(new Uint8Array(32).fill(8)).publicKey.toBase58();
+    const built = await buildApproveTransaction(conn as never, {
+      owner: owner.publicKey.toBase58(),
+      mint: mint.toBase58(),
+      programId,
+      amount: BigInt(1_234_567),
+      decimals: 6,
+      tokenProgram: TOKEN_2022_PROGRAM_ID,
+    });
+    const tx = VersionedTransaction.deserialize(built.bytes);
+    expect(tx.message.version).toBe(0);
+    expect(tx.message.addressTableLookups).toHaveLength(0);
+    expect(tx.message.staticAccountKeys[0].toBase58()).toBe(owner.publicKey.toBase58());
+    expect(tx.message.compiledInstructions).toHaveLength(1);
+    const ix = tx.message.compiledInstructions[0];
+    expect(tx.message.staticAccountKeys[ix.programIdIndex].toBase58()).toBe(TOKEN_2022_PROGRAM_ID.toBase58());
+    expect(ix.data[0]).toBe(13);
+    expect(new DataView(ix.data.buffer, ix.data.byteOffset).getBigUint64(1, true)).toBe(BigInt(1_234_567));
+    expect(built.lastValidBlockHeight).toBe(99);
+    // The wallet signing it unchanged passes the check.
+    const signed = VersionedTransaction.deserialize(built.bytes);
+    signed.sign([owner]);
+    await expect(checkSignedTransaction(built.bytes, signed.serialize(), owner.publicKey.toBase58())).resolves.toEqual([]);
   });
 });

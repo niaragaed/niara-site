@@ -8,8 +8,9 @@
 import {
   Connection,
   PublicKey,
-  Transaction,
   TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
   type ParsedAccountData,
 } from "@solana/web3.js";
 import { Buffer } from "buffer";
@@ -147,8 +148,10 @@ export function approveCheckedInstruction(args: {
 }
 
 /**
- * Legacy transaction with a single `approve_checked` of the EXACT amount to the vault
- * PDA. Fee payer = the wallet itself.
+ * Versioned (v0) transaction with a single `approve_checked` of the EXACT amount to the
+ * vault PDA. Fee payer = the wallet itself. v0 because Phantom's documentation
+ * recommends versioned transactions (fewer wallet warnings); it uses no address lookup
+ * table, so every account stays a static key and `solana-tx-check.ts` sees them all.
  */
 export async function buildApproveTransaction(
   connection: Connection,
@@ -166,8 +169,8 @@ export async function buildApproveTransaction(
     decimals: args.decimals,
   });
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
-  const tx = new Transaction({ feePayer: owner, blockhash, lastValidBlockHeight }).add(ix);
-  const bytes = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
+  const message = new TransactionMessage({ payerKey: owner, recentBlockhash: blockhash, instructions: [ix] }).compileToV0Message();
+  const bytes = new VersionedTransaction(message).serialize();
   return { bytes: new Uint8Array(bytes), blockhash, lastValidBlockHeight };
 }
 

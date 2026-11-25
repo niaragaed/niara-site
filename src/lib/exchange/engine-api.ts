@@ -36,6 +36,8 @@ export interface EngineOrder {
   lotSize: string;
   limitPrice: string;
   expiresAt: number;
+  /** Engine ad3a082+. Absent from older builds: GTC. */
+  timeInForce?: "GTC" | "IOC";
   filledQuantity: string;
   remaining: string;
   status: OrderStatus;

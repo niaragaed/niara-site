@@ -1,14 +1,22 @@
-// Port of niara-exchange-engine/src/intents/cancel.ts (commit d5b32d6).
+// Port of niara-exchange-engine/src/intents/cancel.ts (commit ad3a082; the message is
+// unchanged since d5b32d6).
 // Cancellation is off-chain only (the engine takes the order out of the book). The
 // on-chain guarantee that a cancelled order never settles is revoking the delegate/allowance.
 import { getAddress, hashTypedData, type Hex } from "viem";
 import { CHAINS, isChainId } from "../chains";
 import { EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from "./evm";
-import { INTENT_VERSION, IntentError } from "./types";
+import { IntentError } from "./types";
 import { NONCE_PATTERN, checkAddress } from "./validate";
 
+/**
+ * The cancellation's own version, independent of the order intent's (engine commit
+ * ad3a082, `CANCEL_VERSION`): it names an order by nonce, the same in every intent
+ * version, so the v1 cancellation cancels v1 and v2 orders alike. Unchanged by v2.
+ */
+export const CANCEL_VERSION = 1;
+
 export interface CancelIntent {
-  version: typeof INTENT_VERSION;
+  version: typeof CANCEL_VERSION;
   chain: keyof typeof CHAINS;
   /** The same program/contract as the order intent. */
   settlement: string;
@@ -19,8 +27,8 @@ export interface CancelIntent {
 }
 
 export function validateCancelIntent(cancel: CancelIntent): CancelIntent {
-  if (cancel.version !== INTENT_VERSION) {
-    throw new IntentError("unsupported_version", `cancel version must be ${INTENT_VERSION}`);
+  if (cancel.version !== CANCEL_VERSION) {
+    throw new IntentError("unsupported_version", `cancel version must be ${CANCEL_VERSION}`);
   }
   if (!isChainId(cancel.chain)) throw new IntentError("unknown_chain", `unknown chain: ${String(cancel.chain)}`);
   const kind = CHAINS[cancel.chain].kind;

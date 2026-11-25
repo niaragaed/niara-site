@@ -141,7 +141,12 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
   const signTransaction = useCallback(
     async (transaction: Uint8Array) => {
       if (!wallet || !account) throw new Error("wallet not connected");
-      const [out] = await wallet.features[SolanaSignTransaction].signTransaction({
+      // The approval is a v0 (versioned) transaction: the wallet must say it signs them.
+      const feature = wallet.features[SolanaSignTransaction];
+      if (!feature.supportedTransactionVersions.includes(0)) {
+        throw new Error(`${wallet.name} does not sign versioned (v0) Solana transactions`);
+      }
+      const [out] = await feature.signTransaction({
         account,
         transaction,
         chain: DEVNET,

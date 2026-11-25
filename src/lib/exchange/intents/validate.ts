@@ -1,10 +1,10 @@
-// Port of niara-exchange-engine/src/intents/validate.ts (commit d5b32d6).
+// Port of niara-exchange-engine/src/intents/validate.ts (commit ad3a082).
 // Same validation as the server: an intent that passes here passes there (except the
 // market rules and validity window, which belong to the engine).
 import { base58 } from "@scure/base";
 import { getAddress, isAddress } from "viem";
 import { CHAINS, isChainId, type ChainKind } from "../chains";
-import { INTENT_VERSION, IntentError, type OrderIntent } from "./types";
+import { SUPPORTED_INTENT_VERSIONS, TIME_IN_FORCE, IntentError, type OrderIntent, type TimeInForce } from "./types";
 
 export const U64_MAX = (BigInt(1) << BigInt(64)) - BigInt(1);
 export const U256_MAX = (BigInt(1) << BigInt(256)) - BigInt(1);
@@ -35,8 +35,15 @@ export function checkAddress(kind: ChainKind, field: string, value: unknown): st
 
 /** Validates the intent and returns its canonical form (checksummed EVM addresses). */
 export function validateIntent(intent: OrderIntent): OrderIntent {
-  if (intent.version !== INTENT_VERSION) {
-    throw new IntentError("unsupported_version", `intent version must be ${INTENT_VERSION}`);
+  if (!(SUPPORTED_INTENT_VERSIONS as readonly unknown[]).includes(intent.version)) {
+    throw new IntentError("unsupported_version", `intent version must be one of ${SUPPORTED_INTENT_VERSIONS.join(", ")}`);
+  }
+  // v1 did not sign a time in force: it is GTC, and an unsigned field may not change that.
+  if (intent.version === 1 && intent.timeInForce !== undefined) {
+    throw new IntentError("invalid_time_in_force", "timeInForce is a v2 field: a v1 intent is GTC");
+  }
+  if (intent.version !== 1 && !TIME_IN_FORCE.includes(intent.timeInForce as TimeInForce)) {
+    throw new IntentError("invalid_time_in_force", "timeInForce must be GTC or IOC");
   }
   if (!isChainId(intent.chain)) throw new IntentError("unknown_chain", `unknown chain: ${String(intent.chain)}`);
   const kind = CHAINS[intent.chain].kind;
@@ -89,6 +96,8 @@ export function intentToJson(intent: OrderIntent) {
     paymentAsset: i.paymentAsset,
     nonce: i.nonce,
     expiresAt: i.expiresAt,
+    // v2 only: the engine refuses `timeInForce` on a v1 intent.
+    ...(i.version !== 1 && { timeInForce: i.timeInForce }),
   };
 }
 

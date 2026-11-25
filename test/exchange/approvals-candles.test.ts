@@ -185,3 +185,35 @@ describe("chart slots", () => {
     expect(pricePrecision([c("5")], 0)).toBe(0);
   });
 });
+
+describe("approval sum with time in force", () => {
+  it("an IOC buy needs quantity / lotSize x its cap price, added to the open GTC orders", () => {
+    // Market buy of 4 lots with a cap of 25.25 USDT (best ask 25.00 + 1%).
+    const cap = BigInt(25_250_000);
+    const iocNeed = orderNeed(order({ side: "buy", remaining: "4", lotSize: "1", limitPrice: cap.toString(), timeInForce: "IOC" }));
+    expect(iocNeed).toEqual({ token: USDT, amount: BigInt(4) * cap });
+    const r = requiredApproval({
+      chain: "solana-devnet",
+      token: USDT,
+      openOrders: [order({ side: "buy", remaining: "2", limitPrice: "100", timeInForce: "GTC" })],
+      newNeed: iocNeed.amount,
+      now: NOW,
+    });
+    expect(r).toEqual({ openNeed: BigInt(200), openCount: 1, newNeed: BigInt(101_000_000), total: BigInt(101_000_200) });
+  });
+
+  it("never counts an earlier IOC order, even while the engine still lists it as live", () => {
+    const r = requiredApproval({
+      chain: "solana-devnet",
+      token: ASSET,
+      openOrders: [
+        order({ remaining: "10", timeInForce: "IOC", status: "partially_filled" }),
+        order({ remaining: "3", timeInForce: "GTC" }),
+        order({ remaining: "2" }), // v1 / older engine: GTC
+      ],
+      newNeed: BigInt(1),
+      now: NOW,
+    });
+    expect(r).toEqual({ openNeed: BigInt(5), openCount: 2, newNeed: BigInt(1), total: BigInt(6) });
+  });
+});

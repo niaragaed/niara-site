@@ -3,8 +3,9 @@
 //
 // Real wallets (Phantom, for example) add instructions before they sign: ComputeBudget
 // priority fees and Lighthouse assertions. Those are accepted, and nothing else is:
-// - the fee payer and the recent blockhash are unchanged, and there are no address
-//   lookup tables and no extra required signers;
+// - the transaction version (v0 here, legacy before), the fee payer and the recent
+//   blockhash are unchanged, and there are no address lookup tables and no extra
+//   required signers;
 // - every original instruction is still there, byte-identical (program, account keys
 //   with their signer/writable flags, and data) and in the same order;
 // - every added instruction belongs to ComputeBudget or Lighthouse;
@@ -28,6 +29,7 @@ const LIGHTHOUSE_LAST_ASSERTION = 17;
 
 export type SignedTxCheckCode =
   | "unreadable"
+  | "version_changed"
   | "fee_payer_changed"
   | "blockhash_changed"
   | "lookup_tables"
@@ -125,6 +127,9 @@ export function compareSignedTransaction(unsigned: Uint8Array, signed: Uint8Arra
   const a = parse(unsigned);
   const b = parse(signed);
 
+  if (a.message.version !== b.message.version) {
+    throw new SignedTxError("version_changed", `a ${a.message.version} transaction came back as ${b.message.version}`);
+  }
   if (a.feePayer !== b.feePayer) {
     throw new SignedTxError("fee_payer_changed", `fee payer ${a.feePayer} became ${b.feePayer}`);
   }

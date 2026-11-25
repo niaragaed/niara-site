@@ -10,6 +10,12 @@
 //
 // USDT is shared by every buy order of the chain, whatever the asset, so a buy
 // on one market counts against the approval a buy on another market relies on.
+//
+// Time in force (intent v2): only GTC orders rest, so only they count as open. An IOC
+// never rests (engine docs/decisions.md): the new order is IOC or GTC, its own need is
+// added, and an earlier IOC is never counted, even if the engine still lists it while
+// its match settles. An IOC buy needs quantity / lotSize × its LIMIT price, which for a
+// market order is the price cap, not the expected price.
 
 import { CHAINS, type ChainId } from "./chains";
 
@@ -25,6 +31,8 @@ export interface OpenOrderLike {
   limitPrice: string;
   /** Unix seconds. */
   expiresAt: number;
+  /** Absent on v1 orders and older engine builds: GTC. */
+  timeInForce?: "GTC" | "IOC";
 }
 
 const LIVE = new Set(["open", "partially_filled"]);
@@ -52,8 +60,8 @@ export interface ApprovalRequirement {
 }
 
 /**
- * The approval `token` needs on `chain` so that the wallet's live orders AND the new
- * one stay covered. Orders past their expiry are left out (they can no longer be
+ * The approval `token` needs on `chain` so that the wallet's live GTC orders AND the
+ * new one (GTC or IOC) stay covered. Orders past their expiry are left out (they can no longer be
  * matched or settled); so are other chains and other tokens.
  */
 export function requiredApproval(args: {
@@ -68,6 +76,7 @@ export function requiredApproval(args: {
   let openCount = 0;
   for (const o of args.openOrders) {
     if (o.chain !== args.chain || !LIVE.has(o.status) || o.expiresAt <= args.now) continue;
+    if (o.timeInForce === "IOC") continue;
     const need = orderNeed(o);
     if (need.amount <= BigInt(0) || !same(args.chain, need.token, args.token)) continue;
     openNeed += need.amount;

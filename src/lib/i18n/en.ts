@@ -245,6 +245,35 @@ export const en = {
       lotsLabel: "Quantity (lots)",
       lotsHint: (perLot: string, symbol: string) => `1 lot = ${perLot} ${symbol}`,
       priceLabel: "Limit price per lot (USDT)",
+      orderTypeGroup: "Order type",
+      limitTab: "Limit (GTC)",
+      marketTab: "Market",
+      limitNote: "Good till cancelled: the part that does not match now rests in the book until it fills, you cancel it, or it expires.",
+      market: {
+        best: (side: "buy" | "sell") => (side === "buy" ? "Best ask" : "Best bid"),
+        slippageLabel: "Slippage tolerance (%)",
+        slippageHint: "1% by default, at most 5%.",
+        slippagePresetsAria: "Slippage presets",
+        invalidSlippage: "Enter a slippage from 0% to 5%, with at most 2 decimals.",
+        cap: (side: "buy" | "sell") =>
+          side === "buy" ? "Price cap per lot (the most you pay)" : "Price floor per lot (the least you receive)",
+        total: (side: "buy" | "sell") => (side === "buy" ? "Maximum total cost" : "Minimum total received"),
+        depth: (lots: string) => `Book depth at or better than the cap, at the last read: ${lots} lots`,
+        ioc: "A market order is immediate or cancel (IOC): it matches now against the book, at the makers' prices and never beyond the cap. Any part that cannot fill at or better than the cap is cancelled, not left in the book.",
+        emptySide: (side: "buy" | "sell") =>
+          side === "buy"
+            ? "Market buy is unavailable: there is no ask in the book to buy from. Place a limit order instead."
+            : "Market sell is unavailable: there is no bid in the book to sell to. Place a limit order instead.",
+        bookLoading: "Reading the order book…",
+        bookError: "The order book could not be read, so a market order's cap cannot be computed.",
+        capMoved: (cap: string) =>
+          `The book changed before signing: the cap is now ${cap} USDT per lot. Review it and place the order again.`,
+        validity: "Signed validity: 1 day, the time its matches have to settle. An IOC never rests in the book.",
+        place: "Sign and place market order",
+      },
+      iocResult: (filled: string, cancelled: string) =>
+        `Immediate or cancel: ${filled} lots matched; ${cancelled} lots could not fill within the cap and were cancelled, not left in the book.`,
+      iocNothing: "Nothing could fill at or better than the cap, so the whole order was cancelled. Nothing will settle and nothing rests in the book.",
       expiryLabel: "Expires in",
       expiry: { "3600": "1 hour", "86400": "1 day", "604800": "7 days", "2592000": "30 days" } as Record<string, string>,
       notional: "Order value",
@@ -358,7 +387,14 @@ export const en = {
         by_wallet: "cancelled by you",
         self_trade_prevention: "cancelled: would trade with your own order",
         below_min_notional: "cancelled: below the minimum order value",
+        ioc_unfilled: "IOC unfilled",
       } as Record<string, string>,
+      timeInForce: { GTC: "GTC", IOC: "IOC" } as Record<string, string>,
+      timeInForceTitle: {
+        GTC: "Good till cancelled: rests in the book until filled, cancelled or expired",
+        IOC: "Immediate or cancel: matched at once; the unfilled part is cancelled",
+      } as Record<string, string>,
+      noMatchesIoc: "No match: nothing could fill within the limit, and an IOC never rests in the book.",
       orderStatus: {
         open: "Open",
         partially_filled: "Partially filled",
