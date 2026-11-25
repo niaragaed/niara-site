@@ -365,6 +365,24 @@ export const en = {
       publicNote:
         "Testnet: the order service lists a wallet's orders by address, without sign-in. A mainnet deployment will require signing in.",
       lots: "lots",
+      limit: (price: string) => `limit ${price}`,
+      limitTitle: {
+        buy: "Signed limit per lot, in USDT: the most this order pays per lot (for a market order, its price cap). Not the price paid.",
+        sell: "Signed limit per lot, in USDT: the least this order accepts per lot (for a market order, its price floor). Not the price received.",
+      } as Record<string, string>,
+      avgFill: (price: string, approx: boolean) => `Avg fill ${approx ? "≈" : ""}${price} USDT/lot`,
+      fillTotal: {
+        buy: {
+          settled: (total: string) => `paid ${total} USDT`,
+          pending: (total: string) => `${total} USDT to pay on settlement`,
+        },
+        sell: {
+          settled: (total: string) => `received ${total} USDT before the trading fee`,
+          pending: (total: string) => `${total} USDT before the trading fee, on settlement`,
+        },
+      } as Record<string, Record<"settled" | "pending", (total: string) => string>>,
+      fillsTitle: "From the fills the order service reports for this order; fills whose settlement failed are not counted.",
+      fillsLoading: "Reading this order's fills…",
       filled: (filled: string, remaining: string) => `Filled ${filled} · remaining ${remaining} lots`,
       placed: "Placed",
       expires: "Expires",

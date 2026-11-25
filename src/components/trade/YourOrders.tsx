@@ -11,6 +11,7 @@ import { ChevronDown, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { explorerTxUrl } from "@/lib/exchange/config";
 import { cancelOrder, fetchOrder, type MatchHistory, type StoredOrder, type WalletMatch } from "@/lib/exchange/engine-api";
+import { coversOrderFills, summarizeFills } from "@/lib/exchange/fills";
 import { formatUnitsExact, unixNow } from "@/lib/exchange/units";
 import { en } from "@/lib/i18n/en";
 import { engineErrorMessage } from "./OrderTicket";
@@ -70,6 +71,36 @@ function OrderMatches({ orderId, usdtDecimals, ioc }: { orderId: string; usdtDec
   );
 }
 
+/**
+ * Average fill price and total from the engine's fills for this order: the
+ * wallet's match list when it holds all of them, else the order's own matches.
+ * Never computed from the signed limit (a cap for market orders).
+ */
+function OrderFills({ order, usdtDecimals }: { order: StoredOrder; usdtDecimals: number }) {
+  const t = en.trade.session;
+  const { matches } = useTrade();
+  const listed = matches?.filter((m) => m.orderId === order.id) ?? [];
+  const hasFills = BigInt(order.filledQuantity) > BigInt(0);
+  const fromList = matches !== undefined && coversOrderFills(listed, order.filledQuantity);
+  const detail = useQuery({
+    queryKey: ["exchange", "order", order.id],
+    queryFn: () => fetchOrder(order.id),
+    enabled: hasFills && matches !== undefined && !fromList,
+  });
+  if (!hasFills) return null;
+  const fills = fromList ? listed : detail.data?.matches;
+  if (!fills) return detail.isFetching ? <p className="mt-1 text-[11px] text-text-muted">{t.fillsLoading}</p> : null;
+  const s = summarizeFills(fills);
+  if (!s) return null;
+  const fmt = (v: bigint) => formatUnitsExact(v, usdtDecimals, true);
+  const total = t.fillTotal[order.side][s.settled ? "settled" : "pending"](fmt(s.total));
+  return (
+    <p className="mt-1 font-mono text-[11px] tabular-nums text-text-secondary" title={t.fillsTitle}>
+      {t.avgFill(fmt(s.averagePrice), !s.exact)} · {total}
+    </p>
+  );
+}
+
 function OrderRow({ order }: { order: StoredOrder }) {
   const t = en.trade.session;
   const { config, terms, listings, refreshWallet } = useTrade();
@@ -111,8 +142,10 @@ function OrderRow({ order }: { order: StoredOrder }) {
           </span>
           <span className="ml-1 text-text-primary">{symbol}</span>
         </button>
-        <span className="font-mono tabular-nums text-text-secondary">
-          {lots(order.quantity, order.lotSize)} {t.lots} · {formatUnitsExact(BigInt(order.limitPrice), usdtDecimals, true)} USDT
+        {/* The signed limit (a price cap for market orders), not what was paid. */}
+        <span className="font-mono tabular-nums text-text-secondary" title={t.limitTitle[order.side]}>
+          {lots(order.quantity, order.lotSize)} {t.lots} · {t.limit(formatUnitsExact(BigInt(order.limitPrice), usdtDecimals, true))}
+          <span className="sr-only"> ({t.limitTitle[order.side]})</span>
         </span>
         <span className="flex items-center gap-1.5">
           {/* Time in force (intent v2); v1 orders and older engine builds are GTC. */}
@@ -133,6 +166,7 @@ function OrderRow({ order }: { order: StoredOrder }) {
         {new Date(order.createdAt).toLocaleString("en-US")} · {t.expires} {new Date(order.expiresAt * 1000).toLocaleString("en-US")}
         {order.cancelReason && ` · ${t.cancelReason[order.cancelReason] ?? order.cancelReason}`}
       </p>
+      <OrderFills order={order} usdtDecimals={usdtDecimals} />
 
       {open && (
         <div className="mt-2">
