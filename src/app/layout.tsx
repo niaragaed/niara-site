@@ -28,6 +28,17 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Niara",
   description: "Niara — decentralized global exchange infrastructure",
+  // Tab icons: transparent mark, dark for light tab bars and light for dark ones.
+  // Source: public/icons (see public/icons/README.md).
+  icons: {
+    icon: [
+      { url: "/icons/icon-dark-mark-16.png", sizes: "16x16", type: "image/png", media: "(prefers-color-scheme: light)" },
+      { url: "/icons/icon-dark-mark-32.png", sizes: "32x32", type: "image/png", media: "(prefers-color-scheme: light)" },
+      { url: "/icons/icon-light-mark-16.png", sizes: "16x16", type: "image/png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icons/icon-light-mark-32.png", sizes: "32x32", type: "image/png", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: [{ url: "/icons/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default async function RootLayout({
