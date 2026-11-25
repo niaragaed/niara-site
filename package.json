@@ -42,5 +42,12 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "4.1.11"
+  },
+  "allowScripts": {
+    "@reown/appkit@1.8.19": true,
+    "bufferutil@4.2.0": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true,
+    "utf-8-validate@6.1.0": true
   }
 }
