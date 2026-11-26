@@ -45,7 +45,7 @@ export const WALLET_DIRECTORY: readonly WalletDirectoryEntry[] = [
   { name: "Trust Wallet", url: "https://trustwallet.com/download", families: ["evm", "solana"], kind: "software", icon: "/wallets/trust.png" },
   { name: "Coinbase Wallet", url: "https://www.coinbase.com/wallet", families: ["evm", "solana"], kind: "software", icon: "/wallets/coinbase.png" },
   { name: "Rabby", url: "https://rabby.io", families: ["evm"], kind: "software", icon: "/wallets/rabby.png" },
-  { name: "OKX Wallet", url: "https://web3.okx.com/download", families: ["evm", "solana"], kind: "software" },
+  { name: "OKX Wallet", url: "https://web3.okx.com/download", families: ["evm", "solana"], kind: "software", icon: "/wallets/okx.png" },
   { name: "Binance Wallet", url: "https://web3.binance.com/en/about", families: ["evm", "solana"], kind: "software", icon: "/wallets/binance.png" },
   { name: "Kraken Wallet", url: "https://www.kraken.com/wallet", families: ["evm", "solana"], kind: "software", icon: "/wallets/kraken.png" },
   { name: "Solflare", url: "https://solflare.com", families: ["solana"], kind: "software", icon: "/wallets/solflare.svg" },
@@ -59,5 +59,5 @@ export const WALLET_DIRECTORY: readonly WalletDirectoryEntry[] = [
     iconOnLight: true,
   },
   { name: "Trezor", url: "https://trezor.io", families: ["evm", "solana"], kind: "hardware", icon: "/wallets/trezor.svg" },
-  { name: "Tangem", url: "https://tangem.com", families: ["evm", "solana"], kind: "hardware" },
+  { name: "Tangem", url: "https://tangem.com", families: ["evm", "solana"], kind: "hardware", icon: "/wallets/tangem.png" },
 ];
