@@ -1,10 +1,11 @@
-// Port of niara-exchange-engine/src/intents/solana.ts (commit ad3a082).
+// Port of niara-exchange-engine/src/intents/solana.ts (commit 057b979).
 // The engine's verifier rebuilds THIS text from the structured intent
 // and checks the signature over it — any different byte = bad_signature.
 // v2 adds one line, `Time in force`, after the limit price; v1 texts are unchanged.
+// v3 (iceberg) adds one more, `Display quantity`, after it; v2 texts are unchanged.
 import { base58 } from "@scure/base";
 import { CHAINS } from "../chains";
-import { IntentError, type OrderIntent, type TimeInForce } from "./types";
+import { ICEBERG_INTENT_VERSION, IntentError, type OrderIntent, type TimeInForce } from "./types";
 import { validateIntent } from "./validate";
 
 /**
@@ -28,6 +29,7 @@ export function solanaIntentMessage(intent: OrderIntent): Uint8Array {
     `Lot size: ${i.lotSize} (asset base units)`,
     `Limit price: ${i.limitPrice} (payment base units per lot)`,
     ...(i.version === 1 ? [] : [`Time in force: ${TIF_TEXT[i.timeInForce!]}`]),
+    ...(i.version === ICEBERG_INTENT_VERSION ? [`Display quantity: ${i.displayQuantity} (asset base units shown in the book at a time)`] : []),
     `Payment asset: ${i.paymentAsset}`,
     `Nonce: ${i.nonce}`,
     `Expires at: ${i.expiresAt} (unix seconds)`,

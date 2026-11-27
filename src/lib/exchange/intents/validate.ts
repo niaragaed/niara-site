@@ -1,10 +1,10 @@
-// Port of niara-exchange-engine/src/intents/validate.ts (commit ad3a082).
+// Port of niara-exchange-engine/src/intents/validate.ts (commit 057b979).
 // Same validation as the server: an intent that passes here passes there (except the
 // market rules and validity window, which belong to the engine).
 import { base58 } from "@scure/base";
 import { getAddress, isAddress } from "viem";
 import { CHAINS, isChainId, type ChainKind } from "../chains";
-import { SUPPORTED_INTENT_VERSIONS, TIME_IN_FORCE, IntentError, type OrderIntent, type TimeInForce } from "./types";
+import { ICEBERG_INTENT_VERSION, SUPPORTED_INTENT_VERSIONS, TIME_IN_FORCE, IntentError, type OrderIntent, type TimeInForce } from "./types";
 
 export const U64_MAX = (BigInt(1) << BigInt(64)) - BigInt(1);
 export const U256_MAX = (BigInt(1) << BigInt(256)) - BigInt(1);
@@ -45,6 +45,10 @@ export function validateIntent(intent: OrderIntent): OrderIntent {
   if (intent.version !== 1 && !TIME_IN_FORCE.includes(intent.timeInForce as TimeInForce)) {
     throw new IntentError("invalid_time_in_force", "timeInForce must be GTC or IOC");
   }
+  // v1 and v2 did not sign a display quantity: they are shown whole.
+  if (intent.version !== ICEBERG_INTENT_VERSION && intent.displayQuantity !== undefined) {
+    throw new IntentError("invalid_display_quantity", "displayQuantity is a v3 field: a v1 or v2 order is shown whole");
+  }
   if (!isChainId(intent.chain)) throw new IntentError("unknown_chain", `unknown chain: ${String(intent.chain)}`);
   const kind = CHAINS[intent.chain].kind;
   const settlement = checkAddress(kind, "settlement", intent.settlement);
@@ -61,6 +65,7 @@ export function validateIntent(intent: OrderIntent): OrderIntent {
   if (intent.quantity % intent.lotSize !== BigInt(0)) {
     throw new IntentError("not_whole_lots", "quantity must be a multiple of lotSize");
   }
+  if (intent.version === ICEBERG_INTENT_VERSION) checkDisplayQuantity(intent);
   // On-chain widths: Solana's `settle` takes u64; EVM takes uint256.
   const max = kind === "solana" ? U64_MAX : U256_MAX;
   const notional = (intent.quantity / intent.lotSize) * intent.limitPrice;
@@ -75,6 +80,27 @@ export function validateIntent(intent: OrderIntent): OrderIntent {
     throw new IntentError("invalid_expiry", "expiresAt is required, in positive integer unix seconds");
   }
   return { ...intent, settlement, wallet, asset, paymentAsset };
+}
+
+/**
+ * Iceberg rules that need no market (v3): GTC only (an IOC never rests, so it has
+ * nothing to hide), and a display quantity of whole lots, at least one lot and less than
+ * the quantity. The minimum order value of each slice is the engine's (a market check).
+ */
+function checkDisplayQuantity(intent: OrderIntent): void {
+  if (intent.timeInForce !== "GTC") {
+    throw new IntentError("iceberg_requires_gtc", "an iceberg order (displayQuantity) must be GTC: an IOC never rests in the book");
+  }
+  const d = intent.displayQuantity;
+  if (typeof d !== "bigint" || d <= BigInt(0)) {
+    throw new IntentError("invalid_display_quantity", "displayQuantity is required in a v3 intent, a positive integer");
+  }
+  if (d % intent.lotSize !== BigInt(0)) {
+    throw new IntentError("invalid_display_quantity", "displayQuantity must be a whole number of lots (a multiple of lotSize)");
+  }
+  if (d >= intent.quantity) {
+    throw new IntentError("invalid_display_quantity", "displayQuantity must be less than quantity (an order shown whole is a v2 order)");
+  }
 }
 
 /**
@@ -96,8 +122,10 @@ export function intentToJson(intent: OrderIntent) {
     paymentAsset: i.paymentAsset,
     nonce: i.nonce,
     expiresAt: i.expiresAt,
-    // v2 only: the engine refuses `timeInForce` on a v1 intent.
+    // v2 and v3: the engine refuses `timeInForce` on a v1 intent.
     ...(i.version !== 1 && { timeInForce: i.timeInForce }),
+    // v3 only, a decimal string: the engine refuses `displayQuantity` on v1 and v2.
+    ...(i.version === ICEBERG_INTENT_VERSION && { displayQuantity: i.displayQuantity!.toString() }),
   };
 }
 
