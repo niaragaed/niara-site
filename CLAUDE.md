@@ -101,7 +101,8 @@ regulatory risk.
 - **Never** persist CPF, date of birth or address in `localStorage`. That data
   lives only in React state.
 - Allowed to persist: currency preference, theme, investor profile result
-  (category).
+  (category), and the totals of this browser's iceberg orders (order id → quantity,
+  order data only: `src/lib/exchange/iceberg.ts`; the engine's public reads hide them).
 - Never commit `.env`, API keys or private keys. The repository is **public**.
 
 ---

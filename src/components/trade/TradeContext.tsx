@@ -4,15 +4,23 @@
 // the order service (`GET /v1/markets`), on-chain terms, and the connected wallet's
 // orders and matches across sessions (`GET /v1/orders`, `GET /v1/matches`).
 // Market data comes only from the engine, Supabase and the chain itself — nothing
-// here is illustrative.
+// here is illustrative. The one local addition: the totals of this browser's iceberg
+// orders, from the signed placement answers (the engine's public reads hide them).
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 import { CHAINS, type ChainId } from "@/lib/exchange/chains";
 import { CHAIN_CONFIG, CHAIN_ORDER, ENGINE_URL, type ChainConfig } from "@/lib/exchange/config";
 import { fetchEquityListings } from "@/lib/exchange/market-data";
+import {
+  ICEBERG_TOTALS_KEY,
+  loadIcebergTotals,
+  saveIcebergTotal,
+  withLocalTotals,
+  type IcebergTotals,
+} from "@/lib/exchange/iceberg";
 import { assertDevnet, readMint, readProgramTerms, solanaConnection } from "@/lib/exchange/solana";
 import { assertEvmChain, evmClient, readEvmToken, readSettlementTerms } from "@/lib/exchange/evm";
 import {
@@ -86,8 +94,18 @@ type TradeState = {
   wallet: string | null;
   /** Problems that block orders on this chain (empty = orders allowed). */
   blockers: string[];
-  /** All of the wallet's orders on this chain, newest first. */
+  /**
+   * All of the wallet's orders on this chain, newest first. Icebergs placed from this
+   * browser have `quantity` and `remaining` filled in from their signed total; others
+   * keep them null (total hidden).
+   */
   orders: StoredOrder[] | undefined;
+  /** This browser's iceberg totals (order id → asset base units), for fresh order lists. */
+  icebergTotals: IcebergTotals;
+  /** False until the totals were read from localStorage (after mount). */
+  icebergTotalsReady: boolean;
+  /** Keeps an iceberg's signed total from the placement answer. */
+  rememberIcebergTotal: (orderId: string, total: bigint) => void;
   /** False when the engine had more pages than we read (approval sums are then refused). */
   ordersComplete: boolean;
   ordersError: unknown;
@@ -224,6 +242,37 @@ export function TradeProvider({ children, initialAsset }: { children: ReactNode;
     refetchInterval: (q) => (q.state.data?.items.some((m) => UNSETTLED.has(m.status)) ? 5_000 : false),
   });
 
+  // Read after mount only (no localStorage on the server; no hydration mismatch), and
+  // follow other tabs of this site.
+  const [icebergTotals, setIcebergTotals] = useState<IcebergTotals>({});
+  const [icebergTotalsReady, setIcebergTotalsReady] = useState(false);
+  useEffect(() => {
+    const read = () => {
+      try {
+        setIcebergTotals(loadIcebergTotals(window.localStorage));
+      } catch {
+        // Storage blocked: totals stay unknown, icebergs show "total hidden".
+      }
+    };
+    read();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
+    setIcebergTotalsReady(true);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === ICEBERG_TOTALS_KEY) read();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+  const rememberIcebergTotal = useCallback((orderId: string, total: bigint) => {
+    try {
+      setIcebergTotals(saveIcebergTotal(window.localStorage, orderId, total));
+    } catch {
+      setIcebergTotals((prev) => ({ ...prev, [orderId]: total.toString() }));
+    }
+  }, []);
+  const rawOrders = ordersQuery.data?.items;
+  const orders = useMemo(() => (rawOrders ? withLocalTotals(rawOrders, icebergTotals) : undefined), [rawOrders, icebergTotals]);
+
   const refreshWallet = useCallback(async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["exchange", "wallet-orders", chain, wallet] }),
@@ -274,7 +323,10 @@ export function TradeProvider({ children, initialAsset }: { children: ReactNode;
     termsError: termsQuery.error,
     wallet,
     blockers,
-    orders: ordersQuery.data?.items,
+    orders,
+    icebergTotals,
+    icebergTotalsReady,
+    rememberIcebergTotal,
     ordersComplete: ordersQuery.data?.complete ?? true,
     ordersError: ordersQuery.error,
     matches: matchesQuery.data?.items,

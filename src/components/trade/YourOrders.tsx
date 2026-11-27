@@ -5,6 +5,10 @@
 // cancelled with a signed message), `GET /v1/orders/:id` for one order's matches,
 // and `GET /v1/matches?chain=&wallet=` for settlements. "Settled" only appears with
 // the transaction hash and an explorer link.
+//
+// Icebergs (intent v3): the engine's public reads hide the total and the remainder. When
+// this browser placed the order, TradeContext filled them in from the signed total
+// ("visible X of Y"); otherwise the row says "total hidden".
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
@@ -12,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { explorerTxUrl } from "@/lib/exchange/config";
 import { cancelOrder, fetchOrder, type MatchHistory, type StoredOrder, type WalletMatch } from "@/lib/exchange/engine-api";
 import { coversOrderFills, summarizeFills } from "@/lib/exchange/fills";
+import { isIcebergOrder } from "@/lib/exchange/iceberg";
 import { formatUnitsExact, unixNow } from "@/lib/exchange/units";
 import { en } from "@/lib/i18n/en";
 import { registerRecordUrl } from "@/lib/site-links";
@@ -117,6 +122,9 @@ function OrderRow({ order }: { order: StoredOrder }) {
   const symbol = listings?.find((l) => l.asset === order.asset)?.symbol ?? short(order.asset);
   const live = LIVE.has(order.status) && order.expiresAt > now;
   const tif = order.timeInForce ?? "GTC";
+  const iceberg = isIcebergOrder(order);
+  // The engine shows an iceberg's current slice (0 once out of the book).
+  const visibleLots = iceberg ? lots(order.visibleQuantity ?? "0", order.lotSize) : null;
 
   async function doCancel() {
     if (!config.ready) return;
@@ -149,7 +157,8 @@ function OrderRow({ order }: { order: StoredOrder }) {
         </button>
         {/* The signed limit (a price cap for market orders), not what was paid. */}
         <span className="font-mono tabular-nums text-text-secondary" title={t.limitTitle[order.side]}>
-          {lots(order.quantity, order.lotSize)} {t.lots} · {t.limit(formatUnitsExact(BigInt(order.limitPrice), usdtDecimals, true))}
+          {order.quantity !== null && `${lots(order.quantity, order.lotSize)} ${t.lots} · `}
+          {t.limit(formatUnitsExact(BigInt(order.limitPrice), usdtDecimals, true))}
           <span className="sr-only"> ({t.limitTitle[order.side]})</span>
         </span>
         <span className="flex items-center gap-1.5">
@@ -161,13 +170,32 @@ function OrderRow({ order }: { order: StoredOrder }) {
             <span className="sr-only">{t.timeInForceTitle[tif]}: </span>
             {t.timeInForce[tif]}
           </span>
+          {iceberg && (
+            <span title={t.iceberg.badgeTitle} className="rounded-full border border-accent-violet/40 px-2 py-0.5 font-mono text-[10px] text-accent-violet">
+              <span className="sr-only">{t.iceberg.badgeTitle}: </span>
+              {t.iceberg.badge}
+            </span>
+          )}
           <span className="rounded-full border border-border px-2 py-0.5 text-text-primary">
             {t.orderStatus[order.status] ?? order.status}
           </span>
         </span>
       </div>
+      {iceberg && (
+        <p
+          className="mt-1 font-mono text-[11px] tabular-nums text-text-secondary"
+          title={order.remaining !== null ? t.iceberg.visibleOfTitle : t.iceberg.hiddenTitle}
+        >
+          {order.remaining !== null
+            ? t.iceberg.visibleOf(visibleLots as string, lots(order.remaining, order.lotSize))
+            : t.iceberg.hidden(visibleLots as string)}
+        </p>
+      )}
       <p className="mt-1 text-[11px] text-text-muted">
-        {t.filled(lots(order.filledQuantity, order.lotSize), lots(order.remaining, order.lotSize))} · {t.placed}{" "}
+        {order.remaining !== null
+          ? t.filled(lots(order.filledQuantity, order.lotSize), lots(order.remaining, order.lotSize))
+          : t.filledOnly(lots(order.filledQuantity, order.lotSize))}{" "}
+        · {t.placed}{" "}
         {new Date(order.createdAt).toLocaleString("en-US")} · {t.expires} {new Date(order.expiresAt * 1000).toLocaleString("en-US")}
         {order.cancelReason && ` · ${t.cancelReason[order.cancelReason] ?? order.cancelReason}`}
       </p>

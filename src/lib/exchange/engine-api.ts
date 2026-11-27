@@ -38,6 +38,10 @@ export interface EngineOrder {
   expiresAt: number;
   /** Engine ad3a082+. Absent from older builds: GTC. */
   timeInForce?: "GTC" | "IOC";
+  /** Engine 057b979+: an iceberg's signed display quantity; null for an order shown whole. */
+  displayQuantity?: string | null;
+  /** Engine 057b979+: an iceberg's current visible slice; null for an order shown whole. */
+  visibleQuantity?: string | null;
   filledQuantity: string;
   remaining: string;
   status: OrderStatus;
@@ -91,6 +95,7 @@ async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Pr
   return json as T;
 }
 
+/** The answer to the wallet's signed placement: the only one with an iceberg's total. */
 export function submitOrder(intent: OrderIntent, signature: string) {
   return call<{ order: EngineOrder; matches: EngineMatch[] }>("POST", "/v1/orders", {
     intent: intentToJson(intent),
@@ -143,8 +148,16 @@ export interface EngineChainMarkets {
   markets: EngineMarket[];
 }
 
-/** A stored order as `GET /v1/orders` and `GET /v1/orders/:id` return it. */
-export interface StoredOrder extends Omit<EngineOrder, "cancelReason"> {
+/**
+ * A stored order as `GET /v1/orders` and `GET /v1/orders/:id` return it. These reads are
+ * public, so for an iceberg the engine returns `quantity` and `remaining` as null (they
+ * would show the hidden quantity) and `visibleQuantity` as 0 once out of the book. The
+ * wallet's own total comes from the signed placement answer (`EngineOrder`), kept
+ * locally (iceberg.ts).
+ */
+export interface StoredOrder extends Omit<EngineOrder, "cancelReason" | "quantity" | "remaining"> {
+  quantity: string | null;
+  remaining: string | null;
   seq: number;
   paymentAsset: string;
   nonce: string;

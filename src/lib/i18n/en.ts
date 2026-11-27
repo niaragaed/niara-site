@@ -403,6 +403,17 @@ export const en = {
       fillsTitle: "From the fills the order service reports for this order; fills whose settlement failed are not counted.",
       fillsLoading: "Reading this order's fills…",
       filled: (filled: string, remaining: string) => `Filled ${filled} · remaining ${remaining} lots`,
+      filledOnly: (filled: string) => `Filled ${filled} lots`,
+      iceberg: {
+        badge: "Iceberg",
+        badgeTitle: "Iceberg: only a visible slice rests in the book at a time",
+        visibleOf: (visible: string, remaining: string) => `Iceberg · visible ${visible} of ${remaining} lots`,
+        visibleOfTitle:
+          "The total is the one your wallet signed, kept in this browser; the order service does not publish it.",
+        hidden: (visible: string) => `Iceberg · visible ${visible} · total hidden`,
+        hiddenTitle:
+          "The order service does not publish an iceberg's total, and this browser does not have the total your wallet signed (the order was placed from another device or browser).",
+      },
       placed: "Placed",
       expires: "Expires",
       noMatches: "No match yet: the order rests in the book.",

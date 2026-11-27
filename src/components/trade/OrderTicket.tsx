@@ -23,7 +23,7 @@ import {
   submitOrder,
 } from "@/lib/exchange/engine-api";
 import { requiredApproval } from "@/lib/exchange/approvals";
-import { checkVisibleLots } from "@/lib/exchange/iceberg";
+import { checkVisibleLots, withLocalTotals } from "@/lib/exchange/iceberg";
 import { fetchBook } from "@/lib/exchange/market-data";
 import { DelegationMismatchError, vaultAuthority } from "@/lib/exchange/solana";
 import { SignedTxError } from "@/lib/exchange/solana-tx-check";
@@ -107,7 +107,21 @@ export function blockerMessage(blockers: readonly string[]): string | null {
 export function OrderTicket() {
   const t = en.trade.ticket;
   const trade = useTrade();
-  const { chain, config, listing, terms, wallet, blockers, chainInfo, orders, ordersComplete, refreshWallet } = trade;
+  const {
+    chain,
+    config,
+    listing,
+    terms,
+    wallet,
+    blockers,
+    chainInfo,
+    orders,
+    ordersComplete,
+    refreshWallet,
+    icebergTotals,
+    icebergTotalsReady,
+    rememberIcebergTotal,
+  } = trade;
   const actions = useChainActions(config);
   const kind = CHAINS[chain].kind;
 
@@ -217,7 +231,8 @@ export function OrderTicket() {
     terms !== undefined &&
     chainInfo !== null &&
     orders !== undefined &&
-    ordersComplete;
+    ordersComplete &&
+    icebergTotalsReady;
 
   async function place() {
     setFormError(null);
@@ -286,7 +301,14 @@ export function OrderTicket() {
     try {
       const all = await fetchAllPages((before) => fetchWalletOrders(chain, wallet, before, 100), 20);
       if (!all.complete) return setFormError(t.tooManyOrders);
-      const req = requiredApproval({ chain, token: needNow.token, openOrders: all.items, newNeed: needNow.amount, now: unixNow() });
+      const req = requiredApproval({
+        chain,
+        token: needNow.token,
+        // Icebergs placed from this browser: their remainder from the signed total kept here.
+        openOrders: withLocalTotals(all.items, icebergTotals),
+        newNeed: needNow.amount,
+        now: unixNow(),
+      });
       // An open iceberg whose hidden remainder is unknown here: any total would under-cover it.
       if (req.unknownCount > 0) return setFormError(t.icebergTotalUnknown);
       total = req.total;
@@ -331,6 +353,11 @@ export function OrderTicket() {
       // 4. Submit to the order service.
       setPhase({ step: "submit", approvalTx });
       const res = await submitOrder(intent, signature);
+      // Iceberg: the signed answer is the only one with the total (the public reads hide
+      // it), so keep it locally before anything re-reads the wallet's orders.
+      if (intent.displayQuantity) {
+        rememberIcebergTotal(res.order.id, res.order.quantity ? BigInt(res.order.quantity) : intent.quantity);
+      }
       const lotsOf = (q: string | undefined) => (q ? (BigInt(q) / listing.lotSize).toString() : "0");
       setPhase({
         step: "done",
