@@ -3,6 +3,8 @@
 // Real order ticket (intent v2): Limit = GTC at the price typed; Market = IOC whose
 // signed limit is a price cap, the best opposite price of the book ± the slippage
 // (1% default, 5% max). The cap and the maximum total are shown before signing.
+// Limit only: an optional iceberg (intent v3) signs a visible quantity in lots; plain
+// orders keep signing v2.
 // It builds the OrderIntent exactly as the engine defines it, the
 // wallet signs it, the delegate/allowance is raised to EXACTLY what the wallet's open
 // orders on that token plus this one need (a new approval replaces the previous one,
@@ -21,10 +23,12 @@ import {
   submitOrder,
 } from "@/lib/exchange/engine-api";
 import { requiredApproval } from "@/lib/exchange/approvals";
+import { checkVisibleLots } from "@/lib/exchange/iceberg";
 import { fetchBook } from "@/lib/exchange/market-data";
 import { DelegationMismatchError, vaultAuthority } from "@/lib/exchange/solana";
 import { SignedTxError } from "@/lib/exchange/solana-tx-check";
 import {
+  ICEBERG_INTENT_VERSION,
   INTENT_VERSION,
   IntentError,
   MARKET_ORDER_DEFAULT_SLIPPAGE_BPS,
@@ -69,6 +73,8 @@ type Phase =
       matches: number;
       approvalTx: string | null;
       timeInForce: TimeInForce;
+      /** Iceberg: the signed visible lots and the order's total lots. */
+      iceberg: { visibleLots: string; totalLots: string } | null;
       /** IOC: lots matched and lots cancelled (never left in the book). */
       filledLots: string;
       cancelledLots: string;
@@ -110,6 +116,8 @@ export function OrderTicket() {
   const [slippageText, setSlippageText] = useState(String(MARKET_ORDER_DEFAULT_SLIPPAGE_BPS / 100));
   const [lotsText, setLotsText] = useState("");
   const [priceText, setPriceText] = useState("");
+  const [icebergOn, setIcebergOn] = useState(false);
+  const [visibleText, setVisibleText] = useState("");
   const [expirySecs, setExpirySecs] = useState(86400);
   const [phase, setPhase] = useState<Phase>({ step: "form" });
   const [formError, setFormError] = useState<string | null>(null);
@@ -153,6 +161,22 @@ export function OrderTicket() {
     if (lots === null || price === null || price <= BigInt(0)) return { lots, price, quantity: null, notional: null };
     return { lots, price, quantity: lots * listing.lotSize, notional: lots * price };
   })();
+
+  // Iceberg (Limit tab only; a market order is IOC and never rests, so it has nothing to hide).
+  const isIceberg = !isMarket && icebergOn;
+  const visibleLots = /^[1-9][0-9]*$/.test(visibleText.trim()) ? BigInt(visibleText.trim()) : null;
+  const visibleProblem =
+    isIceberg && parsed?.lots && parsed.price && chainInfo
+      ? checkVisibleLots({ visibleLots, lots: parsed.lots, limitPrice: parsed.price, minOrderNotional: chainInfo.minOrderNotional })
+      : null;
+  const visibleMessage = (problem: NonNullable<typeof visibleProblem>) =>
+    problem === "invalid"
+      ? t.iceberg.invalidVisible
+      : problem === "not_below"
+        ? t.iceberg.visibleNotBelow
+        : t.iceberg.visibleBelowMin(formatUnitsExact(chainInfo?.minOrderNotional ?? BigInt(0), usdtDecimals ?? 0, true));
+  // Shown once the user has typed a visible quantity (an empty field is not an error yet).
+  const visibleHint = visibleProblem && visibleText.trim() !== "" ? visibleMessage(visibleProblem) : null;
 
   // What `settle` can debit for THIS order (spec §3.5): the seller's asset, the
   // buyer's maximum payment in USDT.
@@ -205,6 +229,15 @@ export function OrderTicket() {
       return setFormError(t.invalidPrice(usdtDecimals));
     }
     if (parsed.notional < chainInfo.minOrderNotional) return setFormError(t.belowMin);
+    if (isIceberg) {
+      const problem = checkVisibleLots({
+        visibleLots,
+        lots: parsed.lots,
+        limitPrice: parsed.price,
+        minOrderNotional: chainInfo.minOrderNotional,
+      });
+      if (problem) return setFormError(visibleMessage(problem));
+    }
 
     // Market: re-read the book and require the cap shown to be the cap signed.
     if (isMarket) {
@@ -221,12 +254,14 @@ export function OrderTicket() {
     }
     const timeInForce: TimeInForce = isMarket ? "IOC" : "GTC";
 
-    // 1. Build the intent exactly as the engine's src/intents (v2: time in force signed).
+    // 1. Build the intent exactly as the engine's src/intents (v2: time in force signed;
+    //    v3 iceberg: the visible quantity signed too).
     let intent: OrderIntent;
     try {
       intent = validateIntent({
-        version: INTENT_VERSION,
+        version: isIceberg ? ICEBERG_INTENT_VERSION : INTENT_VERSION,
         timeInForce,
+        ...(isIceberg && { displayQuantity: (visibleLots as bigint) * listing.lotSize }),
         chain,
         settlement: config.settlement,
         wallet,
@@ -301,6 +336,9 @@ export function OrderTicket() {
         matches: res.matches.length,
         approvalTx,
         timeInForce,
+        iceberg: intent.displayQuantity
+          ? { visibleLots: lotsOf(intent.displayQuantity.toString()), totalLots: lotsOf(intent.quantity.toString()) }
+          : null,
         filledLots: lotsOf(res.order.filledQuantity),
         // An IOC leaves nothing in the book: what did not fill was cancelled.
         cancelledLots: res.order.cancelReason === "ioc_unfilled" ? lotsOf(res.order.remaining) : "0",
@@ -317,6 +355,7 @@ export function OrderTicket() {
     setPhase({ step: "form" });
     setLotsText("");
     setPriceText("");
+    setVisibleText("");
   }
 
   const approvalLink = (tx: string | null | undefined) =>
@@ -340,8 +379,9 @@ export function OrderTicket() {
     try {
       return new TextDecoder().decode(
         solanaIntentMessage({
-          version: INTENT_VERSION,
+          version: isIceberg ? ICEBERG_INTENT_VERSION : INTENT_VERSION,
           timeInForce: isMarket ? "IOC" : "GTC",
+          ...(isIceberg && visibleLots !== null && { displayQuantity: visibleLots * listing.lotSize }),
           chain,
           settlement: config.settlement,
           wallet,
@@ -387,6 +427,9 @@ export function OrderTicket() {
           <span className="text-xs text-text-secondary">
             {t.acceptedStatus(en.trade.session.orderStatus[phase.status] ?? phase.status, phase.matches)}
           </span>
+          {phase.iceberg && (
+            <span className="text-xs text-text-secondary">{t.iceberg.accepted(phase.iceberg.visibleLots, phase.iceberg.totalLots)}</span>
+          )}
           {phase.timeInForce === "IOC" && (
             <span className="text-xs text-text-secondary">
               {phase.filledLots === "0" ? t.iocNothing : t.iocResult(phase.filledLots, phase.cancelledLots)}
@@ -530,6 +573,17 @@ export function OrderTicket() {
               </select>
             </div>
             <p className="text-[11px] text-text-muted">{t.limitNote}</p>
+            <IcebergFields
+              on={icebergOn}
+              setOn={(v) => {
+                setIcebergOn(v);
+                setFormError(null);
+              }}
+              busy={busy}
+              visibleText={visibleText}
+              setVisibleText={setVisibleText}
+              hint={visibleHint}
+            />
             </>
             )}
           </div>
@@ -672,7 +726,7 @@ export function OrderTicket() {
           <button
             type="button"
             onClick={() => void place()}
-            disabled={!canOrder || busy || !parsed?.notional || marketUnavailable}
+            disabled={!canOrder || busy || !parsed?.notional || marketUnavailable || (isIceberg && visibleProblem !== null)}
             className="mt-4 w-full rounded-md bg-gradient-primary px-4 py-2 text-sm font-semibold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-cyan disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isMarket ? t.market.place : t.place}
@@ -680,6 +734,67 @@ export function OrderTicket() {
         </>
       )}
     </section>
+  );
+}
+
+/** Limit tab only: the iceberg toggle and its visible quantity, in lots. */
+function IcebergFields({
+  on,
+  setOn,
+  busy,
+  visibleText,
+  setVisibleText,
+  hint,
+}: {
+  on: boolean;
+  setOn: (v: boolean) => void;
+  busy: boolean;
+  visibleText: string;
+  setVisibleText: (v: string) => void;
+  /** Why the visible quantity cannot be signed, once typed. */
+  hint: string | null;
+}) {
+  const t = en.trade.ticket.iceberg;
+  return (
+    <div className="rounded-md border border-border bg-bg-elevated p-3">
+      <label htmlFor="ticket-iceberg" className="flex cursor-pointer items-start gap-2 text-xs">
+        <input
+          id="ticket-iceberg"
+          type="checkbox"
+          checked={on}
+          disabled={busy}
+          onChange={(e) => setOn(e.target.checked)}
+          className="mt-0.5 h-3.5 w-3.5 accent-accent-blue focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue"
+        />
+        <span>
+          <span className="font-semibold text-text-primary">{t.toggle}</span>
+          <span className="block text-[11px] text-text-muted">{t.toggleHint}</span>
+        </span>
+      </label>
+      {on && (
+        <div className="mt-3">
+          <label htmlFor="ticket-visible" className="mb-1 block text-xs text-text-muted">
+            {t.visibleLabel}
+          </label>
+          <input
+            id="ticket-visible"
+            inputMode="numeric"
+            value={visibleText}
+            disabled={busy}
+            aria-invalid={hint !== null}
+            aria-describedby={hint ? "ticket-visible-hint" : undefined}
+            onChange={(e) => setVisibleText(e.target.value)}
+            placeholder="0"
+            className="w-full rounded-md border border-border bg-bg-base px-3 py-2 font-mono text-sm tabular-nums text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue"
+          />
+          {hint && (
+            <p id="ticket-visible-hint" className="mt-1 text-[11px] text-negative">
+              {hint}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

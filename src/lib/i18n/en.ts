@@ -249,6 +249,16 @@ export const en = {
       limitTab: "Limit (GTC)",
       marketTab: "Market",
       limitNote: "Good till cancelled: the part that does not match now rests in the book until it fills, you cancel it, or it expires.",
+      iceberg: {
+        toggle: "Iceberg",
+        toggleHint: "Show only part of the order in the book at a time.",
+        visibleLabel: "Visible quantity (lots)",
+        invalidVisible: "Enter a whole number of visible lots (at least 1).",
+        visibleNotBelow: "The visible quantity must be less than the order quantity.",
+        visibleBelowMin: (min: string) =>
+          `The visible part at this price is below this network's minimum order value (${min} USDT). Show more lots at a time or raise the price.`,
+        accepted: (visible: string, total: string) => `Iceberg: the book shows at most ${visible} of your ${total} lots at a time.`,
+      },
       market: {
         best: (side: "buy" | "sell") => (side === "buy" ? "Best ask" : "Best bid"),
         slippageLabel: "Slippage tolerance (%)",
@@ -446,6 +456,9 @@ export const en = {
         too_many_open_orders: "Too many open orders for this wallet on this network.",
         bad_signature: "The order service rejected the signature.",
         expired: "The intent expired before it reached the order service.",
+        display_below_min_notional: "The visible part of the iceberg is below this network's minimum order value.",
+        invalid_display_quantity: "The visible quantity is not valid: whole lots, at least one, and less than the order quantity.",
+        iceberg_requires_gtc: "An iceberg order must be a limit (GTC) order.",
         expiry_too_far: "The expiry is further than this network allows.",
         chain_not_ready: "This network is not ready for orders on the order service.",
         wrong_settlement: "The intent names a different settlement program or contract than the order service.",
