@@ -16,6 +16,13 @@
 // added, and an earlier IOC is never counted, even if the engine still lists it while
 // its match settles. An IOC buy needs quantity / lotSize × its LIMIT price, which for a
 // market order is the price cap, not the expected price.
+//
+// Iceberg (intent v3): covered for its WHOLE remainder, hidden part included, like any
+// order (engine docs/decisions.md item 15). The engine's public order reads return an
+// iceberg's `remaining` as null (it would show the hidden quantity); the caller fills it
+// from the total the wallet signed when it knows it. An open order whose remainder is
+// still unknown is counted in `unknownCount`, and the caller must refuse: approving
+// without it would under-cover that order.
 
 import { CHAINS, type ChainId } from "./chains";
 
@@ -25,8 +32,8 @@ export interface OpenOrderLike {
   asset: string;
   paymentAsset: string;
   status: string;
-  /** Asset base units still open (decimal string). */
-  remaining: string;
+  /** Asset base units still open (decimal string); null for an iceberg whose total is not known here. */
+  remaining: string | null;
   lotSize: string;
   limitPrice: string;
   /** Unix seconds. */
@@ -41,11 +48,16 @@ function same(chain: ChainId, a: string, b: string): boolean {
   return CHAINS[chain].kind === "evm" ? a.toLowerCase() === b.toLowerCase() : a === b;
 }
 
-/** What `settle` can still move from this order's wallet, and on which token. */
-export function orderNeed(o: OpenOrderLike): { token: string; amount: bigint } {
+/**
+ * What `settle` can still move from this order's wallet, and on which token. The amount
+ * is null when the remainder is unknown (an iceberg placed from another device).
+ */
+export function orderNeed(o: OpenOrderLike): { token: string; amount: bigint | null } {
+  const token = o.side === "sell" ? o.asset : o.paymentAsset;
+  if (o.remaining === null) return { token, amount: null };
   const remaining = BigInt(o.remaining);
-  if (o.side === "sell") return { token: o.asset, amount: remaining };
-  return { token: o.paymentAsset, amount: (remaining / BigInt(o.lotSize)) * BigInt(o.limitPrice) };
+  if (o.side === "sell") return { token, amount: remaining };
+  return { token, amount: (remaining / BigInt(o.lotSize)) * BigInt(o.limitPrice) };
 }
 
 export interface ApprovalRequirement {
@@ -53,6 +65,12 @@ export interface ApprovalRequirement {
   openNeed: bigint;
   /** How many open orders draw on this token. */
   openCount: number;
+  /**
+   * Open orders on this token whose remainder is unknown (icebergs whose signed total is
+   * not on this device). Not in `openNeed`: when above 0, `total` would under-cover them,
+   * so the caller must not approve it.
+   */
+  unknownCount: number;
   /** What the new order needs. */
   newNeed: bigint;
   /** openNeed + newNeed: the approval that covers everything. */
@@ -74,13 +92,19 @@ export function requiredApproval(args: {
 }): ApprovalRequirement {
   let openNeed = BigInt(0);
   let openCount = 0;
+  let unknownCount = 0;
   for (const o of args.openOrders) {
     if (o.chain !== args.chain || !LIVE.has(o.status) || o.expiresAt <= args.now) continue;
     if (o.timeInForce === "IOC") continue;
     const need = orderNeed(o);
-    if (need.amount <= BigInt(0) || !same(args.chain, need.token, args.token)) continue;
+    if (!same(args.chain, need.token, args.token)) continue;
+    if (need.amount === null) {
+      unknownCount += 1;
+      continue;
+    }
+    if (need.amount <= BigInt(0)) continue;
     openNeed += need.amount;
     openCount += 1;
   }
-  return { openNeed, openCount, newNeed: args.newNeed, total: openNeed + args.newNeed };
+  return { openNeed, openCount, unknownCount, newNeed: args.newNeed, total: openNeed + args.newNeed };
 }

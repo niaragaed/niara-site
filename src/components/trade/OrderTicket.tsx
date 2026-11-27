@@ -286,7 +286,10 @@ export function OrderTicket() {
     try {
       const all = await fetchAllPages((before) => fetchWalletOrders(chain, wallet, before, 100), 20);
       if (!all.complete) return setFormError(t.tooManyOrders);
-      total = requiredApproval({ chain, token: needNow.token, openOrders: all.items, newNeed: needNow.amount, now: unixNow() }).total;
+      const req = requiredApproval({ chain, token: needNow.token, openOrders: all.items, newNeed: needNow.amount, now: unixNow() });
+      // An open iceberg whose hidden remainder is unknown here: any total would under-cover it.
+      if (req.unknownCount > 0) return setFormError(t.icebergTotalUnknown);
+      total = req.total;
       cov = await actions.readCoverage(wallet, needNow.token);
     } catch (e) {
       return setFormError(e instanceof EngineError ? engineErrorMessage(e) : en.trade.errors.chainRead);
@@ -620,7 +623,9 @@ export function OrderTicket() {
             <div className="mt-3 rounded-md border border-border bg-bg-elevated p-3 text-xs">
               <p className="font-semibold text-text-primary">{t.approvalLabel}</p>
               <p className="mt-1 text-text-secondary">{t.approvalWhy}</p>
-              {coverage.data && requirement ? (
+              {requirement && requirement.unknownCount > 0 ? (
+                <p className="mt-1 text-negative">{t.icebergTotalUnknown}</p>
+              ) : coverage.data && requirement ? (
                 <>
                   <dl className="mt-2 space-y-1">
                     <div className="flex justify-between gap-3">
@@ -771,6 +776,7 @@ function IcebergFields({
           <span className="block text-[11px] text-text-muted">{t.toggleHint}</span>
         </span>
       </label>
+      {on && <p className="mt-2 text-[11px] text-warning">{t.approvalNote}</p>}
       {on && (
         <div className="mt-3">
           <label htmlFor="ticket-visible" className="mb-1 block text-xs text-text-muted">

@@ -252,6 +252,7 @@ export const en = {
       iceberg: {
         toggle: "Iceberg",
         toggleHint: "Show only part of the order in the book at a time.",
+        approvalNote: "The book shows only the visible part. The on-chain approval is public and covers the whole order.",
         visibleLabel: "Visible quantity (lots)",
         invalidVisible: "Enter a whole number of visible lots (at least 1).",
         visibleNotBelow: "The visible quantity must be less than the order quantity.",
@@ -330,6 +331,8 @@ export const en = {
         "Your balance covers this order but not all your open orders on this token: some of them may be marked stale.",
       tooManyOrders:
         "Your order history on this network is longer than this page reads, so the approval your open orders need cannot be computed safely. Ordering is disabled.",
+      icebergTotalUnknown:
+        "One of your open iceberg orders on this token was placed from another device or browser, so its hidden total is not known here and the approval your open orders need cannot be computed safely. Place this order from the device that placed the iceberg, or cancel that iceberg first.",
       overflow: "Amounts are too large for this network.",
       engineNotConfigured: "The order service URL is not configured in this deployment.",
       blocked: {

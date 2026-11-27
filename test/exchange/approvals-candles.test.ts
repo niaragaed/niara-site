@@ -39,7 +39,7 @@ describe("approval sum", () => {
       newNeed: BigInt(5),
       now: NOW,
     });
-    expect(r).toEqual({ openNeed: BigInt(13), openCount: 2, newNeed: BigInt(5), total: BigInt(18) });
+    expect(r).toEqual({ openNeed: BigInt(13), openCount: 2, unknownCount: 0, newNeed: BigInt(5), total: BigInt(18) });
   });
 
   it("counts every buy order of the chain against USDT, whatever the asset", () => {
@@ -75,7 +75,7 @@ describe("approval sum", () => {
       newNeed: BigInt(5),
       now: NOW,
     });
-    expect(r).toEqual({ openNeed: BigInt(0), openCount: 0, newNeed: BigInt(5), total: BigInt(5) });
+    expect(r).toEqual({ openNeed: BigInt(0), openCount: 0, unknownCount: 0, newNeed: BigInt(5), total: BigInt(5) });
   });
 
   it("compares EVM addresses case-insensitively", () => {
@@ -196,10 +196,10 @@ describe("approval sum with time in force", () => {
       chain: "solana-devnet",
       token: USDT,
       openOrders: [order({ side: "buy", remaining: "2", limitPrice: "100", timeInForce: "GTC" })],
-      newNeed: iocNeed.amount,
+      newNeed: iocNeed.amount as bigint,
       now: NOW,
     });
-    expect(r).toEqual({ openNeed: BigInt(200), openCount: 1, newNeed: BigInt(101_000_000), total: BigInt(101_000_200) });
+    expect(r).toEqual({ openNeed: BigInt(200), openCount: 1, unknownCount: 0, newNeed: BigInt(101_000_000), total: BigInt(101_000_200) });
   });
 
   it("never counts an earlier IOC order, even while the engine still lists it as live", () => {
@@ -214,6 +214,43 @@ describe("approval sum with time in force", () => {
       newNeed: BigInt(1),
       now: NOW,
     });
-    expect(r).toEqual({ openNeed: BigInt(5), openCount: 2, newNeed: BigInt(1), total: BigInt(6) });
+    expect(r).toEqual({ openNeed: BigInt(5), openCount: 2, unknownCount: 0, newNeed: BigInt(1), total: BigInt(6) });
+  });
+});
+
+describe("approval sum with iceberg orders", () => {
+  it("covers an iceberg's whole remainder, hidden part included, when its total is known", () => {
+    // The caller filled `remaining` from the signed total: 10 lots left, 2 visible.
+    const r = requiredApproval({
+      chain: "solana-devnet",
+      token: ASSET,
+      openOrders: [order({ remaining: "10" })],
+      newNeed: BigInt(8), // a new iceberg: the whole order, not its visible slice
+      now: NOW,
+    });
+    expect(r).toEqual({ openNeed: BigInt(10), openCount: 1, unknownCount: 0, newNeed: BigInt(8), total: BigInt(18) });
+  });
+
+  it("counts an open iceberg with an unknown remainder apart, so the caller refuses", () => {
+    expect(orderNeed(order({ side: "buy", remaining: null }))).toEqual({ token: USDT, amount: null });
+    const r = requiredApproval({
+      chain: "solana-devnet",
+      token: ASSET,
+      openOrders: [order({ remaining: null }), order({ remaining: "3" }), order({ remaining: null, asset: OTHER })],
+      newNeed: BigInt(1),
+      now: NOW,
+    });
+    expect(r).toEqual({ openNeed: BigInt(3), openCount: 1, unknownCount: 1, newNeed: BigInt(1), total: BigInt(4) });
+  });
+
+  it("ignores an unknown remainder once the order is no longer live", () => {
+    const r = requiredApproval({
+      chain: "solana-devnet",
+      token: ASSET,
+      openOrders: [order({ remaining: null, status: "cancelled" }), order({ remaining: null, expiresAt: NOW })],
+      newNeed: BigInt(1),
+      now: NOW,
+    });
+    expect(r.unknownCount).toBe(0);
   });
 });
